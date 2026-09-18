@@ -7,7 +7,7 @@ import AdminPage from './AdminPage.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/barber-morais-admin" element={<AdminPage />} />
