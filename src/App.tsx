@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from './supabase'
+import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
 import './App.css'
 
 interface Servico {
@@ -9,14 +10,6 @@ interface Servico {
   preco: string
   duracao: string
   icone: string
-}
-
-interface Depoimento {
-  id: number
-  nome: string
-  texto: string
-  estrelas: number
-  foto: string
 }
 
 function App() {
@@ -58,28 +51,35 @@ function App() {
   }
 
   const servicos: Servico[] = [
-    { id: 1, nome: 'Corte Masculino', descricao: 'Corte moderno e personalizado, lavagem e finalização incluso.', preco: 'R$ 45', duracao: '40 min', icone: '✂️' },
-    { id: 2, nome: 'Barba', descricao: 'Modelagem completa com navalha, toalha quente e hidratação.', preco: 'R$ 30', duracao: '30 min', icone: '🪒' },
-    { id: 3, nome: 'Corte + Barba', descricao: 'Combo completo com desconto especial. O visual perfeito.', preco: 'R$ 65', duracao: '1h', icone: '👑' },
-    { id: 4, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com navalha.', preco: 'R$ 15', duracao: '15 min', icone: '✨' },
-    { id: 5, nome: 'Pigmentação', descricao: 'Camufla falhas no cabelo ou barba com pigmento natural.', preco: 'R$ 50', duracao: '45 min', icone: '🎨' },
-    { id: 6, nome: 'Hidratação Capilar', descricao: 'Tratamento profundo para cabelos ressecados e danificados.', preco: 'R$ 35', duracao: '30 min', icone: '💧' },
-    { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: '🖋️' },
+    { id: 1, nome: 'Corte Masculino', descricao: 'Corte moderno e personalizado, lavagem e finalização incluso.', preco: 'R$ 45', duracao: '40 min', icone: 'scissors' },
+    { id: 2, nome: 'Barba', descricao: 'Modelagem completa com navalha, toalha quente e hidratação.', preco: 'R$ 30', duracao: '30 min', icone: 'razor' },
+    { id: 3, nome: 'Corte + Barba', descricao: 'Combo completo com desconto especial. O visual perfeito.', preco: 'R$ 65', duracao: '1h', icone: 'crown' },
+    { id: 4, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com navalha.', preco: 'R$ 15', duracao: '15 min', icone: 'sparkles' },
+    { id: 5, nome: 'Pigmentação', descricao: 'Camufla falhas no cabelo ou barba com pigmento natural.', preco: 'R$ 50', duracao: '45 min', icone: 'palette' },
+    { id: 6, nome: 'Hidratação Capilar', descricao: 'Tratamento profundo para cabelos ressecados e danificados.', preco: 'R$ 35', duracao: '30 min', icone: 'droplets' },
+    { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pentool' },
   ]
 
-  const depoimentos: Depoimento[] = [
-    { id: 1, nome: 'Lucas Mendes', texto: 'Melhor barbeiro da cidade! Sempre saio satisfeito. O ambiente é top e o atendimento é impecável.', estrelas: 5, foto: 'LM' },
-    { id: 2, nome: 'Rafael Costa', texto: 'Corte sempre na régua. Profissional de primeira, recomendo demais!', estrelas: 5, foto: 'RC' },
-    { id: 3, nome: 'André Silva', texto: 'Melhor custo-benefício. Corte rápido, bonito e barato. Já é meu barbeiro fixo!', estrelas: 5, foto: 'AS' },
-  ]
+  const getIcon = (name: string) => {
+    const icons: any = {
+      scissors: <Scissors size={32} />,
+      razor: <Scissors size={32} />,
+      crown: <Crown size={32} />,
+      sparkles: <Sparkles size={32} />,
+      palette: <Palette size={32} />,
+      droplets: <Droplets size={32} />,
+      pentool: <PenTool size={32} />,
+    }
+    return icons[name] || <Scissors size={32} />
+  }
 
   const galeria = [
-    { id: 1, estilo: 'Fade degradê', desc: 'Corte degradê com acabamento perfeito' },
-    { id: 2, estilo: 'Undercut', desc: 'Lateral raspada com volume no topo' },
-    { id: 3, estilo: 'Pompadour', desc: 'Estilo clássico com finalização moderna' },
-    { id: 4, estilo: 'Barba cheia', desc: 'Modelagem completa com navalha' },
-    { id: 5, estilo: 'Social', desc: 'Corte elegante para o dia a dia' },
-    { id: 6, estilo: 'Moicano', desc: 'Estilo moderno e ousado' },
+    { id: 1, estilo: 'Fade degradê' },
+    { id: 2, estilo: 'Undercut' },
+    { id: 3, estilo: 'Pompadour' },
+    { id: 4, estilo: 'Barba cheia' },
+    { id: 5, estilo: 'Social' },
+    { id: 6, estilo: 'Moicano' },
   ]
 
   return (
@@ -87,7 +87,7 @@ function App() {
       <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
         <div className="nav-container">
           <div className="logo">
-            <span className="logo-icon">✂️</span>
+            <span className="logo-icon"><Scissors size={28} /></span>
             <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
           </div>
 
@@ -99,7 +99,7 @@ function App() {
             <li><a href="#inicio" onClick={() => setMenuAberto(false)}>Início</a></li>
             <li><a href="#servicos" onClick={() => setMenuAberto(false)}>Serviços</a></li>
             <li><a href="#galeria" onClick={() => setMenuAberto(false)}>Galeria</a></li>
-            <li><a href="#depoimentos" onClick={() => setMenuAberto(false)}>Depoimentos</a></li>
+            <li><a href="#avaliacoes" onClick={() => setMenuAberto(false)}>Avaliações</a></li>
             <li><a href="#contato" onClick={() => setMenuAberto(false)}>Contato</a></li>
           </ul>
 
@@ -110,7 +110,7 @@ function App() {
       <section id="inicio" className="hero">
         <div className="hero-overlay" />
         <div className="hero-content">
-          <p className="hero-subtitle">✨ BARBearia CLÁSSICA ⚜️ TATTOO ⚜️</p>
+          <p className="hero-subtitle">BARBEaria CLÁSSICA • TATTOO</p>
           <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
           <p className="hero-desc">
             Cortes modernos, barba feita com capricho e tatuagens artísticas.
@@ -145,12 +145,12 @@ function App() {
           <div className="grid-servicos">
             {servicos.map(servico => (
               <div key={servico.id} className="card-servico">
-                <div className="servico-icone">{servico.icone}</div>
+                <div className="servico-icone">{getIcon(servico.icone)}</div>
                 <h3>{servico.nome}</h3>
                 <p className="servico-desc">{servico.descricao}</p>
                 <div className="servico-info">
                   <span className="servico-preco">{servico.preco}</span>
-                  <span className="servico-duracao">⏱ {servico.duracao}</span>
+                  <span className="servico-duracao"><Clock size={16} /> {servico.duracao}</span>
                 </div>
               </div>
             ))}
@@ -163,7 +163,7 @@ function App() {
           <div className="sobre-grid">
             <div className="sobre-img">
               <div className="img-placeholder">
-                <span>✂️</span>
+                <Scissors size={64} />
                 <p>Morais Barber</p>
                 <small>Desde 2020</small>
               </div>
@@ -174,10 +174,10 @@ function App() {
               <p className="sobre-p">A Morais Barber nasceu da paixão por transformar visagismo e autoestima. Nosso barbeiro tem mais de 5 anos de experiência e sempre se mantém atualizado com as últimas tendências e técnicas do mercado.</p>
               <p className="sobre-p">Aqui você encontra um ambiente descontraído, cerveja gelada e o melhor atendimento da cidade. Cada cliente é tratado de forma única e personalizada.</p>
               <ul className="sobre-lista">
-                <li>✅ Profissional certificado e experiente</li>
-                <li>✅ Ambiente climatizado e confortável</li>
-                <li>✅ Produtos de primeira linha</li>
-                <li>✅ Atendimento personalizado</li>
+                <li><CheckCircle size={18} /> Profissional certificado e experiente</li>
+                <li><CheckCircle size={18} /> Ambiente climatizado e confortável</li>
+                <li><CheckCircle size={18} /> Produtos de primeira linha</li>
+                <li><CheckCircle size={18} /> Atendimento personalizado</li>
               </ul>
             </div>
           </div>
@@ -199,7 +199,9 @@ function App() {
           <div className="galeria-grid">
             {galeria.map((item) => (
               <div key={item.id} className="galeria-item">
-                <div className="galeria-item-img"><span>💈</span></div>
+                <div className="galeria-item-img">
+                  <Scissors size={48} />
+                </div>
                 <p>{item.estilo}</p>
               </div>
             ))}
@@ -207,24 +209,75 @@ function App() {
         </div>
       </section>
 
-      <section id="depoimentos" className="secao secao-escura">
+      <section id="avaliacoes" className="secao secao-escura">
         <div className="container">
-          <p className="secao-subtitle">DEPOIMENTOS</p>
-          <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem</h2>
-          <div className="grid-depoimentos">
-            {depoimentos.map(dep => (
-              <div key={dep.id} className="card-depoimento">
-                <div className="estrelas">{'★'.repeat(dep.estrelas)}</div>
-                <p className="dep-texto">"{dep.texto}"</p>
-                <div className="dep-autor">
-                  <div className="dep-foto">{dep.foto}</div>
-                  <div>
-                    <strong className="dep-nome">{dep.nome}</strong>
-                    <span className="dep-verificado">✓ Cliente verificado</span>
+          <p className="secao-subtitle">AVALIAÇÕES</p>
+          <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem no Google</h2>
+          <div className="google-rating">
+            <div className="rating-score">
+              <span className="rating-num">5.0</span>
+              <div className="rating-stars">
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+              </div>
+              <span className="rating-count">+200 avaliações</span>
+            </div>
+          </div>
+          <div className="google-reviews">
+            <div className="review-card">
+              <div className="review-header">
+                <div className="review-avatar">LM</div>
+                <div>
+                  <strong>Lucas Mendes</strong>
+                  <div className="review-stars">
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
                   </div>
                 </div>
               </div>
-            ))}
+              <p className="review-text">"Melhor barbeiro da cidade! Sempre saio satisfeito. O ambiente é top e o atendimento é impecável."</p>
+              <span className="review-source">Google Reviews</span>
+            </div>
+            <div className="review-card">
+              <div className="review-header">
+                <div className="review-avatar">RC</div>
+                <div>
+                  <strong>Rafael Costa</strong>
+                  <div className="review-stars">
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                  </div>
+                </div>
+              </div>
+              <p className="review-text">"Corte sempre na régua. Profissional de primeira, recomendo demais!"</p>
+              <span className="review-source">Google Reviews</span>
+            </div>
+            <div className="review-card">
+              <div className="review-header">
+                <div className="review-avatar">AS</div>
+                <div>
+                  <strong>André Silva</strong>
+                  <div className="review-stars">
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                  </div>
+                </div>
+              </div>
+              <p className="review-text">"Melhor custo-benefício. Corte rápido, bonito e barato. Já é meu barbeiro fixo!"</p>
+              <span className="review-source">Google Reviews</span>
+            </div>
           </div>
         </div>
       </section>
@@ -237,26 +290,28 @@ function App() {
           <div className="contato-grid">
             <div className="contato-info">
               <div className="info-item">
-                <span className="info-icone">📍</span>
+                <span className="info-icone"><MapPin size={28} /></span>
                 <div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos</p></div>
               </div>
               <div className="info-item">
-                <span className="info-icone">📞</span>
+                <span className="info-icone"><Phone size={28} /></span>
                 <div><strong>Telefone</strong><p>(51) 98130-1035</p></div>
               </div>
               <div className="info-item">
-                <span className="info-icone">⏰</span>
+                <span className="info-icone"><Clock size={28} /></span>
                 <div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sáb: 9h às 17h</p></div>
               </div>
               <div className="info-item">
-                <span className="info-icone">📱</span>
+                <span className="info-icone"><Phone size={28} /></span>
                 <div><strong>Redes Sociais</strong><p>@moraisbarber.tattoo</p></div>
               </div>
-              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp">💬 Agendar pelo WhatsApp</a>
+              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
+                <MessageCircle size={20} /> Agendar pelo WhatsApp
+              </a>
             </div>
             <div className="contato-form">
               <h3>Envie uma mensagem</h3>
-              {enviado && <div className="sucesso-msg">✅ Agendamento enviado com sucesso! Aguarde a confirmação.</div>}
+              {enviado && <div className="sucesso-msg"><CheckCircle size={18} /> Agendamento enviado com sucesso! Aguarde a confirmação.</div>}
               <form onSubmit={enviarFormulario}>
                 <div className="form-grupo">
                   <label htmlFor="nome">Nome</label>
@@ -274,7 +329,7 @@ function App() {
                   </select>
                 </div>
                 <div className="form-grupo">
-                  <label htmlFor="horario">📅 Data e Horário desejados</label>
+                  <label htmlFor="horario"><Clock size={16} /> Data e Horário desejados</label>
                   <input type="datetime-local" id="horario" value={horario} onChange={e => setHorario(e.target.value)} />
                 </div>
                 <div className="form-grupo">
@@ -293,7 +348,7 @@ function App() {
           <div className="footer-grid">
             <div className="footer-col">
               <div className="logo footer-logo">
-                <span className="logo-icon">✂️</span>
+                <span className="logo-icon"><Scissors size={28} /></span>
                 <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
               </div>
               <p className="footer-desc">O melhor da barbearia masculina em um só lugar. Corte, barba e estilo com excelência.</p>
@@ -304,7 +359,7 @@ function App() {
                 <li><a href="#inicio">Início</a></li>
                 <li><a href="#servicos">Serviços</a></li>
                 <li><a href="#galeria">Galeria</a></li>
-                <li><a href="#depoimentos">Depoimentos</a></li>
+                <li><a href="#avaliacoes">Avaliações</a></li>
                 <li><a href="#contato">Contato</a></li>
               </ul>
             </div>
@@ -321,16 +376,16 @@ function App() {
             <div className="footer-col">
               <h4>Contato</h4>
               <ul>
-                <li>📍 R. Potiguara, 974</li>
-                <li>📞 (51) 98130-1035</li>
-                <li>⏰ Ter-Sex 9h-19:30h</li>
-                <li>📷 @moraisbarber.tattoo</li>
+                <li><MapPin size={16} /> R. Potiguara, 974</li>
+                <li><Phone size={16} /> (51) 98130-1035</li>
+                <li><Clock size={16} /> Ter-Sex 9h-19:30h</li>
+                <li><Phone size={16} /> @moraisbarber.tattoo</li>
               </ul>
             </div>
           </div>
           <div className="footer-bottom">
             <p>© 2026 Morais Barber. Todos os direitos reservados.</p>
-            <p>Feito com ❤️ para clientes incríveis.</p>
+            <p>Feito com carinho para clientes incríveis.</p>
           </div>
         </div>
       </footer>

@@ -850,7 +850,7 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .galeria-grid {
+  .google-reviews {
     grid-template-columns: 1fr;
   }
 
@@ -1054,6 +1054,95 @@ body {
 .celula-horario {
   color: #d0d0e0;
   font-size: 0.85rem;
+}
+
+/* Google Reviews */
+.google-rating {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.rating-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-num {
+  font-size: 4rem;
+  font-weight: 700;
+  color: white;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 5px;
+}
+
+.rating-count {
+  color: #8080a0;
+  font-size: 1rem;
+}
+
+.google-reviews {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.review-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.review-card:hover {
+  border-color: rgba(233, 30, 99, 0.3);
+}
+
+.review-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.review-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #e91e63, #f44336);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white;
+}
+
+.review-header strong {
+  color: white;
+  font-size: 0.95rem;
+}
+
+.review-stars {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.review-text {
+  color: #c0c0d0;
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.review-source {
+  color: #8080a0;
+  font-size: 0.8rem;
 }
 
 .badge {
