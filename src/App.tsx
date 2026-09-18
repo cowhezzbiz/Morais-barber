@@ -46,6 +46,7 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
     { id: 4, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com navalha.', preco: 'R$ 15', duracao: '15 min', icone: '✨' },
     { id: 5, nome: 'Pigmentação', descricao: 'Camufla falhas no cabelo ou barba com pigmento natural.', preco: 'R$ 50', duracao: '45 min', icone: '🎨' },
     { id: 6, nome: 'Hidratação Capilar', descricao: 'Tratamento profundo para cabelos ressecados e danificados.', preco: 'R$ 35', duracao: '30 min', icone: '💧' },
+    { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: '🖋️' },
   ]
 
   const depoimentos: Depoimento[] = [
@@ -93,11 +94,11 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
       <section id="inicio" className="hero">
         <div className="hero-overlay" />
         <div className="hero-content">
-          <p className="hero-subtitle">✨ BEM-VINDO À MORAIS BARBER</p>
+          <p className="hero-subtitle">✨ BARBearia CLÁSSICA ⚜️ TATTOO ⚜️</p>
           <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
           <p className="hero-desc">
-            Cortes modernos, barba feita com capricho e um ambiente pensado pra você se sentir bem.
-            Agende seu horário e transforme seu visual.
+            Cortes modernos, barba feita com capricho e tatuagens artísticas.
+            Um ambiente pensado pra você se sentir bem. Agende seu horário e transforme seu visual.
           </p>
           <div className="hero-botoes">
             <a href="#contato" className="btn btn-primary">Agendar Horário</a>
@@ -262,7 +263,7 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
                 <span className="info-icone">⏰</span>
                 <div>
                   <strong>Horário</strong>
-                  <p>Seg a Sex: 9h às 20h</p>
+                  <p>Terça a Sexta: 9h às 19:30h</p>
                   <p>Sáb: 9h às 17h</p>
                 </div>
               </div>
@@ -270,7 +271,7 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
                 <span className="info-icone">📱</span>
                 <div>
                   <strong>Redes Sociais</strong>
-                  <p>@barbershop_no_instagram</p>
+                  <p>@moraisbarber.tattoo</p>
                 </div>
               </div>
 
@@ -356,8 +357,8 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
               <ul>
                 <li>📍 R. Potiguara, 974</li>
                 <li>📞 (51) 98130-1035</li>
-                <li>⏰ Seg-Sex 9h-20h</li>
-                <li>📷 @moraisbarber</li>
+                <li>⏰ Ter-Sex 9h-19:30h</li>
+                <li>📷 @moraisbarber.tattoo</li>
               </ul>
             </div>
           </div>
