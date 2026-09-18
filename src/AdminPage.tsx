@@ -11,6 +11,7 @@ interface Agendamento {
   mensagem: string
   status: 'pendente' | 'confirmado' | 'cancelado'
   created_at: string
+  horario_agendado: string | null
 }
 
 export default function AdminPage() {
@@ -178,6 +179,7 @@ export default function AdminPage() {
             <span>Nome</span>
             <span>Telefone</span>
             <span>Serviço</span>
+            <span>Horário</span>
             <span>Status</span>
             <span>Ações</span>
           </div>
@@ -189,6 +191,9 @@ export default function AdminPage() {
               </span>
               <span className="celula-telefone">{ag.telefone}</span>
               <span className="celula-servico">{ag.servico}</span>
+              <span className="celula-horario">
+                {ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+              </span>
               <span className="celula-status">
                 <span className={`badge ${ag.status}`}>
                   {ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : '❌'} {ag.status}

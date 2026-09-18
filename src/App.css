@@ -999,7 +999,7 @@ body {
 
 .tabela-header {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr;
+  grid-template-columns: 1.5fr 1.2fr 1.2fr 1.2fr 1fr 0.8fr;
   padding: 15px 20px;
   background: rgba(255, 255, 255, 0.05);
   color: #8080a0;
@@ -1011,7 +1011,7 @@ body {
 
 .tabela-linha {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr;
+  grid-template-columns: 1.5fr 1.2fr 1.2fr 1.2fr 1fr 0.8fr;
   padding: 15px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   align-items: center;
@@ -1049,6 +1049,11 @@ body {
 .celula-servico {
   color: #d0d0e0;
   font-size: 0.9rem;
+}
+
+.celula-horario {
+  color: #d0d0e0;
+  font-size: 0.85rem;
 }
 
 .badge {

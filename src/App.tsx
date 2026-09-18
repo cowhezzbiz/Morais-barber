@@ -27,6 +27,7 @@ function App() {
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
   const [enviado, setEnviado] = useState(false)
+  const [horario, setHorario] = useState('')
 
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,10 +37,11 @@ function App() {
         telefone: formTelefone,
         servico: formServico,
         mensagem: formMensagem || '',
-        status: 'pendente'
+        status: 'pendente',
+        horario_agendado: horario ? new Date(horario).toISOString() : null
       })
 
-      const texto = `Olá! Gostaria de agendar um horário. Nome: ${formNome} Telefone: ${formTelefone} Serviço: ${formServico} Mensagem: ${formMensagem || 'Nenhuma'}`
+      const texto = `Olá! Gostaria de agendar um horário.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const url = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
       window.open(url, '_blank')
 
@@ -48,6 +50,7 @@ function App() {
       setFormTelefone('')
       setFormServico('')
       setFormMensagem('')
+      setHorario('')
       setTimeout(() => setEnviado(false), 4000)
     } catch {
       alert('Erro ao enviar. Tente novamente.')
@@ -269,6 +272,10 @@ function App() {
                     <option value="">Selecione...</option>
                     {servicos.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
                   </select>
+                </div>
+                <div className="form-grupo">
+                  <label htmlFor="horario">📅 Data e Horário desejados</label>
+                  <input type="datetime-local" id="horario" value={horario} onChange={e => setHorario(e.target.value)} />
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="mensagem">Mensagem (opcional)</label>
