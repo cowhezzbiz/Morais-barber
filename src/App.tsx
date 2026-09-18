@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { supabase } from './supabase'
 import './App.css'
 
 interface Servico {
@@ -25,18 +26,32 @@ function App() {
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
+  const [enviado, setEnviado] = useState(false)
 
-  const enviarFormulario = (e: React.FormEvent) => {
+  const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
-    const texto = `Olá! Gostaria de agendar um horário.
-    
-Nome: ${formNome}
-Telefone: ${formTelefone}
-Serviço: ${formServico}
-Mensagem: ${formMensagem || 'Nenhuma'}`
+    try {
+      await supabase.from('agendamentos').insert({
+        nome: formNome,
+        telefone: formTelefone,
+        servico: formServico,
+        mensagem: formMensagem || '',
+        status: 'pendente'
+      })
 
-    const url = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
-    window.open(url, '_blank')
+      const texto = `Olá! Gostaria de agendar um horário. Nome: ${formNome} Telefone: ${formTelefone} Serviço: ${formServico} Mensagem: ${formMensagem || 'Nenhuma'}`
+      const url = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
+      window.open(url, '_blank')
+
+      setEnviado(true)
+      setFormNome('')
+      setFormTelefone('')
+      setFormServico('')
+      setFormMensagem('')
+      setTimeout(() => setEnviado(false), 4000)
+    } catch {
+      alert('Erro ao enviar. Tente novamente.')
+    }
   }
 
   const servicos: Servico[] = [
@@ -66,7 +81,6 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
 
   return (
     <div className="app">
-      {/* ========== NAVBAR ========== */}
       <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
         <div className="nav-container">
           <div className="logo">
@@ -90,7 +104,6 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
         </div>
       </nav>
 
-      {/* ========== HERO ========== */}
       <section id="inicio" className="hero">
         <div className="hero-overlay" />
         <div className="hero-content">
@@ -121,13 +134,11 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
         </div>
       </section>
 
-      {/* ========== SERVIÇOS ========== */}
       <section id="servicos" className="secao">
         <div className="container">
           <p className="secao-subtitle">NOSSOS SERVIÇOS</p>
           <h2 className="secao-titulo">O que fazemos de <span className="destaque">melhor</span></h2>
           <p className="secao-desc">Serviços pensados pra você sair com o visual impecável.</p>
-
           <div className="grid-servicos">
             {servicos.map(servico => (
               <div key={servico.id} className="card-servico">
@@ -144,7 +155,6 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
         </div>
       </section>
 
-      {/* ========== SOBRE ========== */}
       <section className="secao secao-escura">
         <div className="container">
           <div className="sobre-grid">
@@ -158,15 +168,8 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
             <div className="sobre-texto">
               <p className="secao-subtitle">SOBRE NÓS</p>
               <h2 className="secao-titulo">Tradição e modernidade em cada <span className="destaque">corte</span></h2>
-              <p className="sobre-p">
-                A Morais Barber nasceu da paixão por transformar visagismo e autoestima.
-                Nosso barbeiro tem mais de 5 anos de experiência e sempre se mantém atualizado
-                com as últimas tendências e técnicas do mercado.
-              </p>
-              <p className="sobre-p">
-                Aqui você encontra um ambiente descontraído, cerveja gelada e o melhor atendimento
-                da cidade. Cada cliente é tratado de forma única e personalizada.
-              </p>
+              <p className="sobre-p">A Morais Barber nasceu da paixão por transformar visagismo e autoestima. Nosso barbeiro tem mais de 5 anos de experiência e sempre se mantém atualizado com as últimas tendências e técnicas do mercado.</p>
+              <p className="sobre-p">Aqui você encontra um ambiente descontraído, cerveja gelada e o melhor atendimento da cidade. Cada cliente é tratado de forma única e personalizada.</p>
               <ul className="sobre-lista">
                 <li>✅ Profissional certificado e experiente</li>
                 <li>✅ Ambiente climatizado e confortável</li>
@@ -178,31 +181,22 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
         </div>
       </section>
 
-      {/* ========== GALERIA ========== */}
       <section id="galeria" className="secao">
         <div className="container">
           <p className="secao-subtitle">PORTFÓLIO</p>
           <h2 className="secao-titulo">Nossos <span className="destaque">trabalhos</span></h2>
           <p className="secao-desc">Confira alguns cortes realizados por nosso barbeiro.</p>
-
           <div className="galeria-tabs">
             {galeria.map((item, index) => (
-              <button
-                key={item.id}
-                className={`galeria-tab ${abaGaleria === index ? 'ativa' : ''}`}
-                onClick={() => setAbaGaleria(index)}
-              >
+              <button key={item.id} className={`galeria-tab ${abaGaleria === index ? 'ativa' : ''}`} onClick={() => setAbaGaleria(index)}>
                 {item.estilo}
               </button>
             ))}
           </div>
-
           <div className="galeria-grid">
             {galeria.map((item) => (
               <div key={item.id} className="galeria-item">
-                <div className="galeria-item-img">
-                  <span>💈</span>
-                </div>
+                <div className="galeria-item-img"><span>💈</span></div>
                 <p>{item.estilo}</p>
               </div>
             ))}
@@ -210,18 +204,14 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
         </div>
       </section>
 
-      {/* ========== DEPOIMENTOS ========== */}
       <section id="depoimentos" className="secao secao-escura">
         <div className="container">
           <p className="secao-subtitle">DEPOIMENTOS</p>
           <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem</h2>
-
           <div className="grid-depoimentos">
             {depoimentos.map(dep => (
               <div key={dep.id} className="card-depoimento">
-                <div className="estrelas">
-                  {'★'.repeat(dep.estrelas)}
-                </div>
+                <div className="estrelas">{'★'.repeat(dep.estrelas)}</div>
                 <p className="dep-texto">"{dep.texto}"</p>
                 <div className="dep-autor">
                   <div className="dep-foto">{dep.foto}</div>
@@ -236,89 +226,61 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
         </div>
       </section>
 
-      {/* ========== CONTATO ========== */}
       <section id="contato" className="secao">
         <div className="container">
           <p className="secao-subtitle">CONTATO</p>
           <h2 className="secao-titulo">Agende seu <span className="destaque">horário</span></h2>
           <p className="secao-desc">Escolha o melhor dia e horário pra você.</p>
-
           <div className="contato-grid">
             <div className="contato-info">
               <div className="info-item">
                 <span className="info-icone">📍</span>
-                <div>
-                  <strong>Endereço</strong>
-                  <p>R. Potiguara, 974 - Canudos</p>
-                </div>
+                <div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos</p></div>
               </div>
               <div className="info-item">
                 <span className="info-icone">📞</span>
-                <div>
-                  <strong>Telefone</strong>
-                  <p>(51) 98130-1035</p>
-                </div>
+                <div><strong>Telefone</strong><p>(51) 98130-1035</p></div>
               </div>
               <div className="info-item">
                 <span className="info-icone">⏰</span>
-                <div>
-                  <strong>Horário</strong>
-                  <p>Terça a Sexta: 9h às 19:30h</p>
-                  <p>Sáb: 9h às 17h</p>
-                </div>
+                <div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sáb: 9h às 17h</p></div>
               </div>
               <div className="info-item">
                 <span className="info-icone">📱</span>
-                <div>
-                  <strong>Redes Sociais</strong>
-                  <p>@moraisbarber.tattoo</p>
-                </div>
+                <div><strong>Redes Sociais</strong><p>@moraisbarber.tattoo</p></div>
               </div>
-
-              <a
-                href="https://wa.me/5551981301035"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-whatsapp"
-              >
-                💬 Agendar pelo WhatsApp
-              </a>
+              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp">💬 Agendar pelo WhatsApp</a>
             </div>
-
             <div className="contato-form">
               <h3>Envie uma mensagem</h3>
+              {enviado && <div className="sucesso-msg">✅ Agendamento enviado com sucesso! Aguarde a confirmação.</div>}
               <form onSubmit={enviarFormulario}>
                 <div className="form-grupo">
                   <label htmlFor="nome">Nome</label>
-                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} />
+                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required />
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="telefone">Telefone</label>
-                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} />
+                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required />
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="servico">Serviço</label>
-                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)}>
+                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required>
                     <option value="">Selecione...</option>
-                    {servicos.map(s => (
-                      <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>
-                    ))}
+                    {servicos.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
                   </select>
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="mensagem">Mensagem (opcional)</label>
                   <textarea id="mensagem" rows={3} placeholder="Alguma preferência?" value={formMensagem} onChange={e => setFormMensagem(e.target.value)}></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary btn-full">
-                  Enviar Mensagem
-                </button>
+                <button type="submit" className="btn btn-primary btn-full">Enviar Mensagem</button>
               </form>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ========== FOOTER ========== */}
       <footer className="footer">
         <div className="container">
           <div className="footer-grid">
@@ -327,10 +289,7 @@ Mensagem: ${formMensagem || 'Nenhuma'}`
                 <span className="logo-icon">✂️</span>
                 <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
               </div>
-              <p className="footer-desc">
-                O melhor da barbearia masculina em um só lugar.
-                Corte, barba e estilo com excelência.
-              </p>
+              <p className="footer-desc">O melhor da barbearia masculina em um só lugar. Corte, barba e estilo com excelência.</p>
             </div>
             <div className="footer-col">
               <h4>Links Rápidos</h4>
