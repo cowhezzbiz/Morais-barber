@@ -12,6 +12,7 @@ interface Agendamento {
   status: 'pendente' | 'confirmado' | 'cancelado'
   created_at: string
   horario_agendado: string | null
+  pago: boolean
 }
 
 const PRECOS: Record<string, number> = {
@@ -108,6 +109,18 @@ export default function AdminPage() {
 
     if (!error) {
       setAgendamentos(prev => prev.map(a => a.id === id ? { ...a, status } : a))
+    }
+  }
+
+  const togglePagamento = async (id: number, valorAtual: boolean) => {
+    const novoValor = !valorAtual
+    const { error } = await supabase
+      .from('agendamentos')
+      .update({ pago: novoValor })
+      .eq('id', id)
+
+    if (!error) {
+      setAgendamentos(prev => prev.map(a => a.id === id ? { ...a, pago: novoValor } : a))
     }
   }
 
@@ -379,6 +392,7 @@ export default function AdminPage() {
             <span>Telefone</span>
             <span>Serviço</span>
             <span>Horário</span>
+            <span>Pgto</span>
             <span>Status</span>
             <span>Ações</span>
           </div>
@@ -392,6 +406,15 @@ export default function AdminPage() {
               <span className="celula-servico">{ag.servico}</span>
               <span className="celula-horario">
                 {ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+              </span>
+              <span className="celula-pgto">
+                <button
+                  className={`btn-pagamento ${ag.pago ? 'pago' : 'pendente'}`}
+                  onClick={() => togglePagamento(ag.id, ag.pago)}
+                  title={ag.pago ? 'Clique para marcar como não pago' : 'Clique para marcar como pago'}
+                >
+                  {ag.pago ? '💰' : '⏳'}
+                </button>
               </span>
               <span className="celula-status">
                 <span className={`badge ${ag.status}`}>

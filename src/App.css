@@ -1068,7 +1068,7 @@ body {
 
 .tabela-header {
   display: grid;
-  grid-template-columns: 1.5fr 1.2fr 1.2fr 1.2fr 1fr 0.8fr;
+  grid-template-columns: 1.5fr 1.2fr 1.2fr 1.2fr 0.6fr 1fr 0.8fr;
   padding: 15px 20px;
   background: rgba(255, 255, 255, 0.05);
   color: #8080a0;
@@ -1080,7 +1080,7 @@ body {
 
 .tabela-linha {
   display: grid;
-  grid-template-columns: 1.5fr 1.2fr 1.2fr 1.2fr 1fr 0.8fr;
+  grid-template-columns: 1.5fr 1.2fr 1.2fr 1.2fr 0.6fr 1fr 0.8fr;
   padding: 15px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   align-items: center;
@@ -1212,6 +1212,40 @@ body {
 .review-source {
   color: #8080a0;
   font-size: 0.8rem;
+}
+
+.celula-pgto {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-pagamento {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-pagamento.pago {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.btn-pagamento.pago:hover {
+  background: rgba(76, 175, 80, 0.4);
+}
+
+.btn-pagamento.pendente {
+  background: rgba(255, 193, 7, 0.2);
+}
+
+.btn-pagamento.pendente:hover {
+  background: rgba(255, 193, 7, 0.4);
 }
 
 .badge {
