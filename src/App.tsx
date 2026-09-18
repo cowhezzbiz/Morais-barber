@@ -45,8 +45,9 @@ function App() {
       setFormMensagem('')
       setHorario('')
       setTimeout(() => setEnviado(false), 4000)
-    } catch {
-      alert('Erro ao enviar. Tente novamente.')
+    } catch (err: any) {
+      console.error('Erro ao enviar:', err)
+      alert('Erro: ' + (err.message || 'Erro ao enviar. Tente novamente.'))
     }
   }
 
