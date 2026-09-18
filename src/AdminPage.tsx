@@ -14,6 +14,16 @@ interface Agendamento {
   horario_agendado: string | null
 }
 
+const PRECOS: Record<string, number> = {
+  'Corte Masculino': 45,
+  'Barba': 30,
+  'Corte + Barba': 65,
+  'Sobrancelha': 15,
+  'Pigmentação': 50,
+  'Hidratação Capilar': 35,
+  'Tatuagem': 0,
+}
+
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -97,6 +107,27 @@ export default function AdminPage() {
   const filtrados = filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro)
   const countStatus = (status: string) => agendamentos.filter(a => a.status === status).length
 
+  const calcularFaturamento = (periodo: 'diario' | 'mensal' | 'anual') => {
+    const agora = new Date()
+    let inicio: Date
+
+    if (periodo === 'diario') {
+      inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
+    } else if (periodo === 'mensal') {
+      inicio = new Date(agora.getFullYear(), agora.getMonth(), 1)
+    } else {
+      inicio = new Date(agora.getFullYear(), 0, 1)
+    }
+
+    const agendamentosConfirmados = agendamentos.filter(
+      a => a.status === 'confirmado' && new Date(a.created_at) >= inicio
+    )
+
+    return agendamentosConfirmados.reduce((total, a) => {
+      return total + (PRECOS[a.servico] || 0)
+    }, 0)
+  }
+
   if (loading) {
     return (
       <div className="admin-container">
@@ -157,6 +188,31 @@ export default function AdminPage() {
         <div className="admin-stat">
           <span className="stat-num stat-vermelho">{countStatus('cancelado')}</span>
           <span className="stat-label">Cancelados</span>
+        </div>
+      </div>
+
+      {/* Painel de Faturamento */}
+      <div className="faturamento-container">
+        <h3 className="faturamento-titulo">💰 Faturamento</h3>
+        <div className="faturamento-cards">
+          <div className="faturamento-card">
+            <span className="faturamento-label">Hoje</span>
+            <span className="faturamento-valor">
+              R$ {calcularFaturamento('diario').toFixed(2).replace('.', ',')}
+            </span>
+          </div>
+          <div className="faturamento-card">
+            <span className="faturamento-label">Este Mês</span>
+            <span className="faturamento-valor">
+              R$ {calcularFaturamento('mensal').toFixed(2).replace('.', ',')}
+            </span>
+          </div>
+          <div className="faturamento-card">
+            <span className="faturamento-label">Este Ano</span>
+            <span className="faturamento-valor">
+              R$ {calcularFaturamento('anual').toFixed(2).replace('.', ',')}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -859,6 +859,58 @@ body {
   }
 }
 
+/* ========== FATURAMENTO ========== */
+.faturamento-container {
+  max-width: 1000px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.faturamento-titulo {
+  color: white;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.faturamento-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.faturamento-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.faturamento-card:hover {
+  border-color: rgba(233, 30, 99, 0.3);
+}
+
+.faturamento-label {
+  display: block;
+  color: #8080a0;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.faturamento-valor {
+  display: block;
+  color: #4caf50;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .faturamento-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ========== ÁREA ADMIN ========== */
 .admin-container {
   min-height: 100vh;
