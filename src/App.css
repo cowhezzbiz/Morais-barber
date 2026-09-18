@@ -911,6 +911,23 @@ body {
   }
 }
 
+.btn-reset-faturamento {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 20px;
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reset-faturamento:hover {
+  background: rgba(244, 67, 54, 0.2);
+  border-color: #f44336;
+}
+
 /* ========== ÁREA ADMIN ========== */
 .admin-container {
   min-height: 100vh;

@@ -104,7 +104,20 @@ export default function AdminPage() {
     }
   }
 
-  const filtrados = filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro)
+  const [faturamentoZerado, setFaturamentoZerado] = useState({ diario: false, mensal: false, anual: false })
+
+  const handleResetFaturamento = (periodo: 'diario' | 'mensal' | 'anual') => {
+    const periodoLabel = periodo === 'diario' ? 'DIÁRIO' : periodo === 'mensal' ? 'MENSAL' : 'ANUAL'
+    const confirmou = window.confirm(
+      `⚠️ CONFIRMAÇÃO NECESSÁRIA\n\n` +
+      `Você está prestes a ZERAR o faturamento ${periodoLabel}.\n\n` +
+      `Esta ação não pode ser desfeita!\n\n` +
+      `Deseja realmente continuar?`
+    )
+    if (confirmou) {
+      setFaturamentoZerado(prev => ({ ...prev, [periodo]: true }))
+    }
+  }
   const countStatus = (status: string) => agendamentos.filter(a => a.status === status).length
 
   const calcularFaturamento = (periodo: 'diario' | 'mensal' | 'anual') => {
@@ -198,20 +211,29 @@ export default function AdminPage() {
           <div className="faturamento-card">
             <span className="faturamento-label">Hoje</span>
             <span className="faturamento-valor">
-              R$ {calcularFaturamento('diario').toFixed(2).replace('.', ',')}
+              R$ {faturamentoZerado.diario ? '0,00' : calcularFaturamento('diario').toFixed(2).replace('.', ',')}
             </span>
+            <button className="btn-reset-faturamento" onClick={() => handleResetFaturamento('diario')}>
+              🗑 Zerar
+            </button>
           </div>
           <div className="faturamento-card">
             <span className="faturamento-label">Este Mês</span>
             <span className="faturamento-valor">
-              R$ {calcularFaturamento('mensal').toFixed(2).replace('.', ',')}
+              R$ {faturamentoZerado.mensal ? '0,00' : calcularFaturamento('mensal').toFixed(2).replace('.', ',')}
             </span>
+            <button className="btn-reset-faturamento" onClick={() => handleResetFaturamento('mensal')}>
+              🗑 Zerar
+            </button>
           </div>
           <div className="faturamento-card">
             <span className="faturamento-label">Este Ano</span>
             <span className="faturamento-valor">
-              R$ {calcularFaturamento('anual').toFixed(2).replace('.', ',')}
+              R$ {faturamentoZerado.anual ? '0,00' : calcularFaturamento('anual').toFixed(2).replace('.', ',')}
             </span>
+            <button className="btn-reset-faturamento" onClick={() => handleResetFaturamento('anual')}>
+              🗑 Zerar
+            </button>
           </div>
         </div>
       </div>
