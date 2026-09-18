@@ -32,6 +32,9 @@ export default function AdminPage() {
   const [error, setError] = useState('')
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado'>('todos')
+  const [faturamentoDiario, setFaturamentoDiario] = useState(0)
+  const [faturamentoMensal, setFaturamentoMensal] = useState(0)
+  const [faturamentoAnual, setFaturamentoAnual] = useState(0)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -52,6 +55,13 @@ export default function AdminPage() {
     }
   }, [user])
 
+  useEffect(() => {
+    if (agendamentos.length >= 0) {
+      calcularTodosFaturamentos()
+      verificarFechamentoAutomatico()
+    }
+  }, [agendamentos])
+
   const fetchAgendamentos = async () => {
     const { data, error } = await supabase
       .from('agendamentos')
@@ -63,6 +73,15 @@ export default function AdminPage() {
     } else {
       setAgendamentos(data || [])
     }
+  }
+
+  const calcularTodosFaturamentos = async () => {
+    const diario = await calcularFaturamento('diario')
+    const mensal = await calcularFaturamento('mensal')
+    const anual = await calcularFaturamento('anual')
+    setFaturamentoDiario(diario)
+    setFaturamentoMensal(mensal)
+    setFaturamentoAnual(anual)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -104,23 +123,82 @@ export default function AdminPage() {
     }
   }
 
-  const [faturamentoZerado, setFaturamentoZerado] = useState({ diario: false, mensal: false, anual: false })
+  const verificarFechamentoAutomatico = async () => {
+    const hoje = new Date()
+    const diaSemana = hoje.getDay()
+    const diaMes = hoje.getDate()
+    const mes = hoje.getMonth()
+    const hojeStr = hoje.toISOString().split('T')[0]
 
-  const handleResetFaturamento = (periodo: 'diario' | 'mensal' | 'anual') => {
-    const periodoLabel = periodo === 'diario' ? 'DIÁRIO' : periodo === 'mensal' ? 'MENSAL' : 'ANUAL'
-    const confirmou = window.confirm(
-      `⚠️ CONFIRMAÇÃO NECESSÁRIA\n\n` +
-      `Você está prestes a ZERAR o faturamento ${periodoLabel}.\n\n` +
-      `Esta ação não pode ser desfeita!\n\n` +
-      `Deseja realmente continuar?`
-    )
-    if (confirmou) {
-      setFaturamentoZerado(prev => ({ ...prev, [periodo]: true }))
+    // Diário: todo sábado
+    if (diaSemana === 6) {
+      const { data } = await supabase
+        .from('fechamentos')
+        .select('ultima_data')
+        .eq('tipo', 'diario')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const ultimaData = data?.ultima_data
+      if (!ultimaData || ultimaData !== hojeStr) {
+        const valor = await calcularFaturamento('diario')
+        await supabase.from('fechamentos').insert({
+          tipo: 'diario',
+          ultima_data: hojeStr,
+          valor_fechado: valor
+        })
+        setFaturamentoDiario(0)
+      }
+    }
+
+    // Mensal: último dia do mês
+    const ultimoDiaMes = new Date(hoje.getFullYear(), mes + 1, 0).getDate()
+    if (diaMes === ultimoDiaMes) {
+      const { data } = await supabase
+        .from('fechamentos')
+        .select('ultima_data')
+        .eq('tipo', 'mensal')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const ultimaData = data?.ultima_data
+      if (!ultimaData || ultimaData !== hojeStr) {
+        const valor = await calcularFaturamento('mensal')
+        await supabase.from('fechamentos').insert({
+          tipo: 'mensal',
+          ultima_data: hojeStr,
+          valor_fechado: valor
+        })
+        setFaturamentoMensal(0)
+      }
+    }
+
+    // Anual: 31 de dezembro
+    if (mes === 11 && diaMes === 31) {
+      const { data } = await supabase
+        .from('fechamentos')
+        .select('ultima_data')
+        .eq('tipo', 'anual')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const ultimaData = data?.ultima_data
+      if (!ultimaData || ultimaData !== hojeStr) {
+        const valor = await calcularFaturamento('anual')
+        await supabase.from('fechamentos').insert({
+          tipo: 'anual',
+          ultima_data: hojeStr,
+          valor_fechado: valor
+        })
+        setFaturamentoAnual(0)
+      }
     }
   }
-  const countStatus = (status: string) => agendamentos.filter(a => a.status === status).length
 
-  const calcularFaturamento = (periodo: 'diario' | 'mensal' | 'anual') => {
+  const calcularFaturamento = async (periodo: 'diario' | 'mensal' | 'anual') => {
     const agora = new Date()
     let inicio: Date
 
@@ -132,14 +210,58 @@ export default function AdminPage() {
       inicio = new Date(agora.getFullYear(), 0, 1)
     }
 
-    const agendamentosConfirmados = agendamentos.filter(
-      a => a.status === 'confirmado' && new Date(a.created_at) >= inicio
+    const { data: ultimoFechamento } = await supabase
+      .from('fechamentos')
+      .select('ultima_data')
+      .eq('tipo', periodo)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    let dataCorte = inicio
+    if (ultimoFechamento?.ultima_data) {
+      const dataFechamento = new Date(ultimoFechamento.ultima_data)
+      if (dataFechamento >= inicio) {
+        dataCorte = new Date(dataFechamento.getTime() + 86400000)
+      }
+    }
+
+    const agendamentosPeriodo = agendamentos.filter(
+      a => {
+        const dataAgendamento = new Date(a.created_at)
+        return a.status === 'confirmado' && dataAgendamento >= dataCorte
+      }
     )
 
-    return agendamentosConfirmados.reduce((total, a) => {
+    return agendamentosPeriodo.reduce((total, a) => {
       return total + (PRECOS[a.servico] || 0)
     }, 0)
   }
+
+  const handleResetFaturamento = async (periodo: 'diario' | 'mensal' | 'anual') => {
+    const periodoLabel = periodo === 'diario' ? 'DIÁRIO' : periodo === 'mensal' ? 'MENSAL' : 'ANUAL'
+    const confirmou = window.confirm(
+      `⚠️ CONFIRMAÇÃO NECESSÁRIA\n\n` +
+      `Você está prestes a ZERAR o faturamento ${periodoLabel}.\n\n` +
+      `Esta ação não pode ser desfeita!\n\n` +
+      `Deseja realmente continuar?`
+    )
+    if (confirmou) {
+      const hojeStr = new Date().toISOString().split('T')[0]
+      const valor = await calcularFaturamento(periodo)
+      await supabase.from('fechamentos').insert({
+        tipo: periodo,
+        ultima_data: hojeStr,
+        valor_fechado: valor
+      })
+      if (periodo === 'diario') setFaturamentoDiario(0)
+      if (periodo === 'mensal') setFaturamentoMensal(0)
+      if (periodo === 'anual') setFaturamentoAnual(0)
+    }
+  }
+
+  const countStatus = (status: string) => agendamentos.filter(a => a.status === status).length
+  const filtrados = filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro)
 
   if (loading) {
     return (
@@ -204,14 +326,13 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Painel de Faturamento */}
       <div className="faturamento-container">
         <h3 className="faturamento-titulo">💰 Faturamento</h3>
         <div className="faturamento-cards">
           <div className="faturamento-card">
             <span className="faturamento-label">Hoje</span>
             <span className="faturamento-valor">
-              R$ {faturamentoZerado.diario ? '0,00' : calcularFaturamento('diario').toFixed(2).replace('.', ',')}
+              R$ {faturamentoDiario.toFixed(2).replace('.', ',')}
             </span>
             <button className="btn-reset-faturamento" onClick={() => handleResetFaturamento('diario')}>
               🗑 Zerar
@@ -220,7 +341,7 @@ export default function AdminPage() {
           <div className="faturamento-card">
             <span className="faturamento-label">Este Mês</span>
             <span className="faturamento-valor">
-              R$ {faturamentoZerado.mensal ? '0,00' : calcularFaturamento('mensal').toFixed(2).replace('.', ',')}
+              R$ {faturamentoMensal.toFixed(2).replace('.', ',')}
             </span>
             <button className="btn-reset-faturamento" onClick={() => handleResetFaturamento('mensal')}>
               🗑 Zerar
@@ -229,7 +350,7 @@ export default function AdminPage() {
           <div className="faturamento-card">
             <span className="faturamento-label">Este Ano</span>
             <span className="faturamento-valor">
-              R$ {faturamentoZerado.anual ? '0,00' : calcularFaturamento('anual').toFixed(2).replace('.', ',')}
+              R$ {faturamentoAnual.toFixed(2).replace('.', ',')}
             </span>
             <button className="btn-reset-faturamento" onClick={() => handleResetFaturamento('anual')}>
               🗑 Zerar
