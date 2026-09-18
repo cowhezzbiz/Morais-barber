@@ -12,6 +12,6 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<App />} />
         <Route path="/barber-morais-admin" element={<AdminPage />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   </StrictMode>,
 )
