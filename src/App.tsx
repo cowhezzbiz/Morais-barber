@@ -110,7 +110,7 @@ function App() {
       <section id="inicio" className="hero">
         <div className="hero-overlay" />
         <div className="hero-content">
-          <p className="hero-subtitle">BARBEaria CLÁSSICA • TATTOO</p>
+          <p className="hero-subtitle">Barbearia Morais</p>
           <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
           <p className="hero-desc">
             Cortes modernos, barba feita com capricho e tatuagens artísticas.
