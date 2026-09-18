@@ -229,9 +229,9 @@ function App() {
           <div className="google-reviews">
             <div className="review-card">
               <div className="review-header">
-                <div className="review-avatar">LM</div>
+                <div className="review-avatar">GR</div>
                 <div>
-                  <strong>Lucas Mendes</strong>
+                  <strong>Geanderson</strong>
                   <div className="review-stars">
                     <Star fill="#ffc107" color="#ffc107" size={16} />
                     <Star fill="#ffc107" color="#ffc107" size={16} />
@@ -241,14 +241,14 @@ function App() {
                   </div>
                 </div>
               </div>
-              <p className="review-text">"Melhor barbeiro da cidade! Sempre saio satisfeito. O ambiente é top e o atendimento é impecável."</p>
-              <span className="review-source">Google Reviews</span>
+              <p className="review-text">"Atendimento e corte impecáveis. Sem ressalvas, excelente profissional, ótimo atendimento, super profissional!!"</p>
+              <span className="review-source">•</span>
             </div>
             <div className="review-card">
               <div className="review-header">
-                <div className="review-avatar">RC</div>
+                <div className="review-avatar">CL</div>
                 <div>
-                  <strong>Rafael Costa</strong>
+                  <strong>Cliente Leal</strong>
                   <div className="review-stars">
                     <Star fill="#ffc107" color="#ffc107" size={16} />
                     <Star fill="#ffc107" color="#ffc107" size={16} />
@@ -258,14 +258,14 @@ function App() {
                   </div>
                 </div>
               </div>
-              <p className="review-text">"Corte sempre na régua. Profissional de primeira, recomendo demais!"</p>
-              <span className="review-source">Google Reviews</span>
+              <p className="review-text">"Corto com o Morais a mais de 5 anos e é o único barbeiro que tenho plena confiança. Excelência com diferentes estilos, ambiente agradável, limpo e com ótima playlist."</p>
+              <span className="review-source">•</span>
             </div>
             <div className="review-card">
               <div className="review-header">
-                <div className="review-avatar">AS</div>
+                <div className="review-avatar">RN</div>
                 <div>
-                  <strong>André Silva</strong>
+                  <strong>Rone</strong>
                   <div className="review-stars">
                     <Star fill="#ffc107" color="#ffc107" size={16} />
                     <Star fill="#ffc107" color="#ffc107" size={16} />
@@ -275,8 +275,59 @@ function App() {
                   </div>
                 </div>
               </div>
-              <p className="review-text">"Melhor custo-benefício. Corte rápido, bonito e barato. Já é meu barbeiro fixo!"</p>
-              <span className="review-source">Google Reviews</span>
+              <p className="review-text">"Excelente trabalho!"</p>
+              <span className="review-source">•</span>
+            </div>
+            <div className="review-card">
+              <div className="review-header">
+                <div className="review-avatar">FS</div>
+                <div>
+                  <strong>Frequentador Assíduo</strong>
+                  <div className="review-stars">
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                  </div>
+                </div>
+              </div>
+              <p className="review-text">"Sempre que volto faço questão de cortar cabelo com o Morais. Recomendo demais!"</p>
+              <span className="review-source">•</span>
+            </div>
+            <div className="review-card">
+              <div className="review-header">
+                <div className="review-avatar">VR</div>
+                <div>
+                  <strong>V. R.</strong>
+                  <div className="review-stars">
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                  </div>
+                </div>
+              </div>
+              <p className="review-text">"Atendimento super profissional e acolhedor. Recomendo!!!"</p>
+              <span className="review-source">•</span>
+            </div>
+            <div className="review-card">
+              <div className="review-header">
+                <div className="review-avatar">TF</div>
+                <div>
+                  <strong>T. F.</strong>
+                  <div className="review-stars">
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                    <Star fill="#ffc107" color="#ffc107" size={16} />
+                  </div>
+                </div>
+              </div>
+              <p className="review-text">"Top! Morais é um ótimo profissional"</p>
+              <span className="review-source">•</span>
             </div>
           </div>
         </div>
