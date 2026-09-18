@@ -507,7 +507,7 @@ body {
   font-size: 0.95rem;
 }
 
-/* ========== DEPOIMENTOS ========== */
+/* ========== AVALIAÇÕES ========== */
 .grid-depoimentos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
