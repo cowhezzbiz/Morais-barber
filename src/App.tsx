@@ -25,6 +25,22 @@ function App() {
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      // Verifica se já existe agendamento no horário
+      if (horario) {
+        const horarioFormatado = new Date(horario).toISOString()
+        const { data: existente, error: errorConsulta } = await supabase
+          .from('agendamentos')
+          .select('id')
+          .eq('horario_agendado', horarioFormatado)
+          .maybeSingle()
+
+        if (errorConsulta) throw errorConsulta
+        if (existente) {
+          alert('⚠️ Horário indisponível!\n\nJá existe um agendamento para este horário.\nPor favor, escolha outro horário.')
+          return
+        }
+      }
+
       await supabase.from('agendamentos').insert({
         nome: formNome,
         telefone: formTelefone,
