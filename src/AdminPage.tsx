@@ -56,12 +56,7 @@ export default function AdminPage() {
     }
   }, [user])
 
-  useEffect(() => {
-    if (agendamentos.length > 0) {
-      calcularTodosFaturamentos()
-      verificarFechamentoAutomatico()
-    }
-  }, [agendamentos])
+  // Faturamento e fechamento são calculados dentro de fetchAgendamentos
 
   const fetchAgendamentos = async () => {
     const { data, error } = await supabase
@@ -73,13 +68,17 @@ export default function AdminPage() {
       console.error('Erro ao carregar:', error)
     } else {
       setAgendamentos(data || [])
+      if (data && data.length > 0) {
+        calcularTodosFaturamentos(data)
+      }
     }
   }
 
-  const calcularTodosFaturamentos = async () => {
-    const diario = await calcularFaturamento('diario')
-    const mensal = await calcularFaturamento('mensal')
-    const anual = await calcularFaturamento('anual')
+  const calcularTodosFaturamentos = async (listaAgendamentos?: Agendamento[]) => {
+    const dados = listaAgendamentos || agendamentos
+    const diario = await calcularFaturamento('diario', dados)
+    const mensal = await calcularFaturamento('mensal', dados)
+    const anual = await calcularFaturamento('anual', dados)
     setFaturamentoDiario(diario)
     setFaturamentoMensal(mensal)
     setFaturamentoAnual(anual)
@@ -211,7 +210,8 @@ export default function AdminPage() {
     }
   }
 
-  const calcularFaturamento = async (periodo: 'diario' | 'mensal' | 'anual') => {
+  const calcularFaturamento = async (periodo: 'diario' | 'mensal' | 'anual', listaAgendamentos?: Agendamento[]) => {
+    const dados = listaAgendamentos || agendamentos
     const agora = new Date()
     let inicio: Date
 
@@ -239,7 +239,7 @@ export default function AdminPage() {
       }
     }
 
-    const agendamentosPeriodo = agendamentos.filter(
+    const agendamentosPeriodo = dados.filter(
       a => {
         const dataAgendamento = new Date(a.created_at)
         return a.status === 'confirmado' && dataAgendamento >= dataCorte
