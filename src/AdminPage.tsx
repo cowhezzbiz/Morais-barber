@@ -293,6 +293,15 @@ export default function AdminPage() {
     window.open(whatsappUrl, '_blank')
   }
 
+  const enviarConfirmacao = (ag: Agendamento) => {
+    const dataHora = ag.horario_agendado
+      ? new Date(ag.horario_agendado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+      : ''
+    const mensagem = `Olá ${ag.nome}! ✅\n\nSeu agendamento na Morais Barber foi CONFIRMADO!\n📅 ${dataHora}\n✂️ ${ag.servico}\n\nTe esperamos! 😊`
+    const whatsappUrl = `https://wa.me/55${ag.telefone}?text=${encodeURIComponent(mensagem)}`
+    window.open(whatsappUrl, '_blank')
+  }
+
   const enviarTodosLembretes = () => {
     lembretes.forEach(ag => enviarLembrete(ag))
   }
@@ -479,8 +488,12 @@ export default function AdminPage() {
                 {ag.status === 'pendente' && (
                   <>
                     <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar">✓</button>
+                    <button className="btn-acao whatsapp" onClick={() => enviarConfirmacao(ag)} title="Enviar confirmação WhatsApp">💬</button>
                     <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Cancelar">✕</button>
                   </>
+                )}
+                {ag.status === 'confirmado' && (
+                  <button className="btn-acao whatsapp" onClick={() => enviarLembrete(ag)} title="Enviar lembrete">💬</button>
                 )}
                 <button className="btn-acao excluir" onClick={() => deleteAgendamento(ag.id)} title="Excluir">🗑</button>
               </span>

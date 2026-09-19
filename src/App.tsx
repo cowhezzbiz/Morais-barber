@@ -39,13 +39,15 @@ const isValidPhone = (phone: string): boolean => {
   return digits.length >= 10 && digits.length <= 11
 }
 
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, '')
+  if (digits.length <= 2) return `(${digits}`
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
+}
+
 export default function App() {
   const [menuAberto, setMenuAberto] = useState(false)
-  const scrollToSection = (id: string) => {
-    setMenuAberto(false)
-    const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
-  }
   const [formNome, setFormNome] = useState('')
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
@@ -54,6 +56,12 @@ export default function App() {
   const [enviado, setEnviado] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+
+  const scrollToSection = (id: string) => {
+    setMenuAberto(false)
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
 
   useEffect(() => {
     if (erro) {
@@ -88,6 +96,11 @@ export default function App() {
     }
     return horarios
   }, [])
+
+  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value)
+    setFormTelefone(formatted)
+  }
 
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -129,6 +142,15 @@ export default function App() {
     }
   }
 
+  const galeria = [
+    { id: 1, nome: 'Fade Degradê', descricao: 'Moderno e elegante' },
+    { id: 2, nome: 'Undercut', descricao: 'Estilo urbano' },
+    { id: 3, nome: 'Pompadour', descricao: 'Clássico e ousado' },
+    { id: 4, nome: 'Barba', descricao: 'Modelada com capricho' },
+    { id: 5, nome: 'Social', descricao: 'Perfeito pra trabalho' },
+    { id: 6, nome: 'Moicano', descricao: 'Atitude e estilo' },
+  ]
+
   return (
     <div className="app">
       <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
@@ -141,28 +163,28 @@ export default function App() {
             <span className={`hamburger ${menuAberto ? 'ativo' : ''}`}></span>
           </button>
           <ul className={`nav-links ${menuAberto ? 'ativo' : ''}`}>
-            <li><a href="#inicio" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('inicio') }}>Início</a></li>
-            <li><a href="#servicos" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('servicos') }}>Serviços</a></li>
-            <li><a href="#galeria" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('galeria') }}>Galeria</a></li>
-            <li><a href="#avaliacoes" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('avaliacoes') }}>Avaliações</a></li>
-            <li><a href="#contato" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('contato') }}>Contato</a></li>
+            <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
+            <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
+            <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
+            <li><button onClick={() => scrollToSection('galeria')}>Galeria</button></li>
+            <li><button onClick={() => scrollToSection('contato')}>Contato</button></li>
           </ul>
         </div>
       </nav>
 
       <section id="inicio" className="hero">
         <div className="hero-content">
-          <p className="hero-subtitle">Barbearia Clássica • Tattoo</p>
-          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
-          <p className="hero-desc">Cortes modernos, barba feita com capricho e tatuagens artísticas.</p>
+          <p className="hero-subtitle">✨ Barbearia Premium • Tattoo Artística</p>
+          <h1 className="hero-title">Onde estilo encontra <span className="destaque">a excelência</span></h1>
+          <p className="hero-desc">Cortes modernos, barba impecável e tatuagens únicas. Um ambiente pensado pra você se sentir bem.</p>
           <div className="hero-botoes">
             <button className="btn btn-primary" onClick={() => scrollToSection('contato')}>Agendar Horário</button>
             <button className="btn btn-outline" onClick={() => scrollToSection('servicos')}>Ver Serviços</button>
           </div>
           <div className="hero-stats">
-            <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes</span></div>
+            <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes Felizes</span></div>
             <div className="stat"><span className="stat-num">5.0</span><span className="stat-label">Avaliação</span></div>
-            <div className="stat"><span className="stat-num">5+</span><span className="stat-label">Anos</span></div>
+            <div className="stat"><span className="stat-num">5+</span><span className="stat-label">Anos de Experiência</span></div>
           </div>
         </div>
       </section>
@@ -188,47 +210,46 @@ export default function App() {
         </div>
       </section>
 
-      <section id="galeria" className="secao secao-escura">
+      <section id="sobre" className="secao secao-escura">
         <div className="container">
-          <p className="secao-subtitle">PORTFÓLIO</p>
-          <h2 className="secao-titulo">Nossos <span className="destaque">trabalhos</span></h2>
-          <div className="galeria-grid">
-            {['Fade', 'Undercut', 'Pompadour', 'Barba', 'Social', 'Moicano'].map(item => (
-              <div key={item} className="galeria-item">
-                <div className="galeria-item-img"><Scissors size={48} /></div>
-                <p>{item}</p>
+          <div className="sobre-grid">
+            <div className="sobre-img">
+              <div className="img-placeholder">
+                <Scissors size={64} />
+                <p>Morais Barber</p>
+                <small>Desde 2020</small>
               </div>
-            ))}
+            </div>
+            <div className="sobre-texto">
+              <p className="secao-subtitle">SOBRE NÓS</p>
+              <h2 className="secao-titulo">Tradição e modernidade em cada <span className="destaque">corte</span></h2>
+              <p className="sobre-p">A Morais Barber nasceu da paixão por transformar autoestima. Nosso barbeiro tem mais de 5 anos de experiência.</p>
+              <p className="sobre-p">Aqui você encontra um ambiente descontraído, produtos de primeira e o melhor atendimento.</p>
+              <ul className="sobre-lista">
+                <li><CheckCircle size={18} /> Profissional certificado</li>
+                <li><CheckCircle size={18} /> Ambiente confortável</li>
+                <li><CheckCircle size={18} /> Produtos premium</li>
+                <li><CheckCircle size={18} /> Atendimento personalizado</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="avaliacoes" className="secao">
+      <section id="galeria" className="secao">
         <div className="container">
-          <p className="secao-subtitle">AVALIAÇÕES</p>
-          <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem</h2>
-          <div className="google-rating">
-            <div className="rating-score">
-              <span className="rating-num">5.0</span>
-              <div className="rating-stars">
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
+          <p className="secao-subtitle">PORTFÓLIO</p>
+          <h2 className="secao-titulo">Nossos <span className="destaque">trabalhos</span></h2>
+          <p className="secao-desc">Confira alguns estilos realizados por nosso barbeiro.</p>
+          <div className="galeria-grid">
+            {galeria.map(item => (
+              <div key={item.id} className="galeria-item">
+                <div className="galeria-item-img">
+                  <Scissors size={48} />
+                </div>
+                <p>{item.nome}</p>
               </div>
-              <span className="rating-count">+200 avaliações</span>
-            </div>
-          </div>
-          <div className="google-reviews">
-            <div className="review-card">
-              <div className="review-header"><div className="review-avatar">GM</div><div><strong>Geanderson</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
-              <p className="review-text">"Atendimento e corte impecáveis!"</p>
-            </div>
-            <div className="review-card">
-              <div className="review-header"><div className="review-avatar">CL</div><div><strong>Cliente Leal</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
-              <p className="review-text">"Corto há mais de 5 anos. Excelência!"</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -240,22 +261,83 @@ export default function App() {
           <p className="secao-desc">Escolha o melhor dia e horário pra você.</p>
           <div className="contato-grid">
             <div className="contato-info">
-              <div className="info-item"><span className="info-icone"><MapPin size={24} /></span><div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos</p></div></div>
-              <div className="info-item"><span className="info-icone"><Phone size={24} /></span><div><strong>Telefone</strong><p>(51) 98130-1035</p></div></div>
-              <div className="info-item"><span className="info-icone"><Clock size={24} /></span><div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sábado: 9h às 17h</p></div></div>
-              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp"><MessageCircle size={20} /> Agendar pelo WhatsApp</a>
+              <div className="info-item">
+                <span className="info-icone"><MapPin size={24} /></span>
+                <div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos, NH</p></div>
+              </div>
+              <div className="info-item">
+                <span className="info-icone"><Phone size={24} /></span>
+                <div><strong>Telefone</strong><p>(51) 98130-1035</p></div>
+              </div>
+              <div className="info-item">
+                <span className="info-icone"><Clock size={24} /></span>
+                <div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sábado: 9h às 17h</p></div>
+              </div>
+              <div className="info-item">
+                <span className="info-icone"><Star size={24} /></span>
+                <div><strong>Instagram</strong><p>@moraisbarber.tattoo</p></div>
+              </div>
+              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
+                <MessageCircle size={20} /> Agendar pelo WhatsApp
+              </a>
+              <div className="mapa-container">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3516.0!2d-51.1!3d-29.1!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sR.+Potiguara%2C+974+-29035-490!5e0!3m2!1spt-BR!2sbr!4v1234567890"
+                  width="100%"
+                  height="200"
+                  style={{ border: 0, borderRadius: 12 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Localização Morais Barber"
+                ></iframe>
+              </div>
             </div>
             <div className="contato-form">
               <h3>Envie uma mensagem</h3>
-              {enviado && (<div className="sucesso-msg"><CheckCircle size={18} /> Agendamento enviado!<p className="link-acompanhar"><a href="#/agendamento">Acompanhe aqui</a></p></div>)}
+              {enviado && (
+                <div className="sucesso-msg">
+                  <CheckCircle size={18} /> Agendamento enviado!
+                  <p className="link-acompanhar"><a href="#/agendamento">Acompanhe aqui</a></p>
+                </div>
+              )}
               <form onSubmit={enviarFormulario}>
-                <div className="form-grupo"><label htmlFor="nome">Nome</label><input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} /></div>
-                <div className="form-grupo"><label htmlFor="telefone">Telefone</label><input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required disabled={loading} /></div>
-                <div className="form-grupo"><label htmlFor="servico">Serviço</label><select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}</select></div>
-                <div className="form-grupo"><label htmlFor="horario">Data e Horário</label><select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{horariosDisponiveis.map(h => { const d = new Date(h); const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]; return <option key={h} value={h}>{dia} {String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')} às {h.split('T')[1]}</option> })}</select></div>
-                <div className="form-grupo"><label htmlFor="mensagem">Mensagem</label><textarea id="mensagem" placeholder="Opcional" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea></div>
+                <div className="form-grupo">
+                  <label htmlFor="nome">Nome</label>
+                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} />
+                </div>
+                <div className="form-grupo">
+                  <label htmlFor="telefone">Telefone</label>
+                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={handleTelefoneChange} required disabled={loading} maxLength={15} />
+                </div>
+                <div className="form-grupo">
+                  <label htmlFor="servico">Serviço</label>
+                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}>
+                    <option value="">Selecione...</option>
+                    {SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
+                  </select>
+                </div>
+                <div className="form-grupo">
+                  <label htmlFor="horario">Data e Horário</label>
+                  <select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}>
+                    <option value="">Selecione...</option>
+                    {horariosDisponiveis.map(h => {
+                      const d = new Date(h)
+                      const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]
+                      const data = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
+                      const hora = h.split('T')[1]
+                      return <option key={h} value={h}>{dia} {data} às {hora}</option>
+                    })}
+                  </select>
+                </div>
+                <div className="form-grupo">
+                  <label htmlFor="mensagem">Mensagem (opcional)</label>
+                  <textarea id="mensagem" rows={3} placeholder="Alguma observação?" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea>
+                </div>
                 {erro && <p className="erro-msg">{erro}</p>}
-                <button type="submit" className="btn btn-primary btn-full" disabled={loading}>{loading ? 'Enviando...' : 'Enviar'}</button>
+                <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                  {loading ? 'Enviando...' : 'Enviar Mensagem'}
+                </button>
               </form>
             </div>
           </div>
@@ -266,12 +348,33 @@ export default function App() {
         <div className="container">
           <div className="footer-grid">
             <div className="footer-col">
-              <div className="logo footer-logo"><span className="logo-icon"><Scissors size={24} /></span><span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span></div>
-              <p className="footer-desc">O melhor da barbearia masculina em um só lugar.</p>
+              <div className="logo footer-logo">
+                <span className="logo-icon"><Scissors size={24} /></span>
+                <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
+              </div>
+              <p className="footer-desc">O melhor da barbearia em Canudos, NH.</p>
             </div>
-            <div className="footer-col"><h4>Contato</h4><ul><li>📍 R. Potiguara, 974</li><li>📞 (51) 98130-1035</li><li>🕐 Ter-Sex 9h-19:30h</li></ul></div>
+            <div className="footer-col">
+              <h4>Links</h4>
+              <ul>
+                <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
+                <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
+                <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
+                <li><button onClick={() => scrollToSection('galeria')}>Galeria</button></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Contato</h4>
+              <ul>
+                <li>📍 R. Potiguara, 974</li>
+                <li>📞 (51) 98130-1035</li>
+                <li>🕐 Ter-Sex 9h-19:30h</li>
+              </ul>
+            </div>
           </div>
-          <div className="footer-bottom"><p>© 2026 Morais Barber. Todos os direitos reservados.</p></div>
+          <div className="footer-bottom">
+            <p>© 2026 Morais Barber. Todos os direitos reservados.</p>
+          </div>
         </div>
       </footer>
     </div>
