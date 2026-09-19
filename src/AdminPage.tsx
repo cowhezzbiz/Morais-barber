@@ -276,6 +276,27 @@ export default function AdminPage() {
   const countStatus = (status: string) => agendamentos.filter(a => a.status === status).length
   const filtrados = filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro)
 
+  // Lembretes - agendamentos de amanhã
+  const amanhã = new Date()
+  amanhã.setDate(amanhã.getDate() + 1)
+  const amanhãStr = amanhã.toISOString().split('T')[0]
+  const lembretes = agendamentos.filter(
+    a => a.horario_agendado && a.horario_agendado.startsWith(amanhãStr) && a.status !== 'cancelado'
+  )
+
+  const enviarLembrete = (ag: Agendamento) => {
+    const dataHora = ag.horario_agendado
+      ? new Date(ag.horario_agendado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+      : ''
+    const mensagem = `Olá ${ag.nome}! 👋\n\nLembrete do seu agendamento na Morais Barber:\n📅 ${dataHora}\n✂️ ${ag.servico}\n\nTe esperamos! 😊`
+    const whatsappUrl = `https://wa.me/55${ag.telefone}?text=${encodeURIComponent(mensagem)}`
+    window.open(whatsappUrl, '_blank')
+  }
+
+  const enviarTodosLembretes = () => {
+    lembretes.forEach(ag => enviarLembrete(ag))
+  }
+
   if (loading) {
     return (
       <div className="admin-container">
@@ -318,6 +339,39 @@ export default function AdminPage() {
           <p>Bem-vindo, {user.email}</p>
         </div>
         <button className="btn btn-outline" onClick={handleLogout}>Sair</button>
+      </div>
+
+      <div className="lembretes-container">
+        <div className="lembretes-header">
+          <h3>⏰ Lembretes para Amanhã ({amanhãStr})</h3>
+          {lembretes.length > 0 && (
+            <button className="btn btn-primary btn-sm" onClick={enviarTodosLembretes}>
+              Enviar Todos ({lembretes.length})
+            </button>
+          )}
+        </div>
+        {lembretes.length === 0 ? (
+          <div className="lembretes-vazio">
+            <p>Nenhum agendamento para amanhã</p>
+          </div>
+        ) : (
+          <div className="lembretes-lista">
+            {lembretes.map(ag => (
+              <div key={ag.id} className="lembrete-card">
+                <div className="lembrete-info">
+                  <strong>{ag.nome}</strong>
+                  <span className="lembrete-horario">
+                    {ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleString('pt-BR', { timeStyle: 'short' }) : ''}
+                  </span>
+                  <span className="lembrete-servico">{ag.servico}</span>
+                </div>
+                <button className="btn-lembrete" onClick={() => enviarLembrete(ag)} title="Enviar lembrete">
+                  💬
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="admin-stats">
