@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')!).render(
     <HashRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/barber-morais-admin" element={<AdminPage />} />
+        <Route path="/admin.morais" element={<AdminPage />} />
         <Route path="/agendamento" element={<Acompanhamento />} />
       </Routes>
     </HashRouter>
