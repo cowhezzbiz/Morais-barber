@@ -126,19 +126,27 @@ export default function AdminPage() {
       alert('Preencha tudo!')
       return
     }
-    await supabase.from('agendamentos').insert({
-      nome: novoCliente.nome,
-      telefone: novoCliente.telefone.replace(/\D/g, ''),
-      servico: novoCliente.servico,
-      status: 'confirmado',
-      pago: novoCliente.forma_pagamento !== 'pendente',
-      forma_pagamento: novoCliente.forma_pagamento,
-      valor: parseFloat(novoCliente.valor) || 0,
-      horario_agendado: novoCliente.horario_agendado || null
-    })
-    setModalAberto(false)
-    setNovoCliente({ nome: '', telefone: '', servico: '', forma_pagamento: 'dinheiro', valor: '', horario_agendado: '' })
-    fetchAgendamentos()
+    try {
+      const { error } = await supabase.from('agendamentos').insert({
+        nome: novoCliente.nome,
+        telefone: novoCliente.telefone.replace(/\D/g, ''),
+        servico: novoCliente.servico,
+        status: 'confirmado',
+        pago: novoCliente.forma_pagamento !== 'pendente',
+        forma_pagamento: novoCliente.forma_pagamento,
+        valor: parseFloat(novoCliente.valor) || 0,
+        horario_agendado: novoCliente.horario_agendado || null
+      })
+      if (error) {
+        alert('Erro ao salvar: ' + error.message)
+        return
+      }
+      setModalAberto(false)
+      setNovoCliente({ nome: '', telefone: '', servico: '', forma_pagamento: 'dinheiro', valor: '', horario_agendado: '' })
+      fetchAgendamentos()
+    } catch (err: unknown) {
+      alert('Erro inesperado: ' + (err instanceof Error ? err.message : String(err)))
+    }
   }
 
   const enviarWhatsApp = (ag: Agendamento, tipo: 'lembrete' | 'confirmacao') => {
