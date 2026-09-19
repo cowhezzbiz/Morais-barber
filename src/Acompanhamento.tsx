@@ -18,19 +18,40 @@ export default function Acompanhamento() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [buscou, setBuscou] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [tentativas, setTentativas] = useState(0)
+  const [ultimoTentativa, setUltimoTentativa] = useState(0)
+  const [erro, setErro] = useState('')
+
+  const podeBuscar = tentativas < 5 || (Date.now() - ultimoTentativa) > 60000
 
   const buscarAgendamento = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!telefone.trim()) return
 
+    if (!podeBuscar) {
+      setErro('Muitas tentativas. Aguarde 1 minuto.')
+      return
+    }
+
     setLoading(true)
+    setErro('')
+    setTentativas(t => t + 1)
+    setUltimoTentativa(Date.now())
+
     const telefoneFormatado = telefone.replace(/\D/g, '')
     
+    if (telefoneFormatado.length < 10) {
+      setErro('Telefone inválido.')
+      setLoading(false)
+      return
+    }
+
     const { data, error } = await supabase
       .from('agendamentos')
       .select('*')
       .ilike('telefone', `%${telefoneFormatado.slice(-8)}%`)
       .order('horario_agendado', { ascending: true })
+      .limit(10)
 
     if (error) {
       console.error('Erro:', error)
@@ -76,6 +97,7 @@ export default function Acompanhamento() {
                 {loading ? 'Buscando...' : 'Buscar'}
               </button>
             </div>
+            {erro && <p className="erro-msg">{erro}</p>}
           </form>
 
           {buscou && (

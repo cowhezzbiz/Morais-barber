@@ -56,6 +56,15 @@ export default function App() {
   const [enviado, setEnviado] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [honeypot, setHoneypot] = useState('') // Honeypot - se preenchido, é bot
+  const [tentativas, setTentativas] = useState(0) // Rate limiting
+  const [ultimoTentativa, setUltimoTentativa] = useState(0) // Timestamp
+
+  // Validação anti-bot: honeypot
+  const isBot = honeypot.length > 0
+
+  // Rate limiting: máximo 3 tentativas por minuto
+  const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
 
   const scrollToSection = (id: string) => {
     setMenuAberto(false)
@@ -105,11 +114,29 @@ export default function App() {
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
+    
+    // Anti-bot: honeypot
+    if (isBot) {
+      // Silently reject - bots don't need to know
+      return
+    }
+
+    // Rate limiting
+    if (!podeEnviar) {
+      setErro('Muitas tentativas. Aguarde 1 minuto.')
+      return
+    }
+
+    // Validação de telefone
     if (!isValidPhone(formTelefone)) {
       setErro('Telefone inválido. Digite pelo menos 10 dígitos.')
       return
     }
+
     setLoading(true)
+    setTentativas(t => t + 1)
+    setUltimoTentativa(Date.now())
+
     try {
       const horarioISO = horario ? new Date(horario).toISOString() : null
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
@@ -117,11 +144,15 @@ export default function App() {
       const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
       const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) : 0
 
+      // Sanitização extra: remove HTML tags
+      const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
+      const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
+
       const { error: insertError } = await supabase.from('agendamentos').insert({
-        nome: formNome.trim().slice(0, 100),
+        nome: nomeSanitizado,
         telefone: formTelefone.replace(/\D/g, ''),
         servico: formServico,
-        mensagem: formMensagem.trim().slice(0, 500),
+        mensagem: mensagemSanitizada,
         status: 'pendente',
         horario_agendado: horarioISO,
         forma_pagamento: 'pendente',
@@ -137,6 +168,7 @@ export default function App() {
       }
       window.open(whatsappUrl, '_blank')
       setEnviado(true)
+      setTentativas(0)
       setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
       setTimeout(() => setEnviado(false), 5000)
     } catch (err: unknown) {
@@ -314,6 +346,10 @@ export default function App() {
                 <div className="form-grupo">
                   <label htmlFor="telefone">Telefone</label>
                   <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={handleTelefoneChange} required disabled={loading} maxLength={15} />
+                </div>
+                {/* Honeypot - campo oculto para detectar bots */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="honeypot" value={honeypot} onChange={e => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="servico">Serviço</label>
