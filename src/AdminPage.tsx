@@ -279,7 +279,7 @@ export default function AdminPage() {
     telefone: '',
     servico: '',
     forma_pagamento: 'dinheiro',
-    valor: 0,
+    valor: '',
     horario_agendado: ''
   })
 
@@ -295,7 +295,7 @@ export default function AdminPage() {
       status: 'confirmado',
       pago: novoCliente.forma_pagamento !== 'pendente',
       forma_pagamento: novoCliente.forma_pagamento,
-      valor: novoCliente.valor,
+      valor: parseFloat(novoCliente.valor) || 0,
       horario_agendado: novoCliente.horario_agendado || null
     })
     if (!error) {
@@ -572,7 +572,7 @@ export default function AdminPage() {
             </div>
             <div className="form-grupo">
               <label>Valor (R$)</label>
-              <input type="number" value={novoCliente.valor} onChange={e => setNovoCliente({...novoCliente, valor: parseFloat(e.target.value) || 0})} placeholder="0,00" />
+              <input type="text" value={novoCliente.valor} onChange={e => setNovoCliente({...novoCliente, valor: e.target.value})} placeholder="45,00" />
             </div>
             <div className="form-grupo">
               <label>Data/Hora (opcional)</label>
