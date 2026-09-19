@@ -122,8 +122,8 @@ export default function AdminPage() {
   }
 
   const adicionarCliente = async () => {
-    if (!novoCliente.nome || !novoCliente.telefone || !novoCliente.servico) {
-      alert('Preencha tudo!')
+    if (!novoCliente.nome || !novoCliente.telefone || !novoCliente.servico || !novoCliente.horario_agendado) {
+      alert('Preencha tudo, incluindo o horário!')
       return
     }
     try {
@@ -135,10 +135,7 @@ export default function AdminPage() {
         pago: novoCliente.forma_pagamento !== 'pendente',
         forma_pagamento: novoCliente.forma_pagamento,
         valor: parseFloat(novoCliente.valor) || 0,
-      }
-      // Só adiciona horario se preenchido
-      if (novoCliente.horario_agendado) {
-        dados.horario_agendado = novoCliente.horario_agendado
+        horario_agendado: novoCliente.horario_agendado
       }
       const { error } = await supabase.from('agendamentos').insert(dados)
       if (error) {
