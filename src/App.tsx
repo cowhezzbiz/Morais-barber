@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabase'
-import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
+import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
 import './App.css'
 
 interface Servico {
@@ -39,14 +39,13 @@ const isValidPhone = (phone: string): boolean => {
   return digits.length >= 10 && digits.length <= 11
 }
 
-const scrollToSection = (id: string) => {
-  setMenuAberto(false)
-  const el = document.getElementById(id)
-  if (el) el.scrollIntoView({ behavior: 'smooth' })
-}
-
 export default function App() {
   const [menuAberto, setMenuAberto] = useState(false)
+  const scrollToSection = (id: string) => {
+    setMenuAberto(false)
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
   const [formNome, setFormNome] = useState('')
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
@@ -142,11 +141,11 @@ export default function App() {
             <span className={`hamburger ${menuAberto ? 'ativo' : ''}`}></span>
           </button>
           <ul className={`nav-links ${menuAberto ? 'ativo' : ''}`}>
-            <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
-            <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
-            <li><button onClick={() => scrollToSection('galeria')}>Galeria</button></li>
-            <li><button onClick={() => scrollToSection('avaliacoes')}>Avaliações</button></li>
-            <li><button onClick={() => scrollToSection('contato')}>Contato</button></li>
+            <li><a href="#inicio" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('inicio') }}>Início</a></li>
+            <li><a href="#servicos" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('servicos') }}>Serviços</a></li>
+            <li><a href="#galeria" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('galeria') }}>Galeria</a></li>
+            <li><a href="#avaliacoes" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('avaliacoes') }}>Avaliações</a></li>
+            <li><a href="#contato" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('contato') }}>Contato</a></li>
           </ul>
         </div>
       </nav>
