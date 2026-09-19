@@ -127,7 +127,7 @@ export default function AdminPage() {
       return
     }
     try {
-      const { error } = await supabase.from('agendamentos').insert({
+      const dados = {
         nome: novoCliente.nome,
         telefone: novoCliente.telefone.replace(/\D/g, ''),
         servico: novoCliente.servico,
@@ -135,8 +135,12 @@ export default function AdminPage() {
         pago: novoCliente.forma_pagamento !== 'pendente',
         forma_pagamento: novoCliente.forma_pagamento,
         valor: parseFloat(novoCliente.valor) || 0,
-        horario_agendado: novoCliente.horario_agendado || null
-      })
+      }
+      // Só adiciona horario se preenchido
+      if (novoCliente.horario_agendado) {
+        dados.horario_agendado = novoCliente.horario_agendado
+      }
+      const { error } = await supabase.from('agendamentos').insert(dados)
       if (error) {
         alert('Erro ao salvar: ' + error.message)
         return
