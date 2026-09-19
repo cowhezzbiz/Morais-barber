@@ -905,6 +905,152 @@ body {
   font-weight: 700;
 }
 
+/* ========== ACOMPANHAMENTO ========== */
+.acompanhamento-secao {
+  min-height: 80vh;
+}
+
+.formulario-busca {
+  max-width: 600px;
+  margin: 0 auto 40px;
+}
+
+.form-grupo-busca {
+  display: flex;
+  gap: 10px;
+}
+
+.form-grupo-busca input {
+  flex: 1;
+  padding: 15px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-grupo-busca input:focus {
+  border-color: #e91e63;
+}
+
+.form-grupo-busca input::placeholder {
+  color: #606080;
+}
+
+.form-grupo-busca button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sem-resultado {
+  text-align: center;
+  padding: 40px;
+  color: #8080a0;
+}
+
+.sem-resultado span {
+  display: block;
+  color: #ffc107;
+  margin-bottom: 10px;
+}
+
+.sem-resultado .dica {
+  color: #606080;
+  font-size: 0.85rem;
+}
+
+.lista-agendamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.agendamento-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.agendamento-card.amarelo {
+  border-left: 3px solid #ffc107;
+}
+
+.agendamento-card.verde {
+  border-left: 3px solid #4caf50;
+}
+
+.agendamento-card.vermelho {
+  border-left: 3px solid #f44336;
+}
+
+.agendamento-status {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.icone-status {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icone-status.amarelo {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.icone-status.verde {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.icone-status.vermelho {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.agendamento-status strong {
+  display: block;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.agendamento-status span {
+  color: #8080a0;
+  font-size: 0.85rem;
+}
+
+.agendamento-detalhes {
+  display: grid;
+  gap: 10px;
+}
+
+.detalhe {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detalhe strong {
+  color: #8080a0;
+  font-weight: 600;
+}
+
+.detalhe span {
+  color: white;
+}
+
 @media (max-width: 768px) {
   .faturamento-cards {
     grid-template-columns: 1fr;

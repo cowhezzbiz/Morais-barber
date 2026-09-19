@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
 import './App.css'
@@ -19,8 +19,15 @@ function App() {
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
-  const [enviado, setEnviado] = useState(false)
-  const [horario, setHorario] = useState('')
+  const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
+
+  useEffect(() => {
+    const buscarDias = async () => {
+      const { data } = await supabase.from('dias_bloqueados').select('data')
+      if (data) setDiasBloqueados(data.map((d: any) => d.data))
+    }
+    buscarDias()
+  }, [])
 
   const gerarHorariosDisponiveis = () => {
     const horarios: string[] = []
@@ -422,7 +429,12 @@ function App() {
             </div>
             <div className="contato-form">
               <h3>Envie uma mensagem</h3>
-              {enviado && <div className="sucesso-msg"><CheckCircle size={18} /> Agendamento enviado com sucesso! Aguarde a confirmação.</div>}
+              {enviado && (
+                <div className="sucesso-msg">
+                  <CheckCircle size={18} /> Agendamento enviado com sucesso!
+                  <p className="link-acompanhar"><a href="#/agendamento">Clique aqui para acompanhar seu agendamento</a></p>
+                </div>
+              )}
               <form onSubmit={enviarFormulario}>
                 <div className="form-grupo">
                   <label htmlFor="nome">Nome</label>
