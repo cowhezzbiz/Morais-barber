@@ -114,13 +114,18 @@ export default function App() {
       const horarioISO = horario ? new Date(horario).toISOString() : null
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
+      const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
+      const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) : 0
+
       const { error: insertError } = await supabase.from('agendamentos').insert({
         nome: formNome.trim().slice(0, 100),
         telefone: formTelefone.replace(/\D/g, ''),
         servico: formServico,
         mensagem: formMensagem.trim().slice(0, 500),
         status: 'pendente',
-        horario_agendado: horarioISO
+        horario_agendado: horarioISO,
+        forma_pagamento: 'pendente',
+        valor: valorServico
       })
       if (insertError) {
         if (insertError.code === '23505') {

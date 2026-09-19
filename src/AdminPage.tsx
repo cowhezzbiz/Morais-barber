@@ -273,8 +273,40 @@ export default function AdminPage() {
     }
   }
 
-  const countStatus = (status: string) => agendamentos.filter(a => a.status === status).length
+  const [modalAberto, setModalAberto] = useState(false)
+  const [novoCliente, setNovoCliente] = useState({
+    nome: '',
+    telefone: '',
+    servico: '',
+    forma_pagamento: 'dinheiro',
+    valor: 0,
+    horario_agendado: ''
+  })
+
+  const adicionarClienteManual = async () => {
+    if (!novoCliente.nome || !novoCliente.telefone || !novoCliente.servico) {
+      alert('Preencha nome, telefone e serviço!')
+      return
+    }
+    const { error } = await supabase.from('agendamentos').insert({
+      nome: novoCliente.nome,
+      telefone: novoCliente.telefone.replace(/\D/g, ''),
+      servico: novoCliente.servico,
+      status: 'confirmado',
+      pago: novoCliente.forma_pagamento !== 'pendente',
+      forma_pagamento: novoCliente.forma_pagamento,
+      valor: novoCliente.valor,
+      horario_agendado: novoCliente.horario_agendado || null
+    })
+    if (!error) {
+      setModalAberto(false)
+      setNovoCliente({ nome: '', telefone: '', servico: '', forma_pagamento: 'dinheiro', valor: 0, horario_agendado: '' })
+      fetchAgendamentos()
+    }
+  }
   const filtrados = filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro)
+
+  // Modal de adicionar cliente
 
   // Lembretes - agendamentos de amanhã
   const amanhã = new Date()
@@ -347,6 +379,7 @@ export default function AdminPage() {
           <h2>📋 Painel de Agendamentos</h2>
           <p>Bem-vindo, {user.email}</p>
         </div>
+        <button className="btn btn-primary" onClick={() => setModalAberto(true)}>+ Adicionar Cliente</button>
         <button className="btn btn-outline" onClick={handleLogout}>Sair</button>
       </div>
 
@@ -499,6 +532,57 @@ export default function AdminPage() {
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal Adicionar Cliente */}
+      {modalAberto && (
+        <div className="modal-overlay" onClick={() => setModalAberto(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h3>➕ Adicionar Cliente Manual</h3>
+            <div className="form-grupo">
+              <label>Nome</label>
+              <input type="text" value={novoCliente.nome} onChange={e => setNovoCliente({...novoCliente, nome: e.target.value})} placeholder="Nome do cliente" />
+            </div>
+            <div className="form-grupo">
+              <label>Telefone</label>
+              <input type="tel" value={novoCliente.telefone} onChange={e => setNovoCliente({...novoCliente, telefone: e.target.value})} placeholder="(51) 99999-9999" />
+            </div>
+            <div className="form-grupo">
+              <label>Serviço</label>
+              <select value={novoCliente.servico} onChange={e => setNovoCliente({...novoCliente, servico: e.target.value})}>
+                <option value="">Selecione...</option>
+                <option value="Corte Masculino">Corte Masculino — R$ 45</option>
+                <option value="Barba">Barba — R$ 30</option>
+                <option value="Corte + Barba">Corte + Barba — R$ 65</option>
+                <option value="Sobrancelha">Sobrancelha — R$ 15</option>
+                <option value="Pigmentação">Pigmentação — R$ 50</option>
+                <option value="Hidratação Capilar">Hidratação Capilar — R$ 35</option>
+                <option value="Tatuagem">Tatuagem — Consultar</option>
+              </select>
+            </div>
+            <div className="form-grupo">
+              <label>Forma de Pagamento</label>
+              <select value={novoCliente.forma_pagamento} onChange={e => setNovoCliente({...novoCliente, forma_pagamento: e.target.value})}>
+                <option value="dinheiro">💵 Dinheiro</option>
+                <option value="pix">📱 PIX</option>
+                <option value="cartao">💳 Cartão</option>
+                <option value="pendente">⏳ Pendente</option>
+              </select>
+            </div>
+            <div className="form-grupo">
+              <label>Valor (R$)</label>
+              <input type="number" value={novoCliente.valor} onChange={e => setNovoCliente({...novoCliente, valor: parseFloat(e.target.value) || 0})} placeholder="0,00" />
+            </div>
+            <div className="form-grupo">
+              <label>Data/Hora (opcional)</label>
+              <input type="datetime-local" value={novoCliente.horario_agendado} onChange={e => setNovoCliente({...novoCliente, horario_agendado: e.target.value})} />
+            </div>
+            <div className="modal-botoes">
+              <button className="btn btn-primary" onClick={adicionarClienteManual}>Salvar</button>
+              <button className="btn btn-outline" onClick={() => setModalAberto(false)}>Cancelar</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
