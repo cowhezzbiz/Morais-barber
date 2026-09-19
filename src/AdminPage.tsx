@@ -18,12 +18,9 @@ interface Agendamento {
 }
 
 const PRECOS: Record<string, number> = {
-  'Corte Masculino': 45,
-  'Barba': 30,
-  'Corte + Barba': 65,
-  'Sobrancelha': 15,
-  'Pigmentação': 50,
-  'Hidratação Capilar': 35,
+  'Corte + Sobrancelha': 35,
+  'Corte + Barba': 35,
+  'Combo Completo': 60,
   'Tatuagem': 0,
 }
 
@@ -267,12 +264,9 @@ export default function AdminPage() {
             <div className="form-grupo"><label>Serviço</label>
               <select value={novoCliente.servico} onChange={e => setNovoCliente({...novoCliente, servico: e.target.value})}>
                 <option value="">Selecione...</option>
-                <option value="Corte Masculino">Corte Masculino — R$ 45</option>
-                <option value="Barba">Barba — R$ 30</option>
-                <option value="Corte + Barba">Corte + Barba — R$ 65</option>
-                <option value="Sobrancelha">Sobrancelha — R$ 15</option>
-                <option value="Pigmentação">Pigmentação — R$ 50</option>
-                <option value="Hidratação Capilar">Hidratação Capilar — R$ 35</option>
+                <option value="Corte + Sobrancelha">Corte + Sobrancelha — R$ 35</option>
+                <option value="Corte + Barba">Corte + Barba — R$ 35</option>
+                <option value="Combo Completo">Combo Completo — R$ 60</option>
                 <option value="Tatuagem">Tatuagem — Consultar</option>
               </select>
             </div>

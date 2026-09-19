@@ -13,13 +13,10 @@ interface Servico {
 }
 
 const SERVICOS: Servico[] = [
-  { id: 1, nome: 'Corte Masculino', descricao: 'Corte moderno e personalizado, lavagem e finalização incluso.', preco: 'R$ 45', duracao: '40 min', icone: 'scissors' },
-  { id: 2, nome: 'Barba', descricao: 'Modelagem completa com navalha, toalha quente e hidratação.', preco: 'R$ 30', duracao: '30 min', icone: 'scissors' },
-  { id: 3, nome: 'Corte + Barba', descricao: 'Combo completo com desconto especial. O visual perfeito.', preco: 'R$ 65', duracao: '1h', icone: 'crown' },
-  { id: 4, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com navalha.', preco: 'R$ 15', duracao: '15 min', icone: 'sparkles' },
-  { id: 5, nome: 'Pigmentação', descricao: 'Camufla falhas no cabelo ou barba com pigmento natural.', preco: 'R$ 50', duracao: '45 min', icone: 'palette' },
-  { id: 6, nome: 'Hidratação Capilar', descricao: 'Tratamento profundo para cabelos ressecados e danificados.', preco: 'R$ 35', duracao: '30 min', icone: 'droplets' },
-  { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pen' },
+  { id: 1, nome: 'Corte + Sobrancelha', descricao: 'Corte personalizado + design de sobrancelha com navalha.', preco: 'R$ 35', duracao: '50 min', icone: 'scissors' },
+  { id: 2, nome: 'Corte + Barba', descricao: 'Corte moderno + modelagem completa de barba.', preco: 'R$ 35', duracao: '1h', icone: 'crown' },
+  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba + Sobrancelha. O visual perfeito.', preco: 'R$ 60', duracao: '1h15min', icone: 'sparkles' },
+  { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pen' },
 ]
 
 const getIcon = (name: string) => {
