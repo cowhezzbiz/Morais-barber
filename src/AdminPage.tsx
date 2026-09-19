@@ -86,6 +86,7 @@ export default function AdminPage() {
 
   const togglePagamento = async (id: number, atual: boolean) => {
     await supabase.from('agendamentos').update({ pago: !atual }).eq('id', id)
+    faturamentoCalculado.current = false
     fetchAgendamentos()
   }
 
@@ -103,9 +104,9 @@ export default function AdminPage() {
     const mes = new Date(agora.getFullYear(), agora.getMonth(), 1)
     const ano = new Date(agora.getFullYear(), 0, 1)
 
-    const diario = dados.filter(a => a.status === 'confirmado' && new Date(a.created_at) >= hoje)
-    const mensal = dados.filter(a => a.status === 'confirmado' && new Date(a.created_at) >= mes)
-    const anual = dados.filter(a => a.status === 'confirmado' && new Date(a.created_at) >= ano)
+    const diario = dados.filter(a => a.pago === true && new Date(a.created_at) >= hoje)
+    const mensal = dados.filter(a => a.pago === true && new Date(a.created_at) >= mes)
+    const anual = dados.filter(a => a.pago === true && new Date(a.created_at) >= ano)
 
     setFaturamento({
       diario: diario.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
