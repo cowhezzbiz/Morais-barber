@@ -22,6 +22,49 @@ function App() {
   const [enviado, setEnviado] = useState(false)
   const [horario, setHorario] = useState('')
 
+  const gerarHorariosDisponiveis = () => {
+    const horarios: string[] = []
+    const hoje = new Date()
+    
+    // Gera horários para os próximos 30 dias
+    for (let i = 0; i < 30; i++) {
+      const data = new Date(hoje)
+      data.setDate(hoje.getDate() + i)
+      const diaSemana = data.getDay() // 0=dom, 1=seg, 2=ter, 3=qua, 4=qui, 5=sex, 6=sab
+      
+      // Domingo (0) e Segunda (1) = fechado
+      if (diaSemana === 0 || diaSemana === 1) continue
+      
+      const ano = data.getFullYear()
+      const mes = String(data.getMonth() + 1).padStart(2, '0')
+      const dia = String(data.getDate()).padStart(2, '0')
+      
+      if (diaSemana >= 2 && diaSemana <= 5) {
+        // Terça a Sexta: 9h às 19:30h
+        for (let h = 9; h <= 19; h++) {
+          horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:00`)
+          if (h < 19) {
+            horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
+          }
+        }
+        // 19:30
+        horarios.push(`${ano}-${mes}-${dia}T19:30`)
+      } else if (diaSemana === 6) {
+        // Sábado: 9h às 17h
+        for (let h = 9; h <= 17; h++) {
+          horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:00`)
+          if (h < 17) {
+            horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
+          }
+        }
+      }
+    }
+    
+    return horarios
+  }
+
+  const horariosDisponiveis = gerarHorariosDisponiveis()
+
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -398,7 +441,21 @@ function App() {
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="horario"><Clock size={16} /> Data e Horário desejados</label>
-                  <input type="datetime-local" id="horario" value={horario} onChange={e => setHorario(e.target.value)} />
+                  <select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required>
+                    <option value="">Selecione um horário...</option>
+                    {horariosDisponiveis.map(h => {
+                      const data = new Date(h)
+                      const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][data.getDay()]
+                      const dia = String(data.getDate()).padStart(2, '0')
+                      const mes = String(data.getMonth() + 1).padStart(2, '0')
+                      const hora = h.split('T')[1]
+                      return (
+                        <option key={h} value={h}>
+                          {diaSemana} {dia}/{mes} às {hora}
+                        </option>
+                      )
+                    })}
+                  </select>
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="mensagem">Mensagem (opcional)</label>
