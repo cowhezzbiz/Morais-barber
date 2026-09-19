@@ -176,15 +176,6 @@ export default function App() {
     }
   }
 
-  const galeria = [
-    { id: 1, nome: 'Fade Degradê', descricao: 'Moderno e elegante' },
-    { id: 2, nome: 'Undercut', descricao: 'Estilo urbano' },
-    { id: 3, nome: 'Pompadour', descricao: 'Clássico e ousado' },
-    { id: 4, nome: 'Barba', descricao: 'Modelada com capricho' },
-    { id: 5, nome: 'Social', descricao: 'Perfeito pra trabalho' },
-    { id: 6, nome: 'Moicano', descricao: 'Atitude e estilo' },
-  ]
-
   return (
     <div className="app">
       <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
@@ -200,7 +191,6 @@ export default function App() {
             <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
             <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
             <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
-            <li><button onClick={() => scrollToSection('galeria')}>Galeria</button></li>
             <li><button onClick={() => scrollToSection('contato')}>Contato</button></li>
           </ul>
         </div>
@@ -266,24 +256,6 @@ export default function App() {
                 <li><CheckCircle size={18} /> Atendimento personalizado</li>
               </ul>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="galeria" className="secao">
-        <div className="container">
-          <p className="secao-subtitle">PORTFÓLIO</p>
-          <h2 className="secao-titulo">Nossos <span className="destaque">trabalhos</span></h2>
-          <p className="secao-desc">Confira alguns estilos realizados por nosso barbeiro.</p>
-          <div className="galeria-grid">
-            {galeria.map(item => (
-              <div key={item.id} className="galeria-item">
-                <div className="galeria-item-img">
-                  <Scissors size={48} />
-                </div>
-                <p>{item.nome}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -398,8 +370,7 @@ export default function App() {
                 <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
                 <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
                 <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
-                <li><button onClick={() => scrollToSection('galeria')}>Galeria</button></li>
-              </ul>
+                  </ul>
             </div>
             <div className="footer-col">
               <h4>Contato</h4>
