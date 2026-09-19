@@ -57,7 +57,7 @@ export default function AdminPage() {
   }, [user])
 
   useEffect(() => {
-    if (agendamentos.length >= 0) {
+    if (agendamentos.length > 0) {
       calcularTodosFaturamentos()
       verificarFechamentoAutomatico()
     }
