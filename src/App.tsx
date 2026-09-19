@@ -20,6 +20,8 @@ function App() {
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
   const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
 
   useEffect(() => {
     const buscarDias = async () => {
@@ -74,6 +76,14 @@ function App() {
 
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErro('')
+    
+    if (!isValidPhone(formTelefone)) {
+      setErro('Telefone inv\u00e1lido. Digite pelo menos 10 d\u00edgitos.')
+      return
+    }
+
+    setLoading(true)
     try {
       // Verifica se já existe agendamento no horário
       if (horario) {
@@ -111,9 +121,19 @@ function App() {
       setFormMensagem('')
       setHorario('')
       setTimeout(() => setEnviado(false), 4000)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao enviar:', err)
-      alert('Erro: ' + (err.message || 'Erro ao enviar. Tente novamente.'))
+      if (err instanceof Error) {
+        if (err.message.includes('unique_horario') || err.message.includes('23505')) {
+          setErro('Este hor\u00e1rio acabou de ser reservado. Escolha outro.')
+        } else {
+          setErro(err.message)
+        }
+      } else {
+        setErro('Erro ao enviar. Tente novamente.')
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -127,17 +147,22 @@ function App() {
     { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pentool' },
   ]
 
-  const getIcon = (name: string) => {
-    const icons: any = {
-      scissors: <Scissors size={32} />,
-      razor: <Scissors size={32} />,
-      crown: <Crown size={32} />,
-      sparkles: <Sparkles size={32} />,
-      palette: <Palette size={32} />,
-      droplets: <Droplets size={32} />,
-      pentool: <PenTool size={32} />,
+  const getIcon = (name: string): JSX.Element => {
+    const icons: Record<string, JSX.Element> = {
+      scissors: <Scissors size={28} />,
+      razor: <Scissors size={28} />,
+      crown: <Crown size={28} />,
+      sparkles: <Sparkles size={28} />,
+      palette: <Palette size={28} />,
+      droplets: <Droplets size={28} />,
+      pentool: <PenTool size={28} />,
     }
-    return icons[name] || <Scissors size={32} />
+    return icons[name] || <Scissors size={28} />
+  }
+
+  const isValidPhone = (phone: string): boolean => {
+    const digits = phone.replace(/\D/g, '')
+    return digits.length >= 10 && digits.length <= 11
   }
 
   const galeria = [
@@ -438,22 +463,22 @@ function App() {
               <form onSubmit={enviarFormulario}>
                 <div className="form-grupo">
                   <label htmlFor="nome">Nome</label>
-                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required />
+                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} />
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="telefone">Telefone</label>
-                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required />
+                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required disabled={loading} />
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="servico">Serviço</label>
-                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required>
+                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}>
                     <option value="">Selecione...</option>
                     {servicos.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
                   </select>
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="horario"><Clock size={16} /> Data e Horário desejados</label>
-                  <select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required>
+                  <select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}>
                     <option value="">Selecione um horário...</option>
                     {horariosDisponiveis.map(h => {
                       const data = new Date(h)
@@ -471,9 +496,12 @@ function App() {
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="mensagem">Mensagem (opcional)</label>
-                  <textarea id="mensagem" rows={3} placeholder="Alguma preferência?" value={formMensagem} onChange={e => setFormMensagem(e.target.value)}></textarea>
+                  <textarea id="mensagem" rows={3} placeholder="Alguma preferência?" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary btn-full">Enviar Mensagem</button>
+                {erro && <p className="erro-msg">{erro}</p>}
+                <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+                  {loading ? 'Enviando...' : 'Enviar Mensagem'}
+                </button>
               </form>
             </div>
           </div>
