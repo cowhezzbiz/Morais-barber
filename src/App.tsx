@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabase'
-import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
+import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
 import './App.css'
 
 interface Servico {
@@ -39,9 +39,14 @@ const isValidPhone = (phone: string): boolean => {
   return digits.length >= 10 && digits.length <= 11
 }
 
+const scrollToSection = (id: string) => {
+  setMenuAberto(false)
+  const el = document.getElementById(id)
+  if (el) el.scrollIntoView({ behavior: 'smooth' })
+}
+
 export default function App() {
   const [menuAberto, setMenuAberto] = useState(false)
-  const [abaGaleria, setAbaGaleria] = useState(0)
   const [formNome, setFormNome] = useState('')
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
@@ -89,13 +94,13 @@ export default function App() {
     e.preventDefault()
     setErro('')
     if (!isValidPhone(formTelefone)) {
-      setErro('Telefone invalido. Digite pelo menos 10 digitos.')
+      setErro('Telefone inválido. Digite pelo menos 10 dígitos.')
       return
     }
     setLoading(true)
     try {
       const horarioISO = horario ? new Date(horario).toISOString() : null
-      const texto = `Ola! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServico: ${formServico}\nHorario: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
+      const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
       const { error: insertError } = await supabase.from('agendamentos').insert({
         nome: formNome.trim().slice(0, 100),
@@ -107,7 +112,7 @@ export default function App() {
       })
       if (insertError) {
         if (insertError.code === '23505') {
-          setErro('Este horario acabou de ser reservado. Escolha outro.')
+          setErro('Este horário acabou de ser reservado. Escolha outro.')
           setLoading(false)
           return
         }
@@ -125,57 +130,49 @@ export default function App() {
     }
   }
 
-  const galeria = [
-    { id: 1, estilo: 'Fade degrade' },
-    { id: 2, estilo: 'Undercut' },
-    { id: 3, estilo: 'Pompadour' },
-    { id: 4, estilo: 'Barba cheia' },
-    { id: 5, estilo: 'Social' },
-    { id: 6, estilo: 'Moicano' },
-  ]
-
   return (
     <div className="app">
       <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
         <div className="nav-container">
-          <a href="#inicio" className="logo" onClick={() => setMenuAberto(false)}>
+          <button className="logo" onClick={() => scrollToSection('inicio')}>
             <span className="logo-icon"><Scissors size={24} /></span>
             <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
-          </a>
+          </button>
           <button className="menu-toggle" onClick={() => setMenuAberto(!menuAberto)} aria-label="Menu">
             <span className={`hamburger ${menuAberto ? 'ativo' : ''}`}></span>
           </button>
           <ul className={`nav-links ${menuAberto ? 'ativo' : ''}`}>
-            <li><a href="#inicio" onClick={() => setMenuAberto(false)}>Inicio</a></li>
-            <li><a href="#servicos" onClick={() => setMenuAberto(false)}>Servicos</a></li>
-            <li><a href="#galeria" onClick={() => setMenuAberto(false)}>Galeria</a></li>
-            <li><a href="#avaliacoes" onClick={() => setMenuAberto(false)}>Avaliacoes</a></li>
-            <li><a href="#contato" onClick={() => setMenuAberto(false)}>Contato</a></li>
-            <li><a href="#contato" className="btn-agendar-nav" onClick={() => setMenuAberto(false)}>Agendar</a></li>
+            <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
+            <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
+            <li><button onClick={() => scrollToSection('galeria')}>Galeria</button></li>
+            <li><button onClick={() => scrollToSection('avaliacoes')}>Avaliações</button></li>
+            <li><button onClick={() => scrollToSection('contato')}>Contato</button></li>
           </ul>
         </div>
       </nav>
+
       <section id="inicio" className="hero">
         <div className="hero-content">
-          <p className="hero-subtitle">Barbearia Classica • Tattoo</p>
-          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelencia</span></h1>
-          <p className="hero-desc">Cortes modernos, barba feita com capricho e tatuagens artisticas. Um ambiente pensado pra voce se sentir bem.</p>
+          <p className="hero-subtitle">Barbearia Clássica • Tattoo</p>
+          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
+          <p className="hero-desc">Cortes modernos, barba feita com capricho e tatuagens artísticas.</p>
           <div className="hero-botoes">
-            <a href="#contato" className="btn btn-primary">Agendar Horario</a>
-            <a href="#servicos" className="btn btn-outline">Ver Servicos</a>
+            <button className="btn btn-primary" onClick={() => scrollToSection('contato')}>Agendar Horário</button>
+            <button className="btn btn-outline" onClick={() => scrollToSection('servicos')}>Ver Serviços</button>
           </div>
           <div className="hero-stats">
-            <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes felizes</span></div>
-            <div className="stat"><span className="stat-num">5.0</span><span className="stat-label">Avaliacao</span></div>
-            <div className="stat"><span className="stat-num">5+</span><span className="stat-label">Anos de experiencia</span></div>
+            <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes</span></div>
+            <div className="stat"><span className="stat-num">5.0</span><span className="stat-label">Avaliação</span></div>
+            <div className="stat"><span className="stat-num">5+</span><span className="stat-label">Anos</span></div>
           </div>
         </div>
       </section>
+
       <section id="servicos" className="secao">
         <div className="container">
-          <p className="secao-subtitle">NOSSOS SERVICOS</p>
+          <p className="secao-subtitle">NOSSOS SERVIÇOS</p>
           <h2 className="secao-titulo">O que fazemos de <span className="destaque">melhor</span></h2>
-          <p className="secao-desc">Servicos pensados pra voce sair com o visual impecavel.</p>
+          <p className="secao-desc">Serviços pensados pra você sair com o visual impecável.</p>
           <div className="grid-servicos">
             {SERVICOS.map(s => (
               <div key={s.id} className="card-servico">
@@ -191,76 +188,62 @@ export default function App() {
           </div>
         </div>
       </section>
-      <section className="secao secao-escura">
+
+      <section id="galeria" className="secao secao-escura">
         <div className="container">
-          <div className="sobre-grid">
-            <div className="sobre-img"><div className="img-placeholder"><Scissors size={64} /><p>Morais Barber</p><small>Desde 2020</small></div></div>
-            <div className="sobre-texto">
-              <p className="secao-subtitle">SOBRE NOS</p>
-              <h2 className="secao-titulo">Tradicao e modernidade em cada <span className="destaque">corte</span></h2>
-              <p className="sobre-p">A Morais Barber nasceu da paixao por transformar autoestima. Nosso barbeiro tem mais de 5 anos de experiencia.</p>
-              <p className="sobre-p">Aqui voce encontra um ambiente descontracao, produtos de primeira e o melhor atendimento.</p>
-              <ul className="sobre-lista">
-                <li><CheckCircle size={18} /> Profissional certificado</li>
-                <li><CheckCircle size={18} /> Ambiente confortavel</li>
-                <li><CheckCircle size={18} /> Produtos de primeira linha</li>
-                <li><CheckCircle size={18} /> Atendimento personalizado</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section id="galeria" className="secao">
-        <div className="container">
-          <p className="secao-subtitle">PORTFOLIO</p>
+          <p className="secao-subtitle">PORTFÓLIO</p>
           <h2 className="secao-titulo">Nossos <span className="destaque">trabalhos</span></h2>
-          <div className="galeria-tabs">
-            {galeria.map((item, index) => (
-              <button key={item.id} className={`galeria-tab ${abaGaleria === index ? 'ativa' : ''}`} onClick={() => setAbaGaleria(index)}>{item.estilo}</button>
-            ))}
-          </div>
           <div className="galeria-grid">
-            {galeria.map(item => (
-              <div key={item.id} className="galeria-item"><div className="galeria-item-img"><Scissors size={48} /></div><p>{item.estilo}</p></div>
+            {['Fade', 'Undercut', 'Pompadour', 'Barba', 'Social', 'Moicano'].map(item => (
+              <div key={item} className="galeria-item">
+                <div className="galeria-item-img"><Scissors size={48} /></div>
+                <p>{item}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
-      <section id="avaliacoes" className="secao secao-escura">
+
+      <section id="avaliacoes" className="secao">
         <div className="container">
-          <p className="secao-subtitle">AVALIACOES</p>
+          <p className="secao-subtitle">AVALIAÇÕES</p>
           <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem</h2>
           <div className="google-rating">
             <div className="rating-score">
               <span className="rating-num">5.0</span>
               <div className="rating-stars">
-                <Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} />
               </div>
-              <span className="rating-count">+200 avaliacoes</span>
+              <span className="rating-count">+200 avaliações</span>
             </div>
           </div>
           <div className="google-reviews">
             <div className="review-card">
-              <div className="review-header"><div className="review-avatar">GR</div><div><strong>Geanderson</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
-              <p className="review-text">"Atendimento e corte impecaveis!"</p>
+              <div className="review-header"><div className="review-avatar">GM</div><div><strong>Geanderson</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
+              <p className="review-text">"Atendimento e corte impecáveis!"</p>
             </div>
             <div className="review-card">
               <div className="review-header"><div className="review-avatar">CL</div><div><strong>Cliente Leal</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
-              <p className="review-text">"Corto ha mais de 5 anos. Excelencia!"</p>
+              <p className="review-text">"Corto há mais de 5 anos. Excelência!"</p>
             </div>
           </div>
         </div>
       </section>
-      <section id="contato" className="secao">
+
+      <section id="contato" className="secao secao-escura">
         <div className="container">
           <p className="secao-subtitle">CONTATO</p>
-          <h2 className="secao-titulo">Agende seu <span className="destaque">horario</span></h2>
-          <p className="secao-desc">Escolha o melhor dia e horario pra voce.</p>
+          <h2 className="secao-titulo">Agende seu <span className="destaque">horário</span></h2>
+          <p className="secao-desc">Escolha o melhor dia e horário pra você.</p>
           <div className="contato-grid">
             <div className="contato-info">
-              <div className="info-item"><span className="info-icone"><MapPin size={24} /></span><div><strong>Endereco</strong><p>R. Potiguara, 974 - Canudos</p></div></div>
+              <div className="info-item"><span className="info-icone"><MapPin size={24} /></span><div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos</p></div></div>
               <div className="info-item"><span className="info-icone"><Phone size={24} /></span><div><strong>Telefone</strong><p>(51) 98130-1035</p></div></div>
-              <div className="info-item"><span className="info-icone"><Clock size={24} /></span><div><strong>Horario</strong><p>Terca a Sexta: 9h as 19:30h</p><p>Sabado: 9h as 17h</p></div></div>
+              <div className="info-item"><span className="info-icone"><Clock size={24} /></span><div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sábado: 9h às 17h</p></div></div>
               <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp"><MessageCircle size={20} /> Agendar pelo WhatsApp</a>
             </div>
             <div className="contato-form">
@@ -269,8 +252,8 @@ export default function App() {
               <form onSubmit={enviarFormulario}>
                 <div className="form-grupo"><label htmlFor="nome">Nome</label><input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} /></div>
                 <div className="form-grupo"><label htmlFor="telefone">Telefone</label><input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required disabled={loading} /></div>
-                <div className="form-grupo"><label htmlFor="servico">Servico</label><select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} - {s.preco}</option>)}</select></div>
-                <div className="form-grupo"><label htmlFor="horario">Data e Horario</label><select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{horariosDisponiveis.map(h => { const d = new Date(h); const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'][d.getDay()]; return <option key={h} value={h}>{dia} {String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')} as {h.split('T')[1]}</option> })}</select></div>
+                <div className="form-grupo"><label htmlFor="servico">Serviço</label><select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}</select></div>
+                <div className="form-grupo"><label htmlFor="horario">Data e Horário</label><select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{horariosDisponiveis.map(h => { const d = new Date(h); const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]; return <option key={h} value={h}>{dia} {String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')} às {h.split('T')[1]}</option> })}</select></div>
                 <div className="form-grupo"><label htmlFor="mensagem">Mensagem</label><textarea id="mensagem" placeholder="Opcional" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea></div>
                 {erro && <p className="erro-msg">{erro}</p>}
                 <button type="submit" className="btn btn-primary btn-full" disabled={loading}>{loading ? 'Enviando...' : 'Enviar'}</button>
@@ -279,11 +262,17 @@ export default function App() {
           </div>
         </div>
       </section>
+
       <footer className="footer">
         <div className="container">
           <div className="footer-grid">
-            <div className="footer-col"><p className="footer-desc">© 2026 Morais Barber. Todos os direitos reservados.</p></div>
+            <div className="footer-col">
+              <div className="logo footer-logo"><span className="logo-icon"><Scissors size={24} /></span><span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span></div>
+              <p className="footer-desc">O melhor da barbearia masculina em um só lugar.</p>
+            </div>
+            <div className="footer-col"><h4>Contato</h4><ul><li>📍 R. Potiguara, 974</li><li>📞 (51) 98130-1035</li><li>🕐 Ter-Sex 9h-19:30h</li></ul></div>
           </div>
+          <div className="footer-bottom"><p>© 2026 Morais Barber. Todos os direitos reservados.</p></div>
         </div>
       </footer>
     </div>
