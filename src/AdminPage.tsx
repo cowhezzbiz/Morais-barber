@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
 import './App.css'
@@ -36,6 +36,8 @@ export default function AdminPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado'>('todos')
   const [modalAberto, setModalAberto] = useState(false)
+  const [faturamento, setFaturamento] = useState({ diario: 0, mensal: 0, anual: 0 })
+  const faturamentoCalculado = useRef(false)
   const [novoCliente, setNovoCliente] = useState({
     nome: '',
     telefone: '',
@@ -65,7 +67,10 @@ export default function AdminPage() {
       .from('agendamentos')
       .select('*')
       .order('created_at', { ascending: false })
-    if (!error) setAgendamentos(data || [])
+    if (!error) {
+      setAgendamentos(data || [])
+      if (data) calcularFaturamento(data)
+    }
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -91,6 +96,31 @@ export default function AdminPage() {
     if (!confirm('Excluir?')) return
     await supabase.from('agendamentos').delete().eq('id', id)
     fetchAgendamentos()
+  }
+
+  const calcularFaturamento = async (dados: Agendamento[]) => {
+    if (faturamentoCalculado.current) return
+    
+    const agora = new Date()
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
+    const mes = new Date(agora.getFullYear(), agora.getMonth(), 1)
+    const ano = new Date(agora.getFullYear(), 0, 1)
+
+    const diario = dados.filter(a => a.status === 'confirmado' && new Date(a.created_at) >= hoje)
+    const mensal = dados.filter(a => a.status === 'confirmado' && new Date(a.created_at) >= mes)
+    const anual = dados.filter(a => a.status === 'confirmado' && new Date(a.created_at) >= ano)
+
+    setFaturamento({
+      diario: diario.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
+      mensal: mensal.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
+      anual: anual.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0)
+    })
+    faturamentoCalculado.current = true
+  }
+
+  const resetarFaturamento = () => {
+    faturamentoCalculado.current = false
+    setFaturamento({ diario: 0, mensal: 0, anual: 0 })
   }
 
   const adicionarCliente = async () => {
@@ -158,6 +188,27 @@ export default function AdminPage() {
         <div className="admin-stat"><span className="stat-num stat-amarelo">{countStatus('pendente')}</span><span className="stat-label">Pendentes</span></div>
         <div className="admin-stat"><span className="stat-num stat-verde">{countStatus('confirmado')}</span><span className="stat-label">Confirmados</span></div>
         <div className="admin-stat"><span className="stat-num stat-vermelho">{countStatus('cancelado')}</span><span className="stat-label">Cancelados</span></div>
+      </div>
+
+      <div className="faturamento-container">
+        <h3 className="faturamento-titulo">💰 Faturamento</h3>
+        <div className="faturamento-cards">
+          <div className="faturamento-card">
+            <span className="faturamento-label">Hoje</span>
+            <span className="faturamento-valor">R$ {faturamento.diario.toFixed(2).replace('.', ',')}</span>
+            <button className="btn-reset-faturamento" onClick={resetarFaturamento}>🗑 Zerar</button>
+          </div>
+          <div className="faturamento-card">
+            <span className="faturamento-label">Este Mês</span>
+            <span className="faturamento-valor">R$ {faturamento.mensal.toFixed(2).replace('.', ',')}</span>
+            <button className="btn-reset-faturamento" onClick={resetarFaturamento}>🗑 Zerar</button>
+          </div>
+          <div className="faturamento-card">
+            <span className="faturamento-label">Este Ano</span>
+            <span className="faturamento-valor">R$ {faturamento.anual.toFixed(2).replace('.', ',')}</span>
+            <button className="btn-reset-faturamento" onClick={resetarFaturamento}>🗑 Zerar</button>
+          </div>
+        </div>
       </div>
 
       <div className="admin-filtros">
