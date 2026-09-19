@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabase'
 import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
 import './App.css'
@@ -12,161 +12,121 @@ interface Servico {
   icone: string
 }
 
-function App() {
+const SERVICOS: Servico[] = [
+  { id: 1, nome: 'Corte Masculino', descricao: 'Corte moderno e personalizado, lavagem e finalização incluso.', preco: 'R$ 45', duracao: '40 min', icone: 'scissors' },
+  { id: 2, nome: 'Barba', descricao: 'Modelagem completa com navalha, toalha quente e hidratação.', preco: 'R$ 30', duracao: '30 min', icone: 'scissors' },
+  { id: 3, nome: 'Corte + Barba', descricao: 'Combo completo com desconto especial. O visual perfeito.', preco: 'R$ 65', duracao: '1h', icone: 'crown' },
+  { id: 4, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com navalha.', preco: 'R$ 15', duracao: '15 min', icone: 'sparkles' },
+  { id: 5, nome: 'Pigmentação', descricao: 'Camufla falhas no cabelo ou barba com pigmento natural.', preco: 'R$ 50', duracao: '45 min', icone: 'palette' },
+  { id: 6, nome: 'Hidratação Capilar', descricao: 'Tratamento profundo para cabelos ressecados e danificados.', preco: 'R$ 35', duracao: '30 min', icone: 'droplets' },
+  { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pen' },
+]
+
+const getIcon = (name: string) => {
+  const icons: Record<string, React.ReactNode> = {
+    scissors: <Scissors size={28} />,
+    crown: <Crown size={28} />,
+    sparkles: <Sparkles size={28} />,
+    palette: <Palette size={28} />,
+    droplets: <Droplets size={28} />,
+    pen: <PenTool size={28} />,
+  }
+  return icons[name] || <Scissors size={28} />
+}
+
+const isValidPhone = (phone: string): boolean => {
+  const digits = phone.replace(/\D/g, '')
+  return digits.length >= 10 && digits.length <= 11
+}
+
+export default function App() {
   const [menuAberto, setMenuAberto] = useState(false)
   const [abaGaleria, setAbaGaleria] = useState(0)
   const [formNome, setFormNome] = useState('')
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
-  const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
+  const [horario, setHorario] = useState('')
+  const [enviado, setEnviado] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
 
   useEffect(() => {
-    const buscarDias = async () => {
-      const { data } = await supabase.from('dias_bloqueados').select('data')
-      if (data) setDiasBloqueados(data.map((d: any) => d.data))
+    if (erro) {
+      const timer = setTimeout(() => setErro(''), 5000)
+      return () => clearTimeout(timer)
     }
-    buscarDias()
-  }, [])
+  }, [erro])
 
-  const gerarHorariosDisponiveis = () => {
+  const horariosDisponiveis = useMemo(() => {
     const horarios: string[] = []
     const hoje = new Date()
-    
-    // Gera horários para os próximos 30 dias
     for (let i = 0; i < 30; i++) {
       const data = new Date(hoje)
       data.setDate(hoje.getDate() + i)
-      const diaSemana = data.getDay() // 0=dom, 1=seg, 2=ter, 3=qua, 4=qui, 5=sex, 6=sab
-      
-      // Domingo (0) e Segunda (1) = fechado
+      const diaSemana = data.getDay()
       if (diaSemana === 0 || diaSemana === 1) continue
-      
       const ano = data.getFullYear()
       const mes = String(data.getMonth() + 1).padStart(2, '0')
       const dia = String(data.getDate()).padStart(2, '0')
-      
       if (diaSemana >= 2 && diaSemana <= 5) {
-        // Terça a Sexta: 9h às 19:30h
         for (let h = 9; h <= 19; h++) {
           horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:00`)
-          if (h < 19) {
-            horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
-          }
+          if (h < 19) horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
         }
-        // 19:30
         horarios.push(`${ano}-${mes}-${dia}T19:30`)
       } else if (diaSemana === 6) {
-        // Sábado: 9h às 17h
         for (let h = 9; h <= 17; h++) {
           horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:00`)
-          if (h < 17) {
-            horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
-          }
+          if (h < 17) horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
         }
       }
     }
-    
     return horarios
-  }
-
-  const horariosDisponiveis = gerarHorariosDisponiveis()
+  }, [])
 
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
-    
     if (!isValidPhone(formTelefone)) {
-      setErro('Telefone inv\u00e1lido. Digite pelo menos 10 d\u00edgitos.')
+      setErro('Telefone invalido. Digite pelo menos 10 digitos.')
       return
     }
-
     setLoading(true)
     try {
-      // Verifica se já existe agendamento no horário
-      if (horario) {
-        const horarioFormatado = new Date(horario).toISOString()
-        const { data: existente, error: errorConsulta } = await supabase
-          .from('agendamentos')
-          .select('id')
-          .eq('horario_agendado', horarioFormatado)
-          .maybeSingle()
-
-        if (errorConsulta) throw errorConsulta
-        if (existente) {
-          alert('⚠️ Horário indisponível!\n\nJá existe um agendamento para este horário.\nPor favor, escolha outro horário.')
+      const horarioISO = horario ? new Date(horario).toISOString() : null
+      const texto = `Ola! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServico: ${formServico}\nHorario: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
+      const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
+      const { error: insertError } = await supabase.from('agendamentos').insert({
+        nome: formNome.trim().slice(0, 100),
+        telefone: formTelefone.replace(/\D/g, ''),
+        servico: formServico,
+        mensagem: formMensagem.trim().slice(0, 500),
+        status: 'pendente',
+        horario_agendado: horarioISO
+      })
+      if (insertError) {
+        if (insertError.code === '23505') {
+          setErro('Este horario acabou de ser reservado. Escolha outro.')
+          setLoading(false)
           return
         }
+        throw insertError
       }
-
-      await supabase.from('agendamentos').insert({
-        nome: formNome,
-        telefone: formTelefone,
-        servico: formServico,
-        mensagem: formMensagem || '',
-        status: 'pendente',
-        horario_agendado: horario ? new Date(horario).toISOString() : null
-      })
-
-      const texto = `Olá! Gostaria de agendar um horário.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
-      const url = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
-      window.open(url, '_blank')
-
+      window.open(whatsappUrl, '_blank')
       setEnviado(true)
-      setFormNome('')
-      setFormTelefone('')
-      setFormServico('')
-      setFormMensagem('')
-      setHorario('')
-      setTimeout(() => setEnviado(false), 4000)
+      setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
+      setTimeout(() => setEnviado(false), 5000)
     } catch (err: unknown) {
-      console.error('Erro ao enviar:', err)
-      if (err instanceof Error) {
-        if (err.message.includes('unique_horario') || err.message.includes('23505')) {
-          setErro('Este hor\u00e1rio acabou de ser reservado. Escolha outro.')
-        } else {
-          setErro(err.message)
-        }
-      } else {
-        setErro('Erro ao enviar. Tente novamente.')
-      }
+      console.error('Erro:', err)
+      setErro(err instanceof Error ? err.message : 'Erro ao enviar.')
     } finally {
       setLoading(false)
     }
   }
 
-  const servicos: Servico[] = [
-    { id: 1, nome: 'Corte Masculino', descricao: 'Corte moderno e personalizado, lavagem e finalização incluso.', preco: 'R$ 45', duracao: '40 min', icone: 'scissors' },
-    { id: 2, nome: 'Barba', descricao: 'Modelagem completa com navalha, toalha quente e hidratação.', preco: 'R$ 30', duracao: '30 min', icone: 'razor' },
-    { id: 3, nome: 'Corte + Barba', descricao: 'Combo completo com desconto especial. O visual perfeito.', preco: 'R$ 65', duracao: '1h', icone: 'crown' },
-    { id: 4, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com navalha.', preco: 'R$ 15', duracao: '15 min', icone: 'sparkles' },
-    { id: 5, nome: 'Pigmentação', descricao: 'Camufla falhas no cabelo ou barba com pigmento natural.', preco: 'R$ 50', duracao: '45 min', icone: 'palette' },
-    { id: 6, nome: 'Hidratação Capilar', descricao: 'Tratamento profundo para cabelos ressecados e danificados.', preco: 'R$ 35', duracao: '30 min', icone: 'droplets' },
-    { id: 7, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pentool' },
-  ]
-
-  const getIcon = (name: string): JSX.Element => {
-    const icons: Record<string, JSX.Element> = {
-      scissors: <Scissors size={28} />,
-      razor: <Scissors size={28} />,
-      crown: <Crown size={28} />,
-      sparkles: <Sparkles size={28} />,
-      palette: <Palette size={28} />,
-      droplets: <Droplets size={28} />,
-      pentool: <PenTool size={28} />,
-    }
-    return icons[name] || <Scissors size={28} />
-  }
-
-  const isValidPhone = (phone: string): boolean => {
-    const digits = phone.replace(/\D/g, '')
-    return digits.length >= 10 && digits.length <= 11
-  }
-
   const galeria = [
-    { id: 1, estilo: 'Fade degradê' },
+    { id: 1, estilo: 'Fade degrade' },
     { id: 2, estilo: 'Undercut' },
     { id: 3, estilo: 'Pompadour' },
     { id: 4, estilo: 'Barba cheia' },
@@ -178,96 +138,71 @@ function App() {
     <div className="app">
       <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
         <div className="nav-container">
-          <div className="logo">
-            <span className="logo-icon"><Scissors size={28} /></span>
+          <a href="#inicio" className="logo" onClick={() => setMenuAberto(false)}>
+            <span className="logo-icon"><Scissors size={24} /></span>
             <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
-          </div>
-
+          </a>
           <button className="menu-toggle" onClick={() => setMenuAberto(!menuAberto)} aria-label="Menu">
             <span className={`hamburger ${menuAberto ? 'ativo' : ''}`}></span>
           </button>
-
           <ul className={`nav-links ${menuAberto ? 'ativo' : ''}`}>
-            <li><a href="#inicio" onClick={() => setMenuAberto(false)}>Início</a></li>
-            <li><a href="#servicos" onClick={() => setMenuAberto(false)}>Serviços</a></li>
+            <li><a href="#inicio" onClick={() => setMenuAberto(false)}>Inicio</a></li>
+            <li><a href="#servicos" onClick={() => setMenuAberto(false)}>Servicos</a></li>
             <li><a href="#galeria" onClick={() => setMenuAberto(false)}>Galeria</a></li>
-            <li><a href="#avaliacoes" onClick={() => setMenuAberto(false)}>Avaliações</a></li>
+            <li><a href="#avaliacoes" onClick={() => setMenuAberto(false)}>Avaliacoes</a></li>
             <li><a href="#contato" onClick={() => setMenuAberto(false)}>Contato</a></li>
+            <li><a href="#contato" className="btn-agendar-nav" onClick={() => setMenuAberto(false)}>Agendar</a></li>
           </ul>
-
-          <a href="#contato" className="btn-agendar-nav">Agendar</a>
         </div>
       </nav>
-
       <section id="inicio" className="hero">
-        <div className="hero-overlay" />
         <div className="hero-content">
-          <p className="hero-subtitle">Barbearia Morais</p>
-          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
-          <p className="hero-desc">
-            Cortes modernos, barba feita com capricho e tatuagens artísticas.
-            Um ambiente pensado pra você se sentir bem. Agende seu horário e transforme seu visual.
-          </p>
+          <p className="hero-subtitle">Barbearia Classica • Tattoo</p>
+          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelencia</span></h1>
+          <p className="hero-desc">Cortes modernos, barba feita com capricho e tatuagens artisticas. Um ambiente pensado pra voce se sentir bem.</p>
           <div className="hero-botoes">
-            <a href="#contato" className="btn btn-primary">Agendar Horário</a>
-            <a href="#servicos" className="btn btn-outline">Ver Serviços</a>
+            <a href="#contato" className="btn btn-primary">Agendar Horario</a>
+            <a href="#servicos" className="btn btn-outline">Ver Servicos</a>
           </div>
           <div className="hero-stats">
-            <div className="stat">
-              <span className="stat-num">2000+</span>
-              <span className="stat-label">Clientes felizes</span>
-            </div>
-            <div className="stat">
-              <span className="stat-num">5★</span>
-              <span className="stat-label">Avaliação</span>
-            </div>
-            <div className="stat">
-              <span className="stat-num">5+</span>
-              <span className="stat-label">Anos de experiência</span>
-            </div>
+            <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes felizes</span></div>
+            <div className="stat"><span className="stat-num">5.0</span><span className="stat-label">Avaliacao</span></div>
+            <div className="stat"><span className="stat-num">5+</span><span className="stat-label">Anos de experiencia</span></div>
           </div>
         </div>
       </section>
-
       <section id="servicos" className="secao">
         <div className="container">
-          <p className="secao-subtitle">NOSSOS SERVIÇOS</p>
+          <p className="secao-subtitle">NOSSOS SERVICOS</p>
           <h2 className="secao-titulo">O que fazemos de <span className="destaque">melhor</span></h2>
-          <p className="secao-desc">Serviços pensados pra você sair com o visual impecável.</p>
+          <p className="secao-desc">Servicos pensados pra voce sair com o visual impecavel.</p>
           <div className="grid-servicos">
-            {servicos.map(servico => (
-              <div key={servico.id} className="card-servico">
-                <div className="servico-icone">{getIcon(servico.icone)}</div>
-                <h3>{servico.nome}</h3>
-                <p className="servico-desc">{servico.descricao}</p>
+            {SERVICOS.map(s => (
+              <div key={s.id} className="card-servico">
+                <div className="servico-icone">{getIcon(s.icone)}</div>
+                <h3>{s.nome}</h3>
+                <p className="servico-desc">{s.descricao}</p>
                 <div className="servico-info">
-                  <span className="servico-preco">{servico.preco}</span>
-                  <span className="servico-duracao"><Clock size={16} /> {servico.duracao}</span>
+                  <span className="servico-preco">{s.preco}</span>
+                  <span className="servico-duracao"><Clock size={16} /> {s.duracao}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </section>
-
       <section className="secao secao-escura">
         <div className="container">
           <div className="sobre-grid">
-            <div className="sobre-img">
-              <div className="img-placeholder">
-                <Scissors size={64} />
-                <p>Morais Barber</p>
-                <small>Desde 2020</small>
-              </div>
-            </div>
+            <div className="sobre-img"><div className="img-placeholder"><Scissors size={64} /><p>Morais Barber</p><small>Desde 2020</small></div></div>
             <div className="sobre-texto">
-              <p className="secao-subtitle">SOBRE NÓS</p>
-              <h2 className="secao-titulo">Tradição e modernidade em cada <span className="destaque">corte</span></h2>
-              <p className="sobre-p">A Morais Barber nasceu da paixão por transformar visagismo e autoestima. Nosso barbeiro tem mais de 5 anos de experiência e sempre se mantém atualizado com as últimas tendências e técnicas do mercado.</p>
-              <p className="sobre-p">Aqui você encontra um ambiente descontraído, cerveja gelada e o melhor atendimento da cidade. Cada cliente é tratado de forma única e personalizada.</p>
+              <p className="secao-subtitle">SOBRE NOS</p>
+              <h2 className="secao-titulo">Tradicao e modernidade em cada <span className="destaque">corte</span></h2>
+              <p className="sobre-p">A Morais Barber nasceu da paixao por transformar autoestima. Nosso barbeiro tem mais de 5 anos de experiencia.</p>
+              <p className="sobre-p">Aqui voce encontra um ambiente descontracao, produtos de primeira e o melhor atendimento.</p>
               <ul className="sobre-lista">
-                <li><CheckCircle size={18} /> Profissional certificado e experiente</li>
-                <li><CheckCircle size={18} /> Ambiente climatizado e confortável</li>
+                <li><CheckCircle size={18} /> Profissional certificado</li>
+                <li><CheckCircle size={18} /> Ambiente confortavel</li>
                 <li><CheckCircle size={18} /> Produtos de primeira linha</li>
                 <li><CheckCircle size={18} /> Atendimento personalizado</li>
               </ul>
@@ -275,287 +210,82 @@ function App() {
           </div>
         </div>
       </section>
-
       <section id="galeria" className="secao">
         <div className="container">
-          <p className="secao-subtitle">PORTFÓLIO</p>
+          <p className="secao-subtitle">PORTFOLIO</p>
           <h2 className="secao-titulo">Nossos <span className="destaque">trabalhos</span></h2>
-          <p className="secao-desc">Confira alguns cortes realizados por nosso barbeiro.</p>
           <div className="galeria-tabs">
             {galeria.map((item, index) => (
-              <button key={item.id} className={`galeria-tab ${abaGaleria === index ? 'ativa' : ''}`} onClick={() => setAbaGaleria(index)}>
-                {item.estilo}
-              </button>
+              <button key={item.id} className={`galeria-tab ${abaGaleria === index ? 'ativa' : ''}`} onClick={() => setAbaGaleria(index)}>{item.estilo}</button>
             ))}
           </div>
           <div className="galeria-grid">
-            {galeria.map((item) => (
-              <div key={item.id} className="galeria-item">
-                <div className="galeria-item-img">
-                  <Scissors size={48} />
-                </div>
-                <p>{item.estilo}</p>
-              </div>
+            {galeria.map(item => (
+              <div key={item.id} className="galeria-item"><div className="galeria-item-img"><Scissors size={48} /></div><p>{item.estilo}</p></div>
             ))}
           </div>
         </div>
       </section>
-
       <section id="avaliacoes" className="secao secao-escura">
         <div className="container">
-          <p className="secao-subtitle">AVALIAÇÕES</p>
-          <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem no Google</h2>
+          <p className="secao-subtitle">AVALIACOES</p>
+          <h2 className="secao-titulo">O que nossos <span className="destaque">clientes</span> dizem</h2>
           <div className="google-rating">
             <div className="rating-score">
               <span className="rating-num">5.0</span>
               <div className="rating-stars">
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
-                <Star fill="#ffc107" color="#ffc107" size={24} />
+                <Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} /><Star fill="#ffc107" color="#ffc107" size={24} />
               </div>
-              <span className="rating-count">+200 avaliações</span>
+              <span className="rating-count">+200 avaliacoes</span>
             </div>
           </div>
           <div className="google-reviews">
             <div className="review-card">
-              <div className="review-header">
-                <div className="review-avatar">GR</div>
-                <div>
-                  <strong>Geanderson</strong>
-                  <div className="review-stars">
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                  </div>
-                </div>
-              </div>
-              <p className="review-text">"Atendimento e corte impecáveis. Sem ressalvas, excelente profissional, ótimo atendimento, super profissional!!"</p>
-              <span className="review-source">•</span>
+              <div className="review-header"><div className="review-avatar">GR</div><div><strong>Geanderson</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
+              <p className="review-text">"Atendimento e corte impecaveis!"</p>
             </div>
             <div className="review-card">
-              <div className="review-header">
-                <div className="review-avatar">CL</div>
-                <div>
-                  <strong>Cliente Leal</strong>
-                  <div className="review-stars">
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                  </div>
-                </div>
-              </div>
-              <p className="review-text">"Corto com o Morais a mais de 5 anos e é o único barbeiro que tenho plena confiança. Excelência com diferentes estilos, ambiente agradável, limpo e com ótima playlist."</p>
-              <span className="review-source">•</span>
-            </div>
-            <div className="review-card">
-              <div className="review-header">
-                <div className="review-avatar">RN</div>
-                <div>
-                  <strong>Rone</strong>
-                  <div className="review-stars">
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                  </div>
-                </div>
-              </div>
-              <p className="review-text">"Excelente trabalho!"</p>
-              <span className="review-source">•</span>
-            </div>
-            <div className="review-card">
-              <div className="review-header">
-                <div className="review-avatar">FS</div>
-                <div>
-                  <strong>Frequentador Assíduo</strong>
-                  <div className="review-stars">
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                  </div>
-                </div>
-              </div>
-              <p className="review-text">"Sempre que volto faço questão de cortar cabelo com o Morais. Recomendo demais!"</p>
-              <span className="review-source">•</span>
-            </div>
-            <div className="review-card">
-              <div className="review-header">
-                <div className="review-avatar">VR</div>
-                <div>
-                  <strong>V. R.</strong>
-                  <div className="review-stars">
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                  </div>
-                </div>
-              </div>
-              <p className="review-text">"Atendimento super profissional e acolhedor. Recomendo!!!"</p>
-              <span className="review-source">•</span>
-            </div>
-            <div className="review-card">
-              <div className="review-header">
-                <div className="review-avatar">TF</div>
-                <div>
-                  <strong>T. F.</strong>
-                  <div className="review-stars">
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                    <Star fill="#ffc107" color="#ffc107" size={16} />
-                  </div>
-                </div>
-              </div>
-              <p className="review-text">"Top! Morais é um ótimo profissional"</p>
-              <span className="review-source">•</span>
+              <div className="review-header"><div className="review-avatar">CL</div><div><strong>Cliente Leal</strong><div className="review-stars"><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /><Star fill="#ffc107" color="#ffc107" size={16} /></div></div></div>
+              <p className="review-text">"Corto ha mais de 5 anos. Excelencia!"</p>
             </div>
           </div>
         </div>
       </section>
-
       <section id="contato" className="secao">
         <div className="container">
           <p className="secao-subtitle">CONTATO</p>
-          <h2 className="secao-titulo">Agende seu <span className="destaque">horário</span></h2>
-          <p className="secao-desc">Escolha o melhor dia e horário pra você.</p>
+          <h2 className="secao-titulo">Agende seu <span className="destaque">horario</span></h2>
+          <p className="secao-desc">Escolha o melhor dia e horario pra voce.</p>
           <div className="contato-grid">
             <div className="contato-info">
-              <div className="info-item">
-                <span className="info-icone"><MapPin size={28} /></span>
-                <div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos</p></div>
-              </div>
-              <div className="info-item">
-                <span className="info-icone"><Phone size={28} /></span>
-                <div><strong>Telefone</strong><p>(51) 98130-1035</p></div>
-              </div>
-              <div className="info-item">
-                <span className="info-icone"><Clock size={28} /></span>
-                <div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sáb: 9h às 17h</p></div>
-              </div>
-              <div className="info-item">
-                <span className="info-icone"><Phone size={28} /></span>
-                <div><strong>Redes Sociais</strong><p>@moraisbarber.tattoo</p></div>
-              </div>
-              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-                <MessageCircle size={20} /> Agendar pelo WhatsApp
-              </a>
+              <div className="info-item"><span className="info-icone"><MapPin size={24} /></span><div><strong>Endereco</strong><p>R. Potiguara, 974 - Canudos</p></div></div>
+              <div className="info-item"><span className="info-icone"><Phone size={24} /></span><div><strong>Telefone</strong><p>(51) 98130-1035</p></div></div>
+              <div className="info-item"><span className="info-icone"><Clock size={24} /></span><div><strong>Horario</strong><p>Terca a Sexta: 9h as 19:30h</p><p>Sabado: 9h as 17h</p></div></div>
+              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp"><MessageCircle size={20} /> Agendar pelo WhatsApp</a>
             </div>
             <div className="contato-form">
               <h3>Envie uma mensagem</h3>
-              {enviado && (
-                <div className="sucesso-msg">
-                  <CheckCircle size={18} /> Agendamento enviado com sucesso!
-                  <p className="link-acompanhar"><a href="#/agendamento">Clique aqui para acompanhar seu agendamento</a></p>
-                </div>
-              )}
+              {enviado && (<div className="sucesso-msg"><CheckCircle size={18} /> Agendamento enviado!<p className="link-acompanhar"><a href="#/agendamento">Acompanhe aqui</a></p></div>)}
               <form onSubmit={enviarFormulario}>
-                <div className="form-grupo">
-                  <label htmlFor="nome">Nome</label>
-                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} />
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="telefone">Telefone</label>
-                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required disabled={loading} />
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="servico">Serviço</label>
-                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}>
-                    <option value="">Selecione...</option>
-                    {servicos.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
-                  </select>
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="horario"><Clock size={16} /> Data e Horário desejados</label>
-                  <select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}>
-                    <option value="">Selecione um horário...</option>
-                    {horariosDisponiveis.map(h => {
-                      const data = new Date(h)
-                      const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][data.getDay()]
-                      const dia = String(data.getDate()).padStart(2, '0')
-                      const mes = String(data.getMonth() + 1).padStart(2, '0')
-                      const hora = h.split('T')[1]
-                      return (
-                        <option key={h} value={h}>
-                          {diaSemana} {dia}/{mes} às {hora}
-                        </option>
-                      )
-                    })}
-                  </select>
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="mensagem">Mensagem (opcional)</label>
-                  <textarea id="mensagem" rows={3} placeholder="Alguma preferência?" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea>
-                </div>
+                <div className="form-grupo"><label htmlFor="nome">Nome</label><input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} /></div>
+                <div className="form-grupo"><label htmlFor="telefone">Telefone</label><input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={e => setFormTelefone(e.target.value)} required disabled={loading} /></div>
+                <div className="form-grupo"><label htmlFor="servico">Servico</label><select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} - {s.preco}</option>)}</select></div>
+                <div className="form-grupo"><label htmlFor="horario">Data e Horario</label><select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}><option value="">Selecione...</option>{horariosDisponiveis.map(h => { const d = new Date(h); const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'][d.getDay()]; return <option key={h} value={h}>{dia} {String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')} as {h.split('T')[1]}</option> })}</select></div>
+                <div className="form-grupo"><label htmlFor="mensagem">Mensagem</label><textarea id="mensagem" placeholder="Opcional" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea></div>
                 {erro && <p className="erro-msg">{erro}</p>}
-                <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-                  {loading ? 'Enviando...' : 'Enviar Mensagem'}
-                </button>
+                <button type="submit" className="btn btn-primary btn-full" disabled={loading}>{loading ? 'Enviando...' : 'Enviar'}</button>
               </form>
             </div>
           </div>
         </div>
       </section>
-
       <footer className="footer">
         <div className="container">
           <div className="footer-grid">
-            <div className="footer-col">
-              <div className="logo footer-logo">
-                <span className="logo-icon"><Scissors size={28} /></span>
-                <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
-              </div>
-              <p className="footer-desc">O melhor da barbearia masculina em um só lugar. Corte, barba e estilo com excelência.</p>
-            </div>
-            <div className="footer-col">
-              <h4>Links Rápidos</h4>
-              <ul>
-                <li><a href="#inicio">Início</a></li>
-                <li><a href="#servicos">Serviços</a></li>
-                <li><a href="#galeria">Galeria</a></li>
-                <li><a href="#avaliacoes">Avaliações</a></li>
-                <li><a href="#contato">Contato</a></li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h4>Serviços</h4>
-              <ul>
-                <li><a href="#servicos">Corte Masculino</a></li>
-                <li><a href="#servicos">Barba</a></li>
-                <li><a href="#servicos">Corte + Barba</a></li>
-                <li><a href="#servicos">Sobrancelha</a></li>
-                <li><a href="#servicos">Pigmentação</a></li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h4>Contato</h4>
-              <ul>
-                <li><MapPin size={16} /> R. Potiguara, 974</li>
-                <li><Phone size={16} /> (51) 98130-1035</li>
-                <li><Clock size={16} /> Ter-Sex 9h-19:30h</li>
-                <li><Phone size={16} /> @moraisbarber.tattoo</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <p>© 2026 Morais Barber. Todos os direitos reservados.</p>
-            <p>Feito com carinho para clientes incríveis.</p>
+            <div className="footer-col"><p className="footer-desc">© 2026 Morais Barber. Todos os direitos reservados.</p></div>
           </div>
         </div>
       </footer>
     </div>
   )
 }
-
-export default App
