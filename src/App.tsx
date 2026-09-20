@@ -259,7 +259,7 @@ export default function App() {
           <p className="hero-desc">Cortes modernos, barba impecável e tatuagens únicas. Um ambiente pensado pra você se sentir bem.</p>
           <div className="hero-botoes">
             <button className="btn btn-primary" onClick={() => scrollToSection('contato')}>Agendar Horário</button>
-            <button className="btn btn-outline" onClick={() => scrollToSection('servicos')}>Ver Serviços</button>
+            <a href="#/agendamento" className="btn btn-outline">Acompanhar Agendamento</a>
           </div>
           <div className="hero-stats">
             <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes Felizes</span></div>

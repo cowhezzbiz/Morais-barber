@@ -11,6 +11,9 @@ interface Agendamento {
   status: 'pendente' | 'confirmado' | 'cancelado'
   horario_agendado: string | null
   created_at: string
+  pago: boolean
+  forma_pagamento: string
+  valor: number
 }
 
 export default function Acompanhamento() {
@@ -48,13 +51,14 @@ export default function Acompanhamento() {
 
     const { data, error } = await supabase
       .from('agendamentos')
-      .select('*')
-      .ilike('telefone', `%${telefoneFormatado.slice(-8)}%`)
+      .select('id, nome, telefone, servico, status, horario_agendado, created_at, pago, forma_pagamento, valor')
+      .eq('telefone', telefoneFormatado)
       .order('horario_agendado', { ascending: true })
       .limit(10)
 
     if (error) {
       console.error('Erro:', error)
+      setErro('Erro ao buscar. Tente novamente.')
     } else {
       setAgendamentos(data || [])
       setBuscou(true)
@@ -141,6 +145,20 @@ export default function Acompanhamento() {
                               </span>
                             </div>
                           )}
+                          <div className="detalhe">
+                            <strong>Pagamento:</strong>
+                            <span style={{ color: ag.pago ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
+                              {ag.pago ? '✅ Pago' : '⏳ Pendente'}
+                            </span>
+                          </div>
+                          <div className="detalhe">
+                            <strong>Valor:</strong>
+                            <span>R$ {ag.valor.toFixed(2).replace('.', ',')}</span>
+                          </div>
+                          <div className="detalhe">
+                            <strong>Forma de Pagamento:</strong>
+                            <span>{ag.forma_pagamento === 'pix' ? '📱 PIX' : ag.forma_pagamento === 'dinheiro' ? '💵 Dinheiro' : ag.forma_pagamento === 'cartao' ? '💳 Cartão' : '⏳ Pendente'}</span>
+                          </div>
                         </div>
                       </div>
                     )
