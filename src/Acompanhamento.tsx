@@ -10,7 +10,6 @@ interface Agendamento {
   servico: string
   status: 'pendente' | 'confirmado' | 'cancelado'
   horario_agendado: string | null
-  created_at: string
   pago: boolean
   forma_pagamento: string
   valor: number
@@ -51,13 +50,12 @@ export default function Acompanhamento() {
 
     const { data, error } = await supabase
       .from('agendamentos')
-      .select('id, nome, telefone, servico, status, horario_agendado, created_at, pago, forma_pagamento, valor')
+      .select('id, nome, telefone, servico, status, horario_agendado, pago, forma_pagamento, valor')
       .eq('telefone', telefoneFormatado)
       .order('horario_agendado', { ascending: true })
       .limit(10)
 
     if (error) {
-      console.error('Erro:', error)
       setErro('Erro ao buscar. Tente novamente.')
     } else {
       setAgendamentos(data || [])

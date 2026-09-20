@@ -53,14 +53,11 @@ export default function App() {
   const [enviado, setEnviado] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
-  const [honeypot, setHoneypot] = useState('') // Honeypot - se preenchido, é bot
-  const [tentativas, setTentativas] = useState(0) // Rate limiting
-  const [ultimoTentativa, setUltimoTentativa] = useState(0) // Timestamp
+  const [honeypot, setHoneypot] = useState('')
+  const [tentativas, setTentativas] = useState(0)
+  const [ultimoTentativa, setUltimoTentativa] = useState(0)
 
-  // Validação anti-bot: honeypot
   const isBot = honeypot.length > 0
-
-  // Rate limiting: máximo 3 tentativas por minuto
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
 
   const scrollToSection = (id: string) => {
@@ -108,37 +105,17 @@ export default function App() {
     setFormTelefone(formatted)
   }
 
-  const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
-
-  const fetchHorariosOcupados = async () => {
-    const { data } = await supabase
-      .from('agendamentos')
-      .select('horario_agendado')
-      .not('horario_agendado', 'is', null)
-      .in('status', ['pendente', 'confirmado'])
-    if (data) {
-      setHorariosOcupados(data.map(a => a.horario_agendado).filter(Boolean) as string[])
-    }
-  }
-
-  useEffect(() => {
-    fetchHorariosOcupados()
-  }, [])
-
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
-    
-    // Anti-bot: honeypot
+
     if (isBot) return
 
-    // Rate limiting
     if (!podeEnviar) {
       setErro('Muitas tentativas. Aguarde 1 minuto.')
       return
     }
 
-    // Validação de telefone
     const telefoneDigits = formTelefone.replace(/\D/g, '')
     if (!isValidPhone(formTelefone)) {
       setErro('Telefone inválido. Digite pelo menos 10 dígitos.')
@@ -156,14 +133,12 @@ export default function App() {
         setLoading(false)
         return
       }
-      // O UNIQUE constraint no banco já protege contra horários duplicados
-      // (Não fazemos SELECT aqui porque o RLS bloqueia para anon)
+
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
       const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
       const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) : 0
 
-      // Sanitização extra: remove HTML tags
       const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
       const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
 
@@ -188,6 +163,7 @@ export default function App() {
         setLoading(false)
         return
       }
+
       window.open(whatsappUrl, '_blank')
       setEnviado(true)
       setTentativas(0)
@@ -195,8 +171,7 @@ export default function App() {
       setTimeout(() => setEnviado(false), 5000)
     } catch (err: unknown) {
       console.error('Erro:', err)
-      const msg = err instanceof Error ? err.message : 'Erro ao enviar.'
-      setErro(`Erro: ${msg}`)
+      setErro(`Erro: ${err instanceof Error ? err.message : 'Erro ao enviar.'}`)
     } finally {
       setLoading(false)
     }
@@ -224,8 +199,8 @@ export default function App() {
 
       <section id="inicio" className="hero">
         <div className="hero-content">
-          <p className="hero-subtitle">✨ Barbearia Premium • Tattoo Artística</p>
-          <h1 className="hero-title">Onde estilo encontra <span className="destaque">a excelência</span></h1>
+          <p className="hero-subtitle">Barbearia Premium • Tattoo Artística</p>
+          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
           <p className="hero-desc">Cortes modernos, barba impecável e tatuagens únicas. Um ambiente pensado pra você se sentir bem.</p>
           <div className="hero-botoes">
             <button className="btn btn-primary" onClick={() => scrollToSection('contato')}>Agendar Horário</button>
@@ -342,7 +317,6 @@ export default function App() {
                   <label htmlFor="telefone">Telefone</label>
                   <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={handleTelefoneChange} required disabled={loading} maxLength={15} />
                 </div>
-                {/* Honeypot - campo oculto para detectar bots */}
                 <div style={{ display: 'none' }} aria-hidden="true">
                   <input type="text" name="honeypot" value={honeypot} onChange={e => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
                 </div>
@@ -362,8 +336,7 @@ export default function App() {
                       const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]
                       const data = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
                       const hora = h.split('T')[1]
-                      const ocupado = horariosOcupados.includes(h)
-                      return <option key={h} value={h} disabled={ocupado}>{dia} {data} às {hora}{ocupado ? ' (Ocupado)' : ''}</option>
+                      return <option key={h} value={h}>{dia} {data} às {hora}</option>
                     })}
                   </select>
                 </div>
@@ -397,7 +370,7 @@ export default function App() {
                 <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
                 <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
                 <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
-                  </ul>
+              </ul>
             </div>
             <div className="footer-col">
               <h4>Contato</h4>

@@ -70,6 +70,31 @@ export default function AdminPage() {
     }
   }
 
+  const calcularFaturamento = async (dados: Agendamento[]) => {
+    if (faturamentoCalculado.current) return
+    
+    const agora = new Date()
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
+    const mes = new Date(agora.getFullYear(), agora.getMonth(), 1)
+    const ano = new Date(agora.getFullYear(), 0, 1)
+
+    const diario = dados.filter(a => a.pago === true && new Date(a.created_at) >= hoje)
+    const mensal = dados.filter(a => a.pago === true && new Date(a.created_at) >= mes)
+    const anual = dados.filter(a => a.pago === true && new Date(a.created_at) >= ano)
+
+    setFaturamento({
+      diario: diario.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
+      mensal: mensal.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
+      anual: anual.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0)
+    })
+    faturamentoCalculado.current = true
+  }
+
+  const resetarFaturamento = () => {
+    faturamentoCalculado.current = false
+    setFaturamento({ diario: 0, mensal: 0, anual: 0 })
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -96,38 +121,13 @@ export default function AdminPage() {
     fetchAgendamentos()
   }
 
-  const calcularFaturamento = async (dados: Agendamento[]) => {
-    if (faturamentoCalculado.current) return
-    
-    const agora = new Date()
-    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
-    const mes = new Date(agora.getFullYear(), agora.getMonth(), 1)
-    const ano = new Date(agora.getFullYear(), 0, 1)
-
-    const diario = dados.filter(a => a.pago === true && new Date(a.created_at) >= hoje)
-    const mensal = dados.filter(a => a.pago === true && new Date(a.created_at) >= mes)
-    const anual = dados.filter(a => a.pago === true && new Date(a.created_at) >= ano)
-
-    setFaturamento({
-      diario: diario.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
-      mensal: mensal.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
-      anual: anual.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0)
-    })
-    faturamentoCalculado.current = true
-  }
-
-  const resetarFaturamento = () => {
-    faturamentoCalculado.current = false
-    setFaturamento({ diario: 0, mensal: 0, anual: 0 })
-  }
-
   const adicionarCliente = async () => {
     if (!novoCliente.nome || !novoCliente.telefone || !novoCliente.servico || !novoCliente.horario_agendado) {
       alert('Preencha tudo, incluindo o horário!')
       return
     }
     try {
-      const dados = {
+      const { error } = await supabase.from('agendamentos').insert({
         nome: novoCliente.nome,
         telefone: novoCliente.telefone.replace(/\D/g, ''),
         servico: novoCliente.servico,
@@ -136,8 +136,7 @@ export default function AdminPage() {
         forma_pagamento: novoCliente.forma_pagamento,
         valor: parseFloat(novoCliente.valor) || 0,
         horario_agendado: novoCliente.horario_agendado
-      }
-      const { error } = await supabase.from('agendamentos').insert(dados)
+      })
       if (error) {
         alert('Erro ao salvar: ' + error.message)
         return
