@@ -108,15 +108,29 @@ export default function App() {
     setFormTelefone(formatted)
   }
 
+  const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
+
+  const fetchHorariosOcupados = async () => {
+    const { data } = await supabase
+      .from('agendamentos')
+      .select('horario_agendado')
+      .not('horario_agendado', 'is', null)
+      .in('status', ['pendente', 'confirmado'])
+    if (data) {
+      setHorariosOcupados(data.map(a => a.horario_agendado).filter(Boolean) as string[])
+    }
+  }
+
+  useEffect(() => {
+    fetchHorariosOcupados()
+  }, [])
+
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
     
     // Anti-bot: honeypot
-    if (isBot) {
-      // Silently reject - bots don't need to know
-      return
-    }
+    if (isBot) return
 
     // Rate limiting
     if (!podeEnviar) {
@@ -125,8 +139,29 @@ export default function App() {
     }
 
     // Validação de telefone
+    const telefoneDigits = formTelefone.replace(/\D/g, '')
     if (!isValidPhone(formTelefone)) {
       setErro('Telefone inválido. Digite pelo menos 10 dígitos.')
+      return
+    }
+
+    // Verificar se horário já está ocupado
+    const horarioSelecionado = horario ? new Date(horario).toISOString() : null
+    if (horarioSelecionado && horariosOcupados.includes(horarioSelecionado)) {
+      setErro('Este horário já está ocupado. Escolha outro.')
+      return
+    }
+
+    // Limite de agendamentos por telefone (máx 2 pendentes/confirmados)
+    const { data: agendamentosExistentes } = await supabase
+      .from('agendamentos')
+      .select('id')
+      .eq('telefone', telefoneDigits)
+      .in('status', ['pendente', 'confirmado'])
+      .limit(3)
+    
+    if (agendamentosExistentes && agendamentosExistentes.length >= 2) {
+      setErro('Você já tem 2 agendamentos ativos. Entre em contato conosco.')
       return
     }
 
@@ -147,7 +182,7 @@ export default function App() {
 
       const { error: insertError } = await supabase.from('agendamentos').insert({
         nome: nomeSanitizado,
-        telefone: formTelefone.replace(/\D/g, ''),
+        telefone: telefoneDigits,
         servico: formServico,
         mensagem: mensagemSanitizada,
         status: 'pendente',
@@ -336,7 +371,8 @@ export default function App() {
                       const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]
                       const data = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
                       const hora = h.split('T')[1]
-                      return <option key={h} value={h}>{dia} {data} às {hora}</option>
+                      const ocupado = horariosOcupados.includes(h)
+                      return <option key={h} value={h} disabled={ocupado}>{dia} {data} às {hora}{ocupado ? ' (Ocupado)' : ''}</option>
                     })}
                   </select>
                 </div>
