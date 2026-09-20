@@ -171,6 +171,25 @@ export default function App() {
 
     try {
       const horarioISO = horario ? new Date(horario).toISOString() : null
+      if (horario && !horarioISO) {
+        setErro('Data/horário inválido.')
+        setLoading(false)
+        return
+      }
+      // Verificar se horário já está ocupado
+      if (horarioISO) {
+        const { data: horarioOcupado } = await supabase
+          .from('agendamentos')
+          .select('id')
+          .eq('horario_agendado', horarioISO)
+          .in('status', ['pendente', 'confirmado'])
+          .limit(1)
+        if (horarioOcupado && horarioOcupado.length > 0) {
+          setErro('Este horário já está ocupado. Escolha outro.')
+          setLoading(false)
+          return
+        }
+      }
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
       const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
@@ -180,16 +199,18 @@ export default function App() {
       const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
       const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
 
-      const { error: insertError } = await supabase.from('agendamentos').insert({
+      const dadosInsert: Record<string, unknown> = {
         nome: nomeSanitizado,
         telefone: telefoneDigits,
         servico: formServico,
         mensagem: mensagemSanitizada,
         status: 'pendente',
-        horario_agendado: horarioISO,
         forma_pagamento: 'pendente',
         valor: valorServico
-      })
+      }
+      if (horarioISO) dadosInsert.horario_agendado = horarioISO
+
+      const { error: insertError } = await supabase.from('agendamentos').insert(dadosInsert)
       if (insertError) {
         if (insertError.code === '23505') {
           setErro('Este horário acabou de ser reservado. Escolha outro.')
