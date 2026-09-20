@@ -145,26 +145,6 @@ export default function App() {
       return
     }
 
-    // Verificar se horário já está ocupado
-    const horarioSelecionado = horario ? new Date(horario).toISOString() : null
-    if (horarioSelecionado && horariosOcupados.includes(horarioSelecionado)) {
-      setErro('Este horário já está ocupado. Escolha outro.')
-      return
-    }
-
-    // Limite de agendamentos por telefone (máx 2 pendentes/confirmados)
-    const { data: agendamentosExistentes } = await supabase
-      .from('agendamentos')
-      .select('id')
-      .eq('telefone', telefoneDigits)
-      .in('status', ['pendente', 'confirmado'])
-      .limit(3)
-    
-    if (agendamentosExistentes && agendamentosExistentes.length >= 2) {
-      setErro('Você já tem 2 agendamentos ativos. Entre em contato conosco.')
-      return
-    }
-
     setLoading(true)
     setTentativas(t => t + 1)
     setUltimoTentativa(Date.now())
@@ -176,20 +156,8 @@ export default function App() {
         setLoading(false)
         return
       }
-      // Verificar se horário já está ocupado
-      if (horarioISO) {
-        const { data: horarioOcupado } = await supabase
-          .from('agendamentos')
-          .select('id')
-          .eq('horario_agendado', horarioISO)
-          .in('status', ['pendente', 'confirmado'])
-          .limit(1)
-        if (horarioOcupado && horarioOcupado.length > 0) {
-          setErro('Este horário já está ocupado. Escolha outro.')
-          setLoading(false)
-          return
-        }
-      }
+      // O UNIQUE constraint no banco já protege contra horários duplicados
+      // (Não fazemos SELECT aqui porque o RLS bloqueia para anon)
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
       const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
@@ -214,10 +182,11 @@ export default function App() {
       if (insertError) {
         if (insertError.code === '23505') {
           setErro('Este horário acabou de ser reservado. Escolha outro.')
-          setLoading(false)
-          return
+        } else {
+          setErro(`Erro: ${insertError.message}`)
         }
-        throw insertError
+        setLoading(false)
+        return
       }
       window.open(whatsappUrl, '_blank')
       setEnviado(true)
@@ -226,7 +195,8 @@ export default function App() {
       setTimeout(() => setEnviado(false), 5000)
     } catch (err: unknown) {
       console.error('Erro:', err)
-      setErro(err instanceof Error ? err.message : 'Erro ao enviar.')
+      const msg = err instanceof Error ? err.message : 'Erro ao enviar.'
+      setErro(`Erro: ${msg}`)
     } finally {
       setLoading(false)
     }
