@@ -127,42 +127,32 @@ export default function App() {
     setUltimoTentativa(Date.now())
 
     try {
-      const horarioISO = horario ? new Date(horario).toISOString() : null
-      if (horario && !horarioISO) {
-        setErro('Data/horário inválido.')
+      const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
+      const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
+
+      // Chama a Edge Function (backend) em vez de insert direto
+      const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/agendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: nomeSanitizado,
+          telefone: telefoneDigits,
+          servico: formServico,
+          mensagem: mensagemSanitizada,
+          horario_agendado: horario || null
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setErro(result.error || 'Erro ao enviar.')
         setLoading(false)
         return
       }
 
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
-      const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
-      const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) : 0
-
-      const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
-      const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
-
-      const dadosInsert: Record<string, unknown> = {
-        nome: nomeSanitizado,
-        telefone: telefoneDigits,
-        servico: formServico,
-        mensagem: mensagemSanitizada,
-        status: 'pendente',
-        forma_pagamento: 'pendente',
-        valor: valorServico
-      }
-      if (horarioISO) dadosInsert.horario_agendado = horarioISO
-
-      const { error: insertError } = await supabase.from('agendamentos').insert(dadosInsert)
-      if (insertError) {
-        if (insertError.code === '23505') {
-          setErro('Este horário acabou de ser reservado. Escolha outro.')
-        } else {
-          setErro(`Erro: ${insertError.message}`)
-        }
-        setLoading(false)
-        return
-      }
 
       window.open(whatsappUrl, '_blank')
       setEnviado(true)

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from './supabase'
 import { Search, Clock, CheckCircle, XCircle, Calendar } from 'lucide-react'
 import './App.css'
 
@@ -48,19 +47,23 @@ export default function Acompanhamento() {
       return
     }
 
-    const { data, error } = await supabase
-      .from('agendamentos')
-      .select('id, nome, telefone, servico, status, horario_agendado, pago, forma_pagamento, valor')
-      .eq('telefone', telefoneFormatado)
-      .order('horario_agendado', { ascending: true })
-      .limit(10)
+    // Chama a Edge Function (backend)
+    const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/acompanhamento', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone: telefoneFormatado })
+    })
 
-    if (error) {
-      setErro('Erro ao buscar. Tente novamente.')
-    } else {
-      setAgendamentos(data || [])
-      setBuscou(true)
+    const result = await response.json()
+
+    if (!response.ok) {
+      setErro(result.error || 'Erro ao buscar.')
+      setLoading(false)
+      return
     }
+
+    setAgendamentos(result.agendamentos || [])
+    setBuscou(true)
     setLoading(false)
   }
 
