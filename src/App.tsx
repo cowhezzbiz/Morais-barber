@@ -43,6 +43,43 @@ const formatPhone = (value: string) => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
 }
 
+// ===== PIX: gera o código BR Code válido (padrão Banco Central) =====
+const PIX_CHAVE = '51981301035'
+const PIX_NOME = 'MORAIS BARBER'
+const PIX_CIDADE = 'NOVO HAMBURGO'
+
+// CRC16-CCITT (0x1021) exigido pelo padrão PIX
+function crc16(str: string): string {
+  let crc = 0xFFFF
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0')
+}
+
+function campo(id: string, valor: string): string {
+  return id + String(valor.length).padStart(2, '0') + valor
+}
+
+// Monta o payload PIX "copia e cola" + QR Code
+function gerarPixPayload(valor: number): string {
+  const mai = campo('00', 'BR.GOV.BCB.PIX') + campo('01', PIX_CHAVE)
+  const payloadSemValor =
+    campo('00', '01') +
+    campo('26', mai) +
+    campo('52', '0000') +
+    campo('53', '986') +
+    (valor > 0 ? campo('54', valor.toFixed(2)) : '') +
+    campo('58', 'BR') +
+    campo('59', PIX_NOME) +
+    campo('60', PIX_CIDADE) +
+    campo('62', campo('05', '***'))
+  return payloadSemValor + '6304' + crc16(payloadSemValor + '6304')
+}
+
 export default function App() {
   const [menuAberto, setMenuAberto] = useState(false)
   const [formNome, setFormNome] = useState('')
@@ -62,6 +99,7 @@ export default function App() {
   const [formaPagamento, setFormaPagamento] = useState<'pix' | 'pix_na_hora'>('pix_na_hora')
   const [pixPago, setPixPago] = useState(false)
   const [confirmandoPix, setConfirmandoPix] = useState(false)
+  const [valorAgendado, setValorAgendado] = useState(0)
 
   const isBot = honeypot.length > 0
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
@@ -135,6 +173,9 @@ export default function App() {
     try {
       const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
       const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
+      const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
+      const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) || 0 : 0
+      setValorAgendado(valorServico)
 
       // Chama a Edge Function (backend) em vez de insert direto
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/agendar', {
@@ -348,25 +389,27 @@ export default function App() {
                       <span className="pix-titulo">Pague com PIX para confirmar</span>
                       <div className="pix-qr">
                         <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('00020126580014BR.GOV.BCB.PIX0136519813010355204000053039865802BR5913MORAIS BARBER6009SAO PAULO62070503***6304')}`}
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(gerarPixPayload(valorAgendado))}`}
                           alt="QR Code PIX"
-                          width={200}
-                          height={200}
+                          width={220}
+                          height={220}
                         />
                       </div>
                       <div className="pix-info">
-                        <span className="pix-chave-label">Chave PIX (celular):</span>
-                        <code className="pix-chave-valor">51981301035</code>
+                        <span className="pix-chave-label">PIX copia e cola:</span>
+                        <code className="pix-payload">{gerarPixPayload(valorAgendado)}</code>
                         <button
                           type="button"
                           className="btn-copiar-pix"
-                          onClick={() => navigator.clipboard.writeText('51981301035')}
+                          onClick={() => navigator.clipboard.writeText(gerarPixPayload(valorAgendado))}
                         >
-                          Copiar chave PIX
+                          Copiar código PIX
                         </button>
                       </div>
                       <p className="pix-aviso">
-                        Seu horário está reservado. Depois de pagar, clique no botão abaixo pra entrar na agenda:
+                        {valorAgendado > 0
+                          ? `Valor: R$ ${valorAgendado.toFixed(2).replace('.', ',')} — seu horário está reservado. Depois de pagar, clique no botão abaixo:`
+                          : 'Seu horário está reservado. Combine o valor no WhatsApp. Depois de pagar, clique no botão abaixo:'}
                       </p>
                       <button
                         type="button"

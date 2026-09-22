@@ -1927,3 +1927,19 @@ body {
   background: var(--accent);
   color: var(--bg-primary);
 }
+
+/* ===== PIX copia e cola ===== */
+.pix-payload {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 100%;
+  word-break: break-all;
+  line-height: 1.5;
+  margin: 0 auto;
+}
