@@ -15,6 +15,7 @@ interface Agendamento {
   pago: boolean
   forma_pagamento: string
   valor: number
+  pago_em: string | null
 }
 
 const PRECOS: Record<string, number> = {
@@ -78,9 +79,12 @@ export default function AdminPage() {
     const mes = new Date(agora.getFullYear(), agora.getMonth(), 1)
     const ano = new Date(agora.getFullYear(), 0, 1)
 
-    const diario = dados.filter(a => a.pago === true && new Date(a.created_at) >= hoje)
-    const mensal = dados.filter(a => a.pago === true && new Date(a.created_at) >= mes)
-    const anual = dados.filter(a => a.pago === true && new Date(a.created_at) >= ano)
+    // Usa pago_em (quando foi pago) com fallback pra created_at
+    const dataPagamento = (a: Agendamento) => new Date(a.pago_em || a.created_at)
+
+    const diario = dados.filter(a => a.pago === true && dataPagamento(a) >= hoje)
+    const mensal = dados.filter(a => a.pago === true && dataPagamento(a) >= mes)
+    const anual = dados.filter(a => a.pago === true && dataPagamento(a) >= ano)
 
     setFaturamento({
       diario: diario.reduce((total, a) => total + (PRECOS[a.servico] || 0), 0),
@@ -110,7 +114,13 @@ export default function AdminPage() {
   }
 
   const togglePagamento = async (id: number, atual: boolean) => {
-    await supabase.from('agendamentos').update({ pago: !atual }).eq('id', id)
+    const novoValor = !atual
+    // Grava quando foi pago (ou limpa se desmarcou)
+    const updateData: Record<string, unknown> = { pago: novoValor }
+    if (novoValor) updateData.pago_em = new Date().toISOString()
+    else updateData.pago_em = null
+
+    await supabase.from('agendamentos').update(updateData).eq('id', id)
     faturamentoCalculado.current = false
     fetchAgendamentos()
   }
@@ -133,6 +143,7 @@ export default function AdminPage() {
         servico: novoCliente.servico,
         status: 'confirmado',
         pago: novoCliente.forma_pagamento !== 'pendente',
+        pago_em: novoCliente.forma_pagamento !== 'pendente' ? new Date().toISOString() : null,
         forma_pagamento: novoCliente.forma_pagamento,
         valor: parseFloat(novoCliente.valor) || 0,
         horario_agendado: novoCliente.horario_agendado

@@ -133,7 +133,11 @@ export default function App() {
       // Chama a Edge Function (backend) em vez de insert direto
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/agendar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+        },
         body: JSON.stringify({
           nome: nomeSanitizado,
           telefone: telefoneDigits,
