@@ -42,13 +42,14 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { nome, telefone, servico, mensagem, horario_agendado } = await req.json()
+    const { nome, telefone, servico, mensagem, horario_agendado, forma_pagamento } = await req.json()
 
     // Sanitização
     const nomeSanitizado = sanitizeString(nome || "", 100)
     const telefoneSanitizado = sanitizeString(telefone || "", 15).replace(/\D/g, "")
     const servicoSanitizado = sanitizeString(servico || "", 100)
     const mensagemSanitizada = sanitizeString(mensagem || "", 500)
+    const formaPagamento = forma_pagamento === "pix" ? "pix" : "pix_na_hora"
 
     // Validações
     if (!nomeSanitizado || nomeSanitizado.length < 2) {
@@ -81,7 +82,7 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "Você já tem 2 agendamentos ativos" }), { status: 403, headers: { "Content-Type": "application/json" } })
     }
 
-    // Verificar horário duplicado (se fornecido)
+    // Verificar horário duplicado (se fornecido) — inclui aguardando_pagamento
     let horarioISO: string | null = null
     if (horario_agendado) {
       horarioISO = new Date(horario_agendado).toISOString()
@@ -93,13 +94,16 @@ serve(async (req: Request) => {
         .from("agendamentos")
         .select("id")
         .eq("horario_agendado", horarioISO)
-        .in("status", ["pendente", "confirmado"])
+        .in("status", ["pendente", "confirmado", "aguardando_pagamento"])
         .limit(1)
 
       if (horarioOcupado && horarioOcupado.length > 0) {
         return new Response(JSON.stringify({ error: "Este horário já está ocupado" }), { status: 409, headers: { "Content-Type": "application/json" } })
       }
     }
+
+    // PIX agora → fica invisível pro admin até pagar; PIX na hora → já entra na agenda
+    const statusInicial = formaPagamento === "pix" ? "aguardando_pagamento" : "pendente"
 
     // Inserir com token único (tenta até 3x em caso de colisão raríssima)
     let token = ""
@@ -113,9 +117,9 @@ serve(async (req: Request) => {
         telefone: telefoneSanitizado,
         servico: servicoSanitizado,
         mensagem: mensagemSanitizada,
-        status: "pendente",
+        status: statusInicial,
         horario_agendado: horarioISO,
-        forma_pagamento: "pendente",
+        forma_pagamento: formaPagamento,
         valor: PRECOS[servicoSanitizado] || 0,
         token
       }).select("id")

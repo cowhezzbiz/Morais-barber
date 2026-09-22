@@ -9,7 +9,7 @@ interface Agendamento {
   telefone: string
   servico: string
   mensagem: string
-  status: 'pendente' | 'confirmado' | 'cancelado'
+  status: 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento'
   created_at: string
   horario_agendado: string | null
   pago: boolean
@@ -32,7 +32,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
-  const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado'>('todos')
+  const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento'>('todos')
   const [modalAberto, setModalAberto] = useState(false)
   const [faturamento, setFaturamento] = useState({ diario: 0, mensal: 0, anual: 0 })
   const faturamentoCalculado = useRef(false)
@@ -229,9 +229,9 @@ export default function AdminPage() {
       </div>
 
       <div className="admin-filtros">
-        {(['todos', 'pendente', 'confirmado', 'cancelado'] as const).map(f => (
+        {(['todos', 'pendente', 'confirmado', 'cancelado', 'aguardando_pagamento'] as const).map(f => (
           <button key={f} className={`btn-filtro ${filtro === f ? 'ativo' : ''}`} onClick={() => setFiltro(f)}>
-            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'aguardando_pagamento' ? 'Aguardando PIX' : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
@@ -255,9 +255,18 @@ export default function AdminPage() {
                 </button>
               </span>
               <span className="celula-status">
-                <span className={`badge ${ag.status}`}>{ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : '❌'} {ag.status}</span>
+                <span className={`badge ${ag.status}`}>
+                  {ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : ag.status === 'aguardando_pagamento' ? '📱' : '❌'}
+                  {ag.status === 'aguardando_pagamento' ? 'Aguardando PIX' : ag.status}
+                </span>
               </span>
               <span className="celula-acoes">
+                {ag.status === 'aguardando_pagamento' && (
+                  <>
+                    <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar pagamento recebido">✓</button>
+                    <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Cancelar">✕</button>
+                  </>
+                )}
                 {ag.status === 'pendente' && (
                   <>
                     <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar">✓</button>

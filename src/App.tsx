@@ -59,6 +59,9 @@ export default function App() {
   const [tokenGerado, setTokenGerado] = useState('')
   const [whatsappUrl, setWhatsappUrl] = useState('')
   const [tokenCopiado, setTokenCopiado] = useState(false)
+  const [formaPagamento, setFormaPagamento] = useState<'pix' | 'pix_na_hora'>('pix_na_hora')
+  const [pixPago, setPixPago] = useState(false)
+  const [confirmandoPix, setConfirmandoPix] = useState(false)
 
   const isBot = honeypot.length > 0
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
@@ -146,7 +149,8 @@ export default function App() {
           telefone: telefoneDigits,
           servico: formServico,
           mensagem: mensagemSanitizada,
-          horario_agendado: horario || null
+          horario_agendado: horario || null,
+          forma_pagamento: formaPagamento
         })
       })
 
@@ -170,6 +174,7 @@ export default function App() {
 
       // NÃO abre o WhatsApp automático — o cliente copia o token primeiro
       setEnviado(true)
+      setPixPago(false)
       setTentativas(0)
       setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
     } catch (err: unknown) {
@@ -177,6 +182,33 @@ export default function App() {
       setErro(`Erro: ${err instanceof Error ? err.message : 'Erro ao enviar.'}`)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Cliente clicou em "Já paguei o PIX" → agendamento entra na agenda do admin
+  const confirmarPix = async () => {
+    if (!tokenGerado) return
+    setConfirmandoPix(true)
+    try {
+      const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/confirmar-pagamento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ token: tokenGerado })
+      })
+      const result = await response.json()
+      if (response.ok) {
+        setPixPago(true)
+      } else {
+        setErro(result.error || 'Erro ao confirmar pagamento.')
+      }
+    } catch {
+      setErro('Erro de conexão ao confirmar.')
+    } finally {
+      setConfirmandoPix(false)
     }
   }
 
@@ -311,6 +343,51 @@ export default function App() {
                   <div className="sucesso-titulo">
                     <CheckCircle size={22} /> Agendamento enviado!
                   </div>
+                  {formaPagamento === 'pix' && !pixPago && (
+                    <div className="pix-box">
+                      <span className="pix-titulo">Pague com PIX para confirmar</span>
+                      <div className="pix-qr">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('00020126580014BR.GOV.BCB.PIX0136519813010355204000053039865802BR5913MORAIS BARBER6009SAO PAULO62070503***6304')}`}
+                          alt="QR Code PIX"
+                          width={200}
+                          height={200}
+                        />
+                      </div>
+                      <div className="pix-info">
+                        <span className="pix-chave-label">Chave PIX (celular):</span>
+                        <code className="pix-chave-valor">51981301035</code>
+                        <button
+                          type="button"
+                          className="btn-copiar-pix"
+                          onClick={() => navigator.clipboard.writeText('51981301035')}
+                        >
+                          Copiar chave PIX
+                        </button>
+                      </div>
+                      <p className="pix-aviso">
+                        Seu horário está reservado. Depois de pagar, clique no botão abaixo pra entrar na agenda:
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-full"
+                        onClick={confirmarPix}
+                        disabled={confirmandoPix}
+                      >
+                        {confirmandoPix ? 'Confirmando...' : '✓ Já paguei o PIX'}
+                      </button>
+                    </div>
+                  )}
+                  {formaPagamento === 'pix' && pixPago && (
+                    <div className="pix-confirmado">
+                      <CheckCircle size={20} /> Pagamento informado! Seu agendamento já está na agenda do barbeiro.
+                    </div>
+                  )}
+                  {formaPagamento === 'pix_na_hora' && (
+                    <div className="pix-na-hora-info">
+                      Você paga na hora do corte (PIX, dinheiro ou cartão). O barbeiro já recebeu seu agendamento!
+                    </div>
+                  )}
                   {tokenGerado && (
                     <div className="token-gerado-box">
                       <span className="token-gerado-label">Guarde seu token de acompanhamento:</span>
@@ -369,6 +446,29 @@ export default function App() {
                       return <option key={h} value={h}>{dia} {data} às {hora}</option>
                     })}
                   </select>
+                </div>
+                <div className="form-grupo">
+                  <label>Forma de pagamento</label>
+                  <div className="pagamento-opcoes">
+                    <button
+                      type="button"
+                      className={`pagamento-opcao ${formaPagamento === 'pix' ? 'ativa' : ''}`}
+                      onClick={() => setFormaPagamento('pix')}
+                    >
+                      <span className="pagamento-icone">📱</span>
+                      <span className="pagamento-titulo">Pagar agora com PIX</span>
+                      <span className="pagamento-desc">Garante seu horário na hora</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`pagamento-opcao ${formaPagamento === 'pix_na_hora' ? 'ativa' : ''}`}
+                      onClick={() => setFormaPagamento('pix_na_hora')}
+                    >
+                      <span className="pagamento-icone">💵</span>
+                      <span className="pagamento-titulo">Pagar na hora do corte</span>
+                      <span className="pagamento-desc">PIX, dinheiro ou cartão lá na barbearia</span>
+                    </button>
+                  </div>
                 </div>
                 <div className="form-grupo">
                   <label htmlFor="mensagem">Mensagem (opcional)</label>

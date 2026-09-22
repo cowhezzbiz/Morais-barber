@@ -6,7 +6,7 @@ interface Agendamento {
   id: number
   nome: string
   servico: string
-  status: 'pendente' | 'confirmado' | 'cancelado'
+  status: 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento'
   horario_agendado: string | null
   pago: boolean
   forma_pagamento: string
@@ -91,6 +91,8 @@ export default function Acompanhamento() {
         return { icon: <CheckCircle size={28} />, text: 'Confirmado!', color: 'verde', desc: 'Te esperamos na data e hora marcada' }
       case 'cancelado':
         return { icon: <XCircle size={28} />, text: 'Cancelado', color: 'vermelho', desc: 'Este agendamento foi cancelado' }
+      case 'aguardando_pagamento':
+        return { icon: <Clock size={28} />, text: 'Aguardando pagamento PIX', color: 'amarelo', desc: 'Pague o PIX e clique em "Já paguei" na confirmação do agendamento' }
       default:
         return { icon: <Clock size={28} />, text: status, color: 'cinza', desc: '' }
     }
