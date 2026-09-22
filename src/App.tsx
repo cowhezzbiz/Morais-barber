@@ -57,6 +57,8 @@ export default function App() {
   const [tentativas, setTentativas] = useState(0)
   const [ultimoTentativa, setUltimoTentativa] = useState(0)
   const [tokenGerado, setTokenGerado] = useState('')
+  const [whatsappUrl, setWhatsappUrl] = useState('')
+  const [tokenCopiado, setTokenCopiado] = useState(false)
 
   const isBot = honeypot.length > 0
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
@@ -164,12 +166,12 @@ export default function App() {
 
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
       const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
+      setWhatsappUrl(whatsappUrl)
 
-      window.open(whatsappUrl, '_blank')
+      // NÃO abre o WhatsApp automático — o cliente copia o token primeiro
       setEnviado(true)
       setTentativas(0)
       setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
-      setTimeout(() => setEnviado(false), 5000)
     } catch (err: unknown) {
       console.error('Erro:', err)
       setErro(`Erro: ${err instanceof Error ? err.message : 'Erro ao enviar.'}`)
@@ -305,15 +307,35 @@ export default function App() {
             <div className="contato-form">
               <h3>Envie uma mensagem</h3>
               {enviado && (
-                <div className="sucesso-msg">
-                  <CheckCircle size={18} /> Agendamento enviado!
+                <div className="sucesso-msg sucesso-token">
+                  <div className="sucesso-titulo">
+                    <CheckCircle size={22} /> Agendamento enviado!
+                  </div>
                   {tokenGerado && (
                     <div className="token-gerado-box">
                       <span className="token-gerado-label">Guarde seu token de acompanhamento:</span>
                       <code className="token-gerado-valor">{tokenGerado}</code>
+                      <button
+                        type="button"
+                        className="btn-copiar-token"
+                        onClick={() => {
+                          navigator.clipboard.writeText(tokenGerado)
+                          setTokenCopiado(true)
+                          setTimeout(() => setTokenCopiado(false), 2000)
+                        }}
+                      >
+                        {tokenCopiado ? '✓ Copiado!' : 'Copiar token'}
+                      </button>
                     </div>
                   )}
-                  <p className="link-acompanhar"><a href="#/agendamento">Acompanhe aqui</a></p>
+                  <div className="sucesso-acoes">
+                    {whatsappUrl && (
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp-mini">
+                        <MessageCircle size={16} /> Avisar no WhatsApp
+                      </a>
+                    )}
+                    <a href="#/agendamento" className="btn btn-outline-mini">Acompanhar agendamento</a>
+                  </div>
                 </div>
               )}
               <form onSubmit={enviarFormulario}>

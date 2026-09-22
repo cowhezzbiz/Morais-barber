@@ -1649,3 +1649,87 @@ body {
     width: 100%;
   }
 }
+
+/* ===== Sucesso com token (não fecha sozinho) ===== */
+.sucesso-token {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  background: rgba(76, 175, 80, 0.08);
+  border: 1px solid rgba(76, 175, 80, 0.35);
+}
+
+.sucesso-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--success);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.btn-copiar-token {
+  padding: 10px;
+  background: var(--accent);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-copiar-token:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.sucesso-acoes {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-whatsapp-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #25d366;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-whatsapp-mini:hover {
+  background: #20bd5a;
+  transform: translateY(-1px);
+}
+
+.btn-outline-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition);
+  flex: 1;
+}
+
+.btn-outline-mini:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
