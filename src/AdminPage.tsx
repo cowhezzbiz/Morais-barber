@@ -9,13 +9,14 @@ interface Agendamento {
   telefone: string
   servico: string
   mensagem: string
-  status: 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento'
+  status: 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento' | 'aguardando_verificacao'
   created_at: string
   horario_agendado: string | null
   pago: boolean
   forma_pagamento: string
   valor: number
   pago_em: string | null
+  comprovante: string | null
 }
 
 const PRECOS: Record<string, number> = {
@@ -32,7 +33,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
-  const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento'>('todos')
+  const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento' | 'aguardando_verificacao'>('todos')
   const [modalAberto, setModalAberto] = useState(false)
   const [faturamento, setFaturamento] = useState({ diario: 0, mensal: 0, anual: 0 })
   const faturamentoCalculado = useRef(false)
@@ -229,9 +230,11 @@ export default function AdminPage() {
       </div>
 
       <div className="admin-filtros">
-        {(['todos', 'pendente', 'confirmado', 'cancelado', 'aguardando_pagamento'] as const).map(f => (
+        {(['todos', 'pendente', 'confirmado', 'cancelado', 'aguardando_verificacao', 'aguardando_pagamento'] as const).map(f => (
           <button key={f} className={`btn-filtro ${filtro === f ? 'ativo' : ''}`} onClick={() => setFiltro(f)}>
-            {f === 'aguardando_pagamento' ? 'Aguardando PIX' : f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'aguardando_pagamento' ? 'PIX não pago'
+             : f === 'aguardando_verificacao' ? 'Verificar PIX 🔍'
+             : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
@@ -256,11 +259,20 @@ export default function AdminPage() {
               </span>
               <span className="celula-status">
                 <span className={`badge ${ag.status}`}>
-                  {ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : ag.status === 'aguardando_pagamento' ? '📱' : '❌'}
-                  {ag.status === 'aguardando_pagamento' ? 'Aguardando PIX' : ag.status}
+                  {ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : ag.status === 'aguardando_pagamento' ? '📱' : ag.status === 'aguardando_verificacao' ? '🔍' : '❌'}
+                  {ag.status === 'aguardando_pagamento' ? 'PIX não pago' : ag.status === 'aguardando_verificacao' ? 'Verificar PIX' : ag.status}
                 </span>
               </span>
               <span className="celula-acoes">
+                {ag.status === 'aguardando_verificacao' && (
+                  <div className="verificacao-box">
+                    <code className="comprovante-mostra" title={ag.comprovante || ''}>
+                      {ag.comprovante ? `${ag.comprovante.slice(0, 18)}...` : '—'}
+                    </code>
+                    <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Pagamento confirmado no extrato">✓</button>
+                    <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Comprovante inválido">✕</button>
+                  </div>
+                )}
                 {ag.status === 'aguardando_pagamento' && (
                   <>
                     <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar pagamento recebido">✓</button>

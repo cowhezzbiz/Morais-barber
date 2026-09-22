@@ -100,6 +100,7 @@ export default function App() {
   const [pixPago, setPixPago] = useState(false)
   const [confirmandoPix, setConfirmandoPix] = useState(false)
   const [valorAgendado, setValorAgendado] = useState(0)
+  const [comprovante, setComprovante] = useState('')
 
   const isBot = honeypot.length > 0
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
@@ -226,9 +227,9 @@ export default function App() {
     }
   }
 
-  // Cliente clicou em "Já paguei o PIX" → agendamento entra na agenda do admin
+  // Cliente enviou o comprovante PIX → vai pra verificação do barbeiro
   const confirmarPix = async () => {
-    if (!tokenGerado) return
+    if (!tokenGerado || comprovante.length < 20) return
     setConfirmandoPix(true)
     try {
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/confirmar-pagamento', {
@@ -238,16 +239,16 @@ export default function App() {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
         },
-        body: JSON.stringify({ token: tokenGerado })
+        body: JSON.stringify({ token: tokenGerado, comprovante })
       })
       const result = await response.json()
       if (response.ok) {
         setPixPago(true)
       } else {
-        setErro(result.error || 'Erro ao confirmar pagamento.')
+        setErro(result.error || 'Erro ao enviar comprovante.')
       }
     } catch {
-      setErro('Erro de conexão ao confirmar.')
+      setErro('Erro de conexão ao enviar comprovante.')
     } finally {
       setConfirmandoPix(false)
     }
@@ -408,22 +409,35 @@ export default function App() {
                       </div>
                       <p className="pix-aviso">
                         {valorAgendado > 0
-                          ? `Valor: R$ ${valorAgendado.toFixed(2).replace('.', ',')} — seu horário está reservado. Depois de pagar, clique no botão abaixo:`
-                          : 'Seu horário está reservado. Combine o valor no WhatsApp. Depois de pagar, clique no botão abaixo:'}
+                          ? `Valor: R$ ${valorAgendado.toFixed(2).replace('.', ',')}. Depois de pagar, cole o código do comprovante:`
+                          : 'Depois de pagar, cole o código do comprovante PIX abaixo:'}
                       </p>
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-full"
-                        onClick={confirmarPix}
-                        disabled={confirmandoPix}
-                      >
-                        {confirmandoPix ? 'Confirmando...' : '✓ Já paguei o PIX'}
-                      </button>
+                      <div className="comprovante-box">
+                        <input
+                          type="text"
+                          value={comprovante}
+                          onChange={e => setComprovante(e.target.value.trim())}
+                          placeholder="Cole o código do comprovante aqui"
+                          maxLength={60}
+                          disabled={confirmandoPix}
+                        />
+                        <span className="comprovante-dica">
+                          No app do banco: PIX feito → toque no pagamento → "Comprovante" ou "Detalhes" → copie o código/ID
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-full"
+                          onClick={confirmarPix}
+                          disabled={confirmandoPix || comprovante.length < 20}
+                        >
+                          {confirmandoPix ? 'Verificando...' : '✓ Enviar comprovante'}
+                        </button>
+                      </div>
                     </div>
                   )}
                   {formaPagamento === 'pix' && pixPago && (
                     <div className="pix-confirmado">
-                      <CheckCircle size={20} /> Pagamento informado! Seu agendamento já está na agenda do barbeiro.
+                      <CheckCircle size={20} /> Comprovante enviado! O barbeiro vai verificar e confirmar seu horário.
                     </div>
                   )}
                   {formaPagamento === 'pix_na_hora' && (

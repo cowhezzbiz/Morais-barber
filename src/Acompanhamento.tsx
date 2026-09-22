@@ -6,7 +6,7 @@ interface Agendamento {
   id: number
   nome: string
   servico: string
-  status: 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento'
+  status: 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento' | 'aguardando_verificacao'
   horario_agendado: string | null
   pago: boolean
   forma_pagamento: string
@@ -92,7 +92,9 @@ export default function Acompanhamento() {
       case 'cancelado':
         return { icon: <XCircle size={28} />, text: 'Cancelado', color: 'vermelho', desc: 'Este agendamento foi cancelado' }
       case 'aguardando_pagamento':
-        return { icon: <Clock size={28} />, text: 'Aguardando pagamento PIX', color: 'amarelo', desc: 'Pague o PIX e clique em "Já paguei" na confirmação do agendamento' }
+        return { icon: <Clock size={28} />, text: 'Aguardando pagamento PIX', color: 'amarelo', desc: 'Pague o PIX e cole o comprovante na tela de confirmação do agendamento' }
+      case 'aguardando_verificacao':
+        return { icon: <Clock size={28} />, text: 'Comprovante em verificação', color: 'amarelo', desc: 'Recebemos seu comprovante! O barbeiro vai confirmar em breve' }
       default:
         return { icon: <Clock size={28} />, text: status, color: 'cinza', desc: '' }
     }

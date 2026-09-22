@@ -1943,3 +1943,67 @@ body {
   line-height: 1.5;
   margin: 0 auto;
 }
+
+/* ===== Comprovante PIX ===== */
+.comprovante-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.comprovante-box input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.comprovante-box input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.comprovante-dica {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ===== Verificação no admin ===== */
+.verificacao-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.comprovante-mostra {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  background: rgba(212, 168, 83, 0.08);
+  border: 1px dashed var(--accent);
+  border-radius: 6px;
+  padding: 6px 10px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.tabela-linha.aguardando_verificacao {
+  border-left: 3px solid #2196f3;
+}
+
+.badge.aguardando_verificacao {
+  background: rgba(33, 150, 243, 0.15);
+  color: #64b5f6;
+}
