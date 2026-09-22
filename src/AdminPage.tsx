@@ -114,6 +114,27 @@ export default function AdminPage() {
     fetchAgendamentos()
   }
 
+  // Barbeiro confirmou o PIX verificado → confirma e marca pago
+  const aprovarComprovante = async (id: number) => {
+    await supabase.from('agendamentos').update({
+      status: 'confirmado',
+      pago: true,
+      pago_em: new Date().toISOString()
+    }).eq('id', id)
+    faturamentoCalculado.current = false
+    fetchAgendamentos()
+  }
+
+  // Barbeiro rejeitou o comprovante → cancela e bloqueia o telefone de usar PIX
+  const rejeitarComprovante = async (id: number) => {
+    if (!confirm('Comprovante NÃO bate com o extrato? O cliente será bloqueado de pagar com PIX.')) return
+    await supabase.from('agendamentos').update({
+      status: 'cancelado',
+      comprovante_rejeitado: true
+    }).eq('id', id)
+    fetchAgendamentos()
+  }
+
   const togglePagamento = async (id: number, atual: boolean) => {
     const novoValor = !atual
     // Grava quando foi pago (ou limpa se desmarcou)
@@ -269,8 +290,8 @@ export default function AdminPage() {
                     <code className="comprovante-mostra" title={ag.comprovante || ''}>
                       {ag.comprovante ? `${ag.comprovante.slice(0, 18)}...` : '—'}
                     </code>
-                    <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Pagamento confirmado no extrato">✓</button>
-                    <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Comprovante inválido">✕</button>
+                    <button className="btn-acao confirmar" onClick={() => aprovarComprovante(ag.id)} title="Confere com o extrato — confirmar e marcar pago">✓</button>
+                    <button className="btn-acao cancelar" onClick={() => rejeitarComprovante(ag.id)} title="Comprovante não bate — cancelar e bloquear PIX">✕</button>
                   </div>
                 )}
                 {ag.status === 'aguardando_pagamento' && (
