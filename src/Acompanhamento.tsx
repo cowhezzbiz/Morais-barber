@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Clock, CheckCircle, XCircle, Ticket, Copy, Check, Calendar, Scissors, Wallet, CreditCard } from 'lucide-react'
+import { Search, Clock, CheckCircle, XCircle, Ticket, Copy, Check, Calendar, Scissors, Wallet, CreditCard, ArrowLeft } from 'lucide-react'
 import './App.css'
 
 interface Agendamento {
@@ -119,6 +119,9 @@ export default function Acompanhamento() {
     <div className="app">
       <section className="secao acompanhamento-secao">
         <div className="container">
+          <a href="#/" className="btn-voltar">
+            <ArrowLeft size={18} /> Voltar ao início
+          </a>
           <div className="acompanhar-header">
             <span className="acompanhar-icone-grande"><Ticket size={40} /></span>
             <p className="secao-subtitle">MEU AGENDAMENTO</p>
