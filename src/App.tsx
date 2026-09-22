@@ -56,6 +56,7 @@ export default function App() {
   const [honeypot, setHoneypot] = useState('')
   const [tentativas, setTentativas] = useState(0)
   const [ultimoTentativa, setUltimoTentativa] = useState(0)
+  const [tokenGerado, setTokenGerado] = useState('')
 
   const isBot = honeypot.length > 0
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
@@ -153,6 +154,12 @@ export default function App() {
         setErro(result.error || 'Erro ao enviar.')
         setLoading(false)
         return
+      }
+
+      // Salva o token do agendamento
+      if (result.token) {
+        setTokenGerado(result.token)
+        try { localStorage.setItem('ultimo_token', result.token) } catch {}
       }
 
       const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
@@ -300,6 +307,12 @@ export default function App() {
               {enviado && (
                 <div className="sucesso-msg">
                   <CheckCircle size={18} /> Agendamento enviado!
+                  {tokenGerado && (
+                    <div className="token-gerado-box">
+                      <span className="token-gerado-label">Guarde seu token de acompanhamento:</span>
+                      <code className="token-gerado-valor">{tokenGerado}</code>
+                    </div>
+                  )}
                   <p className="link-acompanhar"><a href="#/agendamento">Acompanhe aqui</a></p>
                 </div>
               )}

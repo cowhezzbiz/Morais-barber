@@ -29,6 +29,13 @@ function sanitizeString(value: string, maxLength: number): string {
   return value.replace(/<[^>]*>/g, "").trim().slice(0, maxLength)
 }
 
+// Gera token único de 8 caracteres (sem caracteres ambíguos: sem 0/O, 1/I/L)
+function gerarToken(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+  const bytes = crypto.getRandomValues(new Uint8Array(8))
+  return Array.from(bytes, b => chars[b % chars.length]).join("")
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" } })
@@ -94,17 +101,29 @@ serve(async (req: Request) => {
       }
     }
 
-    // Inserir
-    const { data, error } = await supabase.from("agendamentos").insert({
-      nome: nomeSanitizado,
-      telefone: telefoneSanitizado,
-      servico: servicoSanitizado,
-      mensagem: mensagemSanitizada,
-      status: "pendente",
-      horario_agendado: horarioISO,
-      forma_pagamento: "pendente",
-      valor: PRECOS[servicoSanitizado] || 0
-    })
+    // Inserir com token único (tenta até 3x em caso de colisão raríssima)
+    let token = ""
+    let data: { id: number }[] | null = null
+    let error: { code?: string; message: string } | null = null
+
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      token = gerarToken()
+      const resultado = await supabase.from("agendamentos").insert({
+        nome: nomeSanitizado,
+        telefone: telefoneSanitizado,
+        servico: servicoSanitizado,
+        mensagem: mensagemSanitizada,
+        status: "pendente",
+        horario_agendado: horarioISO,
+        forma_pagamento: "pendente",
+        valor: PRECOS[servicoSanitizado] || 0,
+        token
+      }).select("id")
+      data = resultado.data
+      error = resultado.error
+      if (!error) break
+      if (error.code !== "23505") break
+    }
 
     if (error) {
       if (error.code === "23505") {
@@ -113,7 +132,7 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "Erro ao salvar", details: error.message }), { status: 500, headers: { "Content-Type": "application/json" } })
     }
 
-    return new Response(JSON.stringify({ success: true, id: data?.[0]?.id }), { status: 201, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } })
+    return new Response(JSON.stringify({ success: true, id: data?.[0]?.id, token }), { status: 201, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } })
   } catch (err) {
     return new Response(JSON.stringify({ error: "Erro interno do servidor" }), { status: 500, headers: { "Content-Type": "application/json" } })
   }
