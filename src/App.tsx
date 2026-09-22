@@ -187,6 +187,7 @@ export default function App() {
             <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
             <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
             <li><button onClick={() => scrollToSection('contato')}>Contato</button></li>
+            <li><a href="#/agendamento" className="nav-link-acompanhar">Meus Agendamentos</a></li>
           </ul>
         </div>
       </nav>
@@ -364,6 +365,7 @@ export default function App() {
                 <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
                 <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
                 <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
+                <li><a href="#/agendamento">Meus Agendamentos</a></li>
               </ul>
             </div>
             <div className="footer-col">

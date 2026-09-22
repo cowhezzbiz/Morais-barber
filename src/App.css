@@ -134,6 +134,22 @@ body {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.nav-link-acompanhar {
+  background: var(--accent);
+  color: var(--bg-primary) !important;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.nav-link-acompanhar:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
 .menu-toggle {
   display: none;
   background: none;
