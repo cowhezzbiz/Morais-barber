@@ -6,6 +6,10 @@ import App from './App.tsx'
 import AdminPage from './AdminPage.tsx'
 import Acompanhamento from './Acompanhamento.tsx'
 
+// Remove a tela de carregamento assim que o React monta
+const bootEl = document.getElementById('fallback-boot')
+if (bootEl) bootEl.remove()
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
