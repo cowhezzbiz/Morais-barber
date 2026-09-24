@@ -129,8 +129,9 @@ serve(async (req: Request) => {
       }
     }
 
-    // PIX agora → fica invisível pro admin até pagar; PIX na hora → já entra na agenda
-    const statusInicial = formaPagamento === "pix" ? "aguardando_pagamento" : "pendente"
+    // Auto-aceite: PIX na hora → já entra CONFIRMADO na agenda.
+    // PIX agora → fica aguardando pagamento (vira confirmado ao verificar comprovante).
+    const statusInicial = formaPagamento === "pix" ? "aguardando_pagamento" : "confirmado"
 
     // Inserir com token único (tenta até 3x em caso de colisão raríssima)
     let token = ""

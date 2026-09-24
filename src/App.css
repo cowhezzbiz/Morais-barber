@@ -2239,3 +2239,99 @@ body {
   font-size: 0.85rem;
   color: var(--text-secondary);
 }
+
+/* ===== Cancelamento pelo cliente ===== */
+.cancelar-zone {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancelar-agendamento {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  border-radius: 8px;
+  color: #ef9a9a;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-cancelar-agendamento:hover {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: #f44336;
+}
+
+.cancelar-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cancelar-texto {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.cancelar-confirm input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.cancelar-confirm input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.cancelar-botoes {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-cancelar-voltar {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btn-cancelar-confirmar {
+  flex: 2;
+  padding: 10px;
+  background: #f44336;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancelar-confirmar:hover { background: #d32f2f; }
+
+.cancelar-aviso {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.cancelado-ok {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  border-radius: 8px;
+  color: #7bd47f;
+  font-size: 0.88rem;
+  text-align: center;
+}

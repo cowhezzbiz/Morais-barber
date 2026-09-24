@@ -22,6 +22,10 @@ export default function Acompanhamento() {
   const [copiado, setCopiado] = useState(false)
   const [tentativas, setTentativas] = useState(0)
   const [ultimoTentativa, setUltimoTentativa] = useState(0)
+  const [cancelando, setCancelando] = useState(false)
+  const [telefoneCancel, setTelefoneCancel] = useState('')
+  const [mostrarCancelar, setMostrarCancelar] = useState(false)
+  const [canceladoSucesso, setCanceladoSucesso] = useState(false)
 
   const podeBuscar = tentativas < 5 || (Date.now() - ultimoTentativa) > 60000
 
@@ -83,18 +87,53 @@ export default function Acompanhamento() {
     }
   }
 
+  // Cliente cancela o próprio agendamento (token + telefone, com mais de 2h de antecedência)
+  const cancelarAgendamento = async () => {
+    const tel = telefoneCancel.replace(/\D/g, '')
+    if (tel.length < 10) {
+      setErro('Digite o telefone completo que você usou no agendamento.')
+      return
+    }
+    if (!confirm('Cancelar mesmo este agendamento?')) return
+    setCancelando(true)
+    setErro('')
+    try {
+      const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/cancelar-agendamento', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ token: token.trim().toUpperCase(), telefone: tel })
+      })
+      const result = await response.json()
+      if (response.ok) {
+        setCanceladoSucesso(true)
+        setMostrarCancelar(false)
+        if (agendamento) setAgendamento({ ...agendamento, status: 'cancelado' })
+      } else {
+        setErro(result.error || 'Erro ao cancelar.')
+      }
+    } catch {
+      setErro('Erro de conexão ao cancelar.')
+    } finally {
+      setCancelando(false)
+    }
+  }
+
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'pendente':
         return { icon: <Clock size={28} />, text: 'Aguardando confirmação', color: 'amarelo', desc: 'O barbeiro vai confirmar seu horário em breve' }
       case 'confirmado':
-        return { icon: <CheckCircle size={28} />, text: 'Confirmado!', color: 'verde', desc: 'Te esperamos na data e hora marcada' }
+        return { icon: <CheckCircle size={28} />, text: 'Confirmado!', color: 'verde', desc: 'Horário garantido! Te esperamos na data e hora marcada' }
       case 'cancelado':
         return { icon: <XCircle size={28} />, text: 'Cancelado', color: 'vermelho', desc: 'Este agendamento foi cancelado' }
       case 'aguardando_pagamento':
         return { icon: <Clock size={28} />, text: 'Aguardando pagamento PIX', color: 'amarelo', desc: 'Pague o PIX e cole o comprovante na tela de confirmação do agendamento' }
       case 'aguardando_verificacao':
-        return { icon: <Clock size={28} />, text: 'Comprovante em verificação', color: 'amarelo', desc: 'Recebemos seu comprovante! O barbeiro vai confirmar em breve' }
+        return { icon: <Clock size={28} />, text: 'Comprovante em verificação', color: 'amarelo', desc: 'Recebemos seu comprovante! Assim que o pagamento for confirmado, seu horário fica garantido' }
       default:
         return { icon: <Clock size={28} />, text: status, color: 'cinza', desc: '' }
     }
@@ -227,6 +266,40 @@ export default function Acompanhamento() {
                     <div className="token-card-rodape">
                       <span>Agendamento <strong>#{agendamento.id}</strong> • {agendamento.nome}</span>
                     </div>
+
+                    {['pendente', 'confirmado', 'aguardando_pagamento', 'aguardando_verificacao'].includes(agendamento.status) && !canceladoSucesso && (
+                      <div className="cancelar-zone">
+                        {!mostrarCancelar ? (
+                          <button type="button" className="btn-cancelar-agendamento" onClick={() => setMostrarCancelar(true)}>
+                            Cancelar agendamento
+                          </button>
+                        ) : (
+                          <div className="cancelar-confirm">
+                            <p className="cancelar-texto">Confirme seu telefone (o que você usou ao agendar):</p>
+                            <input
+                              type="tel"
+                              value={telefoneCancel}
+                              onChange={e => setTelefoneCancel(e.target.value)}
+                              placeholder="(51) 99999-9999"
+                              maxLength={15}
+                              disabled={cancelando}
+                            />
+                            <div className="cancelar-botoes">
+                              <button type="button" className="btn-cancelar-voltar" onClick={() => { setMostrarCancelar(false); setErro('') }} disabled={cancelando}>
+                                Voltar
+                              </button>
+                              <button type="button" className="btn-cancelar-confirmar" onClick={cancelarAgendamento} disabled={cancelando}>
+                                {cancelando ? 'Cancelando...' : 'Confirmar cancelamento'}
+                              </button>
+                            </div>
+                            <p className="cancelar-aviso">Cancelamento livre até 2h antes do horário. Depois disso, chama no WhatsApp.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {canceladoSucesso && (
+                      <div className="cancelado-ok">✓ Agendamento cancelado. Se mudar de ideia, é só agendar de novo!</div>
+                    )}
                   </div>
                 )
               })()}
