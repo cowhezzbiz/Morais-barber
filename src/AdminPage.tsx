@@ -147,10 +147,24 @@ export default function AdminPage() {
       const reg = await navigator.serviceWorker.ready
       let sub = await reg.pushManager.getSubscription()
       if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
-        })
+        // O serviço de push do navegador às vezes falha por rede — tenta 3x com pausa
+        let ultimoErro = ''
+        for (let tentativa = 0; tentativa < 3; tentativa++) {
+          try {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+            })
+            break
+          } catch (e) {
+            ultimoErro = e instanceof Error ? e.message : 'falhou'
+            if (tentativa < 2) await new Promise(r => setTimeout(r, 2500))
+          }
+        }
+        if (!sub) {
+          setPushStatus(`Não deu pra conectar no serviço de notificações (${ultimoErro}). Checa a internet e tenta de novo — se insistir, fecha e abre o navegador.`)
+          return
+        }
       }
       // Salva a inscrição no banco (Edge Function envia praqui)
       const resp = await fetch('https://croscmpnezlixszygyka.supabase.co/rest/v1/push_inscricoes', {

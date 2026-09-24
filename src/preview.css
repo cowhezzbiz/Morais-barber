@@ -841,3 +841,15 @@
   .pv-chips { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
   .pv-agenda-card { padding: 18px 14px; }
 }
+
+/* Timer do PIX — avisa que o horário expira em 15 min */
+.pv-pix-timer {
+  font-size: 0.85rem;
+  color: var(--pv-texto-2);
+  background: rgba(255, 152, 0, 0.08);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+
+.pv-pix-timer strong { color: #ffb74d; }

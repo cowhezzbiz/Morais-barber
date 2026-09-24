@@ -96,6 +96,8 @@ export default function App() {
   const [confirmandoPix, setConfirmandoPix] = useState(false)
   const [valorAgendado, setValorAgendado] = useState(0)
   const [comprovante, setComprovante] = useState('')
+  const [pixInicioEm, setPixInicioEm] = useState(0)
+  const [, setTick] = useState(0) // força re-render pro timer do PIX andar
   const [faqAberta, setFaqAberta] = useState<number | null>(0)
 
   const isBot = honeypot.length > 0
@@ -107,6 +109,13 @@ export default function App() {
       return () => clearTimeout(timer)
     }
   }, [erro])
+
+  // Timer do PIX: atualiza o contador a cada 30s enquanto espera pagamento
+  useEffect(() => {
+    if (!enviado || formaPagamento !== 'pix' || pixPago) return
+    const t = setInterval(() => setTick(v => v + 1), 30000)
+    return () => clearInterval(t)
+  }, [enviado, formaPagamento, pixPago])
 
   // ===== Grade de horários =====
   const gerarHorariosDoDia = (data: Date): string[] => {
@@ -293,6 +302,7 @@ export default function App() {
       }
       setEnviado(true)
       setPixPago(false)
+      setPixInicioEm(Date.now())
       setTentativas(0)
       setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
     } catch (err: unknown) {
@@ -458,12 +468,15 @@ export default function App() {
                 {formaPagamento === 'pix' && !pixPago && (
                   <div className="pv-pix-box">
                     <span className="pv-pix-titulo">Pague com PIX pra garantir</span>
+                    <div className="pv-pix-timer">
+                      ⏳ Seu horário fica reservado por <strong>{Math.max(0, 15 - Math.floor((Date.now() - pixInicioEm) / 60000))} min</strong>
+                    </div>
                     <div className="pv-pix-qr">
                       <img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(pixPayload)}`} alt="QR Code PIX" />
                     </div>
                     <p className="pv-pix-aviso">
                       {valorAgendado > 0 ? `Valor: R$ ${valorAgendado.toFixed(2).replace('.', ',')}. ` : ''}
-                      Depois de pagar, cole o código do comprovante (aparece no app do banco) pra confirmar:
+                      Depois de pagar, cole o texto do comprovante (aparece no app do banco) pra confirmar:
                     </p>
                     <input
                       type="text"
