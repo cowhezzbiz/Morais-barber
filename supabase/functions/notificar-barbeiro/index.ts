@@ -56,9 +56,9 @@ serve(async (_req: Request) => {
     }
 
     // ===== 2. Expira PIX abandonado =====
-    // Aguardando pagamento por mais de 2h sem comprovante = cancela e libera o horário.
+    // Aguardando pagamento por mais de 15 min sem comprovante = cancela e libera o horário.
     // Evita que fake/abandono fique segurando vaga na agenda.
-    const limite = new Date(agora.getTime() - 2 * 60 * 60 * 1000).toISOString()
+    const limite = new Date(agora.getTime() - 15 * 60 * 1000).toISOString()
     const { data: expirados } = await supabase
       .from("agendamentos")
       .update({ status: "cancelado" })

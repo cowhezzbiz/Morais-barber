@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabase'
-import { Scissors, Crown, Sparkles, Palette, Droplets, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle } from 'lucide-react'
+import { Scissors, Crown, Sparkles, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle, ChevronDown, CalendarCheck, BellRing, BadgeCheck, XCircle } from 'lucide-react'
+import './preview.css'
 import './App.css'
 
 interface Servico {
@@ -9,27 +10,14 @@ interface Servico {
   descricao: string
   preco: string
   duracao: string
-  icone: string
 }
 
 const SERVICOS: Servico[] = [
-  { id: 1, nome: 'Corte + Sobrancelha', descricao: 'Corte personalizado + design de sobrancelha com navalha.', preco: 'R$ 35', duracao: '50 min', icone: 'scissors' },
-  { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min', icone: 'crown' },
-  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba + Sobrancelha. O visual perfeito.', preco: 'R$ 60', duracao: '1h15min', icone: 'sparkles' },
-  { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pen' },
+  { id: 1, nome: 'Corte + Sobrancelha', descricao: 'Corte personalizado + design de sobrancelha com navalha.', preco: 'R$ 35', duracao: '50 min' },
+  { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min' },
+  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba + Sobrancelha. O visual perfeito.', preco: 'R$ 60', duracao: '1h15min' },
+  { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável' },
 ]
-
-const getIcon = (name: string) => {
-  const icons: Record<string, React.ReactNode> = {
-    scissors: <Scissors size={28} />,
-    crown: <Crown size={28} />,
-    sparkles: <Sparkles size={28} />,
-    palette: <Palette size={28} />,
-    droplets: <Droplets size={28} />,
-    pen: <PenTool size={28} />,
-  }
-  return icons[name] || <Scissors size={28} />
-}
 
 const isValidPhone = (phone: string): boolean => {
   const digits = phone.replace(/\D/g, '')
@@ -43,73 +31,75 @@ const formatPhone = (value: string) => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
 }
 
-// ===== PIX: gera o código BR Code válido (padrão Banco Central) =====
+// ===== PIX BR Code =====
 const PIX_CHAVE = '51981301035'
 const PIX_NOME = 'MORAIS BARBER'
 const PIX_CIDADE = 'NOVO HAMBURGO'
 
-// CRC16-CCITT (0x1021) exigido pelo padrão PIX
 function crc16(str: string): string {
   let crc = 0xFFFF
   for (let i = 0; i < str.length; i++) {
     crc ^= str.charCodeAt(i) << 8
     for (let j = 0; j < 8; j++) {
-      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF
+      crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1
+      crc &= 0xFFFF
     }
   }
   return crc.toString(16).toUpperCase().padStart(4, '0')
 }
 
-function campo(id: string, valor: string): string {
-  return id + String(valor.length).padStart(2, '0') + valor
+function tlv(id: string, value: string): string {
+  return id + String(value.length).padStart(2, '0') + value
 }
 
-// Monta o payload PIX "copia e cola" + QR Code
 function gerarPixPayload(valor: number): string {
-  const mai = campo('00', 'BR.GOV.BCB.PIX') + campo('01', PIX_CHAVE)
-  const payloadSemValor =
-    campo('00', '01') +
-    campo('26', mai) +
-    campo('52', '0000') +
-    campo('53', '986') +
-    (valor > 0 ? campo('54', valor.toFixed(2)) : '') +
-    campo('58', 'BR') +
-    campo('59', PIX_NOME) +
-    campo('60', PIX_CIDADE) +
-    campo('62', campo('05', '***'))
-  return payloadSemValor + '6304' + crc16(payloadSemValor + '6304')
+  const gui = tlv('00', 'br.gov.bcb.pix') + tlv('01', PIX_CHAVE)
+  const mai = tlv('00', PIX_NOME.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 25)) + tlv('01', PIX_CIDADE.toUpperCase().slice(0, 15))
+  const valorStr = valor > 0 ? tlv('54', valor.toFixed(2)) : ''
+  const payload =
+    tlv('00', '01') +
+    tlv('26', gui) +
+    tlv('52', '0000') +
+    tlv('53', '986') +
+    valorStr +
+    tlv('58', 'BR') +
+    tlv('59', PIX_NOME.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 25)) +
+    tlv('60', PIX_CIDADE.toUpperCase().slice(0, 15)) +
+    tlv('62', tlv('05', '***'))
+  return payload + '6304' + crc16(payload + '6304')
 }
+
+const FAQS = [
+  { p: 'Preciso ligar ou mandar mensagem pra confirmar?', r: 'Não. Quando você agenda pelo site, o horário já fica confirmado na hora. Você recebe um token pra acompanhar e cancelar se precisar.' },
+  { p: 'Consigo cancelar se surgir algo?', r: 'Sim! Com o token do agendamento você cancela sozinho no site, até 2h antes do horário. Depois disso é só chamar no WhatsApp.' },
+  { p: 'Como funciona o pagamento?', r: 'Você escolhe: pagar na hora (PIX, dinheiro ou cartão lá na barbearia) ou adiantar por PIX na hora de agendar e garantir o horário.' },
+  { p: 'Preciso baixar algum aplicativo?', r: 'Não. Tudo funciona direto no navegador do celular, pelo link do site. Simples assim.' },
+  { p: 'Vou receber lembrete do horário?', r: 'Sim — guarde seu token. E se você pagou por PIX, o barbeiro confirma o pagamento assim que o comprovante for verificado.' },
+]
 
 export default function App() {
-  const [menuAberto, setMenuAberto] = useState(false)
   const [formNome, setFormNome] = useState('')
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
   const [horario, setHorario] = useState('')
-  const [enviado, setEnviado] = useState(false)
+  const [honeypot, setHoneypot] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
-  const [honeypot, setHoneypot] = useState('')
+  const [enviado, setEnviado] = useState(false)
+  const [tokenGerado, setTokenGerado] = useState('')
+  const [tokenCopiado, setTokenCopiado] = useState(false)
   const [tentativas, setTentativas] = useState(0)
   const [ultimoTentativa, setUltimoTentativa] = useState(0)
-  const [tokenGerado, setTokenGerado] = useState('')
-  const [whatsappUrl, setWhatsappUrl] = useState('')
-  const [tokenCopiado, setTokenCopiado] = useState(false)
   const [formaPagamento, setFormaPagamento] = useState<'pix' | 'pix_na_hora'>('pix_na_hora')
   const [pixPago, setPixPago] = useState(false)
   const [confirmandoPix, setConfirmandoPix] = useState(false)
   const [valorAgendado, setValorAgendado] = useState(0)
   const [comprovante, setComprovante] = useState('')
+  const [faqAberta, setFaqAberta] = useState<number | null>(0)
 
   const isBot = honeypot.length > 0
   const podeEnviar = tentativas < 3 || (Date.now() - ultimoTentativa) > 60000
-
-  const scrollToSection = (id: string) => {
-    setMenuAberto(false)
-    const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
-  }
 
   useEffect(() => {
     if (erro) {
@@ -118,8 +108,7 @@ export default function App() {
     }
   }, [erro])
 
-  // ===== Grade de horários (agenda visual) =====
-  // Ter-Sex: 9h-12h e 14h-19h30 (sem horários ao meio-dia) | Sáb: 9h-17h
+  // ===== Grade de horários =====
   const gerarHorariosDoDia = (data: Date): string[] => {
     const diaSemana = data.getDay()
     if (diaSemana === 0 || diaSemana === 1) return []
@@ -139,7 +128,6 @@ export default function App() {
     return horarios
   }
 
-  // Próximas 4 semanas de dias úteis (ter-sáb)
   const datasDisponiveis = useMemo(() => {
     const datas: Date[] = []
     const hoje = new Date()
@@ -157,7 +145,71 @@ export default function App() {
   const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
   const [carregandoGrade, setCarregandoGrade] = useState(false)
 
-  // Busca ocupados quando muda a data — via Edge Function (não expõe dados)
+  // ===== Agenda da Semana (tabela estilo Excel) =====
+  // Semana atual: ter-sáb (pula dom/seg). Colunas = dias, linhas = horários.
+  const [semanaOffset, setSemanaOffset] = useState(0)
+  const [gradeSemanaOcupados, setGradeSemanaOcupados] = useState<string[]>([])
+  const [gradeSemanaCarregando, setGradeSemanaCarregando] = useState(true)
+
+  const diasDaSemana = useMemo(() => {
+    const hoje = new Date()
+    // Acha a terça da semana atual (ou da semana seguinte se hoje for dom/seg)
+    const dow = hoje.getDay() // 0=Dom
+    let base: Date
+    if (dow === 0) base = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 2 + semanaOffset * 7)
+    else if (dow === 1) base = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1 + semanaOffset * 7)
+    else base = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - (dow - 2) + semanaOffset * 7)
+    // Ter, Qua, Qui, Sex, Sáb
+    return [0, 1, 2, 3, 4].map(i => {
+      const d = new Date(base)
+      d.setDate(base.getDate() + i)
+      return d
+    })
+  }, [semanaOffset])
+
+  // Todos os horários possíveis (linhas da tabela): união dos horários de ter-sáb
+  const linhasHorarios = useMemo(() => {
+    const set = new Set<string>()
+    for (const d of diasDaSemana) {
+      for (const h of gerarHorariosDoDia(d)) set.add(h.split('T')[1])
+    }
+    return Array.from(set).sort()
+  }, [diasDaSemana])
+
+  useEffect(() => {
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const ini = diasDaSemana[0]
+    const fim = diasDaSemana[diasDaSemana.length - 1]
+    setGradeSemanaCarregando(true)
+    fetch(`https://croscmpnezlixszygyka.supabase.co/functions/v1/horarios-ocupados?inicio=${fmt(ini)}&fim=${fmt(fim)}`, {
+      headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
+    })
+      .then(r => r.json())
+      .then(res => {
+        const locais = (res.ocupados || []).map((iso: string) => {
+          const d = new Date(iso)
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+        })
+        setGradeSemanaOcupados(locais)
+      })
+      .catch(() => setGradeSemanaOcupados([]))
+      .finally(() => setGradeSemanaCarregando(false))
+  }, [diasDaSemana])
+
+  const chaveHorario = (d: Date, hora: string) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${hora}`
+
+  // Clicou num horário verde da grade → pré-preenche o formulário e rola até ele
+  const escolherDaGrade = (d: Date, hora: string) => {
+    const chave = chaveHorario(d, hora)
+    if (gradeSemanaOcupados.includes(chave)) return
+    const hoje = new Date()
+    if (d.toDateString() === hoje.toDateString() && new Date(chave).getTime() < Date.now()) return
+    setDataSelecionada(d)
+    setHorario(chave)
+    scrollTo('agendar')
+  }
+
   useEffect(() => {
     if (!dataSelecionada) return
     const dataISOBase = `${dataSelecionada.getFullYear()}-${String(dataSelecionada.getMonth() + 1).padStart(2, '0')}-${String(dataSelecionada.getDate()).padStart(2, '0')}`
@@ -167,7 +219,6 @@ export default function App() {
     })
       .then(r => r.json())
       .then(res => {
-        // Converte ISO UTC pro formato local AAAA-MM-DDTHH:MM pra comparar
         const locais = (res.ocupados || []).map((iso: string) => {
           const d = new Date(iso)
           return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
@@ -178,7 +229,6 @@ export default function App() {
       .finally(() => setCarregandoGrade(false))
   }, [dataSelecionada])
 
-  // Horários já passados ficam desabilitados no dia atual
   const agoraMs = Date.now()
   const horariosDoDia = dataSelecionada ? gerarHorariosDoDia(dataSelecionada) : []
   const horarioPassado = (h: string) => {
@@ -189,26 +239,22 @@ export default function App() {
   }
 
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value)
-    setFormTelefone(formatted)
+    setFormTelefone(formatPhone(e.target.value))
+  }
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
 
   const enviarFormulario = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
-
     if (isBot) return
-
-    if (!podeEnviar) {
-      setErro('Muitas tentativas. Aguarde 1 minuto.')
-      return
-    }
-
+    if (!podeEnviar) { setErro('Muitas tentativas. Aguarde 1 minuto.'); return }
     const telefoneDigits = formTelefone.replace(/\D/g, '')
-    if (!isValidPhone(formTelefone)) {
-      setErro('Telefone inválido. Digite pelo menos 10 dígitos.')
-      return
-    }
+    if (!isValidPhone(formTelefone)) { setErro('Telefone inválido. Digite pelo menos 10 dígitos.'); return }
+    if (!horario) { setErro('Escolha um horário na agenda.'); return }
 
     setLoading(true)
     setTentativas(t => t + 1)
@@ -221,7 +267,6 @@ export default function App() {
       const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) || 0 : 0
       setValorAgendado(valorServico)
 
-      // Chama a Edge Function (backend) em vez de insert direto
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/agendar', {
         method: 'POST',
         headers: {
@@ -240,39 +285,25 @@ export default function App() {
       })
 
       const result = await response.json()
+      if (!response.ok) { setErro(result.error || 'Erro ao enviar.'); setLoading(false); return }
 
-      if (!response.ok) {
-        setErro(result.error || 'Erro ao enviar.')
-        setLoading(false)
-        return
-      }
-
-      // Salva o token do agendamento
       if (result.token) {
         setTokenGerado(result.token)
         try { localStorage.setItem('ultimo_token', result.token) } catch {}
       }
-
-      const texto = `Olá! Gostaria de agendar.\nNome: ${formNome}\nTelefone: ${formTelefone}\nServiço: ${formServico}\nHorário: ${horario}\nMensagem: ${formMensagem || 'Nenhuma'}`
-      const whatsappUrl = `https://wa.me/5551981301035?text=${encodeURIComponent(texto)}`
-      setWhatsappUrl(whatsappUrl)
-
-      // NÃO abre o WhatsApp automático — o cliente copia o token primeiro
       setEnviado(true)
       setPixPago(false)
       setTentativas(0)
       setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
     } catch (err: unknown) {
-      console.error('Erro:', err)
       setErro(`Erro: ${err instanceof Error ? err.message : 'Erro ao enviar.'}`)
     } finally {
       setLoading(false)
     }
   }
 
-  // Cliente enviou o comprovante PIX → vai pra verificação do barbeiro
   const confirmarPix = async () => {
-    if (!tokenGerado || comprovante.length < 30) return
+    if (!tokenGerado || comprovante.length < 20) return
     setConfirmandoPix(true)
     try {
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/confirmar-pagamento', {
@@ -285,11 +316,8 @@ export default function App() {
         body: JSON.stringify({ token: tokenGerado, comprovante })
       })
       const result = await response.json()
-      if (response.ok) {
-        setPixPago(true)
-      } else {
-        setErro(result.error || 'Erro ao enviar comprovante.')
-      }
+      if (response.ok) setPixPago(true)
+      else setErro(result.error || 'Erro ao enviar comprovante.')
     } catch {
       setErro('Erro de conexão ao enviar comprovante.')
     } finally {
@@ -297,374 +325,338 @@ export default function App() {
     }
   }
 
-  return (
-    <div className="app">
-      <nav className={`navbar ${menuAberto ? 'aberto' : ''}`}>
-        <div className="nav-container">
-          <button className="logo" onClick={() => scrollToSection('inicio')}>
-            <span className="logo-icon"><Scissors size={24} /></span>
-            <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
-          </button>
-          <button className="menu-toggle" onClick={() => setMenuAberto(!menuAberto)} aria-label="Menu">
-            <span className={`hamburger ${menuAberto ? 'ativo' : ''}`}></span>
-          </button>
-          <ul className={`nav-links ${menuAberto ? 'ativo' : ''}`}>
-            <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
-            <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
-            <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
-            <li><button onClick={() => scrollToSection('contato')}>Contato</button></li>
-            <li><a href="#/agendamento" className="nav-link-acompanhar">Meus Agendamentos</a></li>
-          </ul>
-        </div>
-      </nav>
+  const pixPayload = gerarPixPayload(valorAgendado)
 
-      <section id="inicio" className="hero">
-        <div className="hero-content">
-          <p className="hero-subtitle">Barbearia Premium • Tattoo Artística</p>
-          <h1 className="hero-title">Onde estilo encontra <span className="destaque">excelência</span></h1>
-          <p className="hero-desc">Cortes modernos, barba impecável e tatuagens únicas. Um ambiente pensado pra você se sentir bem.</p>
-          <div className="hero-botoes">
-            <button className="btn btn-primary" onClick={() => scrollToSection('contato')}>Agendar Horário</button>
-            <a href="#/agendamento" className="btn btn-outline">Acompanhar Agendamento</a>
+  return (
+    <div className="pv-app">
+      {/* ===== Barra topo ===== */}
+      <header className="pv-topo">
+        <div className="pv-container pv-topo-inner">
+          <span className="pv-logo">MORAIS<span> BARBER</span></span>
+          <nav className="pv-nav">
+            <button onClick={() => scrollTo('servicos')}>Serviços</button>
+            <button onClick={() => scrollTo('como-funciona')}>Como funciona</button>
+            <button onClick={() => scrollTo('faq')}>Dúvidas</button>
+            </nav>
+          <button className="pv-btn pv-btn-dourado" onClick={() => scrollTo('agendar')}>Agendar agora</button>
+        </div>
+      </header>
+
+      {/* ===== HERO ===== */}
+      <section className="pv-hero">
+        <div className="pv-container">
+          <span className="pv-badge"><CalendarCheck size={14} /> Confirmação na hora · sem ligação</span>
+          <h1 className="pv-h1">
+            Seu corte, agendado<br />em <span className="pv-destaque">30 segundos</span>.
+          </h1>
+          <p className="pv-sub">
+            Veja a agenda da barbearia em tempo real, toque no horário livre<br className="pv-only-desktop" />
+            e pronto — confirmado na hora. Sem espera, sem mensagem, sem caderno.
+          </p>
+          <div className="pv-hero-cta">
+            <button className="pv-btn pv-btn-dourado pv-btn-grande" onClick={() => scrollTo('agendar')}>
+              Agendar meu horário
+            </button>
+            <button className="pv-btn pv-btn-fantasma pv-btn-grande" onClick={() => scrollTo('como-funciona')}>
+              Ver como funciona
+            </button>
           </div>
-          <div className="hero-stats">
-            <div className="stat"><span className="stat-num">2000+</span><span className="stat-label">Clientes Felizes</span></div>
-            <div className="stat"><span className="stat-num">5.0</span><span className="stat-label">Avaliação</span></div>
-            <div className="stat"><span className="stat-num">5+</span><span className="stat-label">Anos de Experiência</span></div>
+          <div className="pv-hero-selos">
+            <span><BadgeCheck size={15} /> Horário garantido</span>
+            <span><BellRing size={15} /> Lembrete automático</span>
+            <span><XCircle size={15} /> Cancele até 2h antes</span>
           </div>
         </div>
       </section>
 
-      <section id="servicos" className="secao">
-        <div className="container">
-          <p className="secao-subtitle">NOSSOS SERVIÇOS</p>
-          <h2 className="secao-titulo">O que fazemos de <span className="destaque">melhor</span></h2>
-          <p className="secao-desc">Serviços pensados pra você sair com o visual impecável.</p>
-          <div className="grid-servicos">
+      {/* ===== COMO FUNCIONA ===== */}
+      <section className="pv-secao" id="como-funciona">
+        <div className="pv-container">
+          <p className="pv-eyebrow">SEM COMPROMISSO</p>
+          <h2 className="pv-h2">Agendar é simples assim</h2>
+          <div className="pv-passos">
+            <div className="pv-passo">
+              <span className="pv-passo-num">1</span>
+              <h3>Escolha o serviço</h3>
+              <p>Corte, barba, combo ou tatuagem — com preço na tela, sem surpresa.</p>
+            </div>
+            <div className="pv-passo">
+              <span className="pv-passo-num">2</span>
+              <h3>Toque no horário verde</h3>
+              <p>A agenda mostra os horários livres em verde e os reservados em vermelho. Um toque e é seu.</p>
+            </div>
+            <div className="pv-passo">
+              <span className="pv-passo-num">3</span>
+              <h3>Pronto, confirmado</h3>
+              <p>Você recebe um token pra acompanhar, pagar por PIX se quiser e cancelar se precisar.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== SERVIÇOS ===== */}
+      <section className="pv-secao pv-secao-escura" id="servicos">
+        <div className="pv-container">
+          <p className="pv-eyebrow">TABELA DE PREÇOS</p>
+          <h2 className="pv-h2">Escolha seu estilo</h2>
+          <div className="pv-servicos">
             {SERVICOS.map(s => (
-              <div key={s.id} className="card-servico">
-                <div className="servico-icone">{getIcon(s.icone)}</div>
-                <h3>{s.nome}</h3>
-                <p className="servico-desc">{s.descricao}</p>
-                <div className="servico-info">
-                  <span className="servico-preco">{s.preco}</span>
-                  <span className="servico-duracao"><Clock size={16} /> {s.duracao}</span>
+              <button key={s.id} className="pv-servico" onClick={() => { scrollTo('agendar'); setTimeout(() => setFormServico(s.nome), 400) }}>
+                <div className="pv-servico-topo">
+                  <span className="pv-servico-nome">{s.nome}</span>
+                  <span className="pv-servico-preco">{s.preco}</span>
                 </div>
+                <p className="pv-servico-desc">{s.descricao}</p>
+                <span className="pv-servico-meta"><Clock size={13} /> {s.duracao} · toque pra agendar</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== PROVA SOCIAL ===== */}
+      <section className="pv-secao">
+        <div className="pv-container">
+          <p className="pv-eyebrow">QUEM JÁ SENTOU NA CADEIRA</p>
+          <h2 className="pv-h2">Resultado que se vê no espelho</h2>
+          <div className="pv-avaliacoes">
+            <div className="pv-avaliacao">
+              <div className="pv-estrelas">★★★★★</div>
+              <p>"Melhor barbeiro da região. Ambiente top e atendimento nota 10."</p>
+              <span>— Cliente Morais Barber</span>
+            </div>
+            <div className="pv-avaliacao">
+              <div className="pv-estrelas">★★★★★</div>
+              <p>"Sempre saio satisfeito. Agendar pelo site então, nem se fala — prático demais."</p>
+              <span>— Cliente Morais Barber</span>
+            </div>
+            <div className="pv-avaliacao">
+              <div className="pv-estrelas">★★★★★</div>
+              <p>"Corte impecável, barba no detalhe. Virei cliente fiel."</p>
+              <span>— Cliente Morais Barber</span>
+            </div>
+          </div>
+          <div className="pv-numeros">
+            <div><strong>+1.000</strong><span>cortes realizados</span></div>
+            <div><strong>5.0</strong><span>nota no Google</span></div>
+            <div><strong>30s</strong><span>pra agendar</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== AGENDAR (form) ===== */}
+      <section className="pv-secao pv-secao-escura" id="agendar">
+        <div className="pv-container">
+          <p className="pv-eyebrow">AGENDA EM TEMPO REAL</p>
+          <h2 className="pv-h2">Garanta seu horário</h2>
+          <p className="pv-secao-desc">Os horários em <strong className="pv-verde">verde</strong> estão livres. Toque, preencha e confirme.</p>
+
+          <div className="pv-form-card">
+            {enviado ? (
+              <div className="pv-sucesso">
+                <div className="pv-sucesso-titulo"><CheckCircle size={24} /> Agendamento confirmado!</div>
+                {formaPagamento === 'pix' && !pixPago && (
+                  <div className="pv-pix-box">
+                    <span className="pv-pix-titulo">Pague com PIX pra garantir</span>
+                    <div className="pv-pix-qr">
+                      <img src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(pixPayload)}`} alt="QR Code PIX" />
+                    </div>
+                    <p className="pv-pix-aviso">
+                      {valorAgendado > 0 ? `Valor: R$ ${valorAgendado.toFixed(2).replace('.', ',')}. ` : ''}
+                      Depois de pagar, cole o código do comprovante (aparece no app do banco) pra confirmar:
+                    </p>
+                    <input
+                      type="text"
+                      className="pv-comprovante-input"
+                      value={comprovante}
+                      onChange={e => setComprovante(e.target.value)}
+                      placeholder="Copie e cole o texto do comprovante PIX (do app do banco)"
+                      maxLength={2000}
+                      disabled={pixPago || confirmandoPix}
+                    />
+                    <button className="pv-btn pv-btn-dourado" onClick={confirmarPix} disabled={confirmandoPix || comprovante.length < 30}>
+                      {confirmandoPix ? 'Enviando...' : 'Enviar comprovante'}
+                    </button>
+                    {pixPago && <div className="pv-pix-ok">✓ Comprovante recebido! Assim que for verificado, seu horário fica garantido.</div>}
+                  </div>
+                )}
+                {formaPagamento === 'pix_na_hora' && (
+                  <p className="pv-sucesso-desc">Seu horário já está reservado. Pague na hora (PIX, dinheiro ou cartão). Te esperamos!</p>
+                )}
+                {tokenGerado && (
+                  <div className="pv-token">
+                    <span>Guarde seu token de acompanhamento:</span>
+                    <code>{tokenGerado}</code>
+                    <button onClick={() => { navigator.clipboard.writeText(tokenGerado); setTokenCopiado(true); setTimeout(() => setTokenCopiado(false), 2000) }}>
+                      {tokenCopiado ? '✓ Copiado!' : 'Copiar'}
+                    </button>
+                    <a href="#/agendamento" className="pv-btn pv-btn-fantasma">Acompanhar / cancelar</a>
+                  </div>
+                )}
+                <button className="pv-btn pv-btn-fantasma" onClick={() => setEnviado(false)}>Fazer outro agendamento</button>
+              </div>
+            ) : (
+              <form onSubmit={enviarFormulario}>
+                <div className="pv-form-grid">
+                  <div className="pv-form-grupo">
+                    <label>Seu nome</label>
+                    <input type="text" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} placeholder="Como te chamamos?" />
+                  </div>
+                  <div className="pv-form-grupo">
+                    <label>WhatsApp</label>
+                    <input type="tel" value={formTelefone} onChange={handleTelefoneChange} required disabled={loading} maxLength={15} placeholder="(51) 99999-9999" />
+                  </div>
+                </div>
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="honeypot" value={honeypot} onChange={e => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
+                </div>
+                <div className="pv-form-grupo">
+                  <label>Serviço</label>
+                  <select value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}>
+                    <option value="">Selecione...</option>
+                    {SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
+                  </select>
+                </div>
+
+                <div className="pv-form-grupo">
+                  <label>Data e horário</label>
+                  <div className="pv-agenda-inline">
+                    {/* Navegação de semanas */}
+                    <div className="pv-semana-nav">
+                      <button type="button" onClick={() => setSemanaOffset(Math.max(0, semanaOffset - 1))} disabled={semanaOffset === 0} aria-label="Semana anterior">‹</button>
+                      <span>{semanaOffset === 0 ? 'Esta semana' : semanaOffset === 1 ? 'Próxima semana' : `Em ${semanaOffset} semanas`}</span>
+                      <button type="button" onClick={() => setSemanaOffset(Math.min(3, semanaOffset + 1))} disabled={semanaOffset === 3} aria-label="Próxima semana">›</button>
+                    </div>
+
+                    {/* Abas de dias */}
+                    <div className="pv-dias-tabs">
+                      {diasDaSemana.map(d => {
+                        const diaNome = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()]
+                        const hoje = new Date().toDateString() === d.toDateString()
+                        const sel = dataSelecionada && dataSelecionada.toDateString() === d.toDateString()
+                        return (
+                          <button
+                            type="button"
+                            key={d.toISOString()}
+                            className={`pv-dia-tab ${sel ? 'selecionada' : ''}`}
+                            onClick={() => { setDataSelecionada(d); setHorario('') }}
+                          >
+                            <span className="pv-dia-nome">{hoje ? 'HOJE' : diaNome}</span>
+                            <span className="pv-dia-num">{String(d.getDate()).padStart(2, '0')}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Chips de horário do dia selecionado */}
+                    {!dataSelecionada && <p className="pv-chips-dica">Escolha um dia acima pra ver os horários</p>}
+                    {dataSelecionada && gradeSemanaCarregando && <p className="pv-chips-dica">Carregando horários...</p>}
+                    {dataSelecionada && !gradeSemanaCarregando && (
+                      <>
+                        <div className="pv-chips">
+                          {gerarHorariosDoDia(dataSelecionada).map(chave => {
+                            const hora = chave.split('T')[1]
+                            const ocupado = gradeSemanaOcupados.includes(chave)
+                            const hoje = new Date()
+                            const passado = dataSelecionada.toDateString() === hoje.toDateString() && new Date(chave).getTime() < Date.now()
+                            const ind = ocupado || passado
+                            const sel = horario === chave
+                            return (
+                              <button
+                                type="button"
+                                key={chave}
+                                className={`pv-chip ${ind ? 'ocupado' : 'livre'} ${sel ? 'selecionado' : ''}`}
+                                disabled={ind}
+                                onClick={() => setHorario(chave)}
+                              >
+                                {hora}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        <p className="pv-chips-legenda">
+                          <span><i className="pv-leg-livre" /> disponível</span>
+                          <span><i className="pv-leg-ocupado" /> reservado</span>
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pv-form-grupo">
+                  <label>Pagamento</label>
+                  <div className="pv-pagamento">
+                    <button type="button" className={`pv-pag-opcao ${formaPagamento === 'pix_na_hora' ? 'ativa' : ''}`} onClick={() => setFormaPagamento('pix_na_hora')}>
+                      <span className="pv-pag-titulo">💵 Pagar na hora do corte</span>
+                      <span className="pv-pag-desc">PIX, dinheiro ou cartão lá na barbearia</span>
+                    </button>
+                    <button type="button" className={`pv-pag-opcao ${formaPagamento === 'pix' ? 'ativa' : ''}`} onClick={() => setFormaPagamento('pix')}>
+                      <span className="pv-pag-titulo">✨ Adiantar com PIX</span>
+                      <span className="pv-pag-desc">Garanta o horário pagando agora</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pv-form-grupo">
+                  <label>Observação (opcional)</label>
+                  <textarea rows={2} value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500} placeholder="Alguma preferência?"></textarea>
+                </div>
+
+                {erro && <p className="pv-erro">{erro}</p>}
+                <button type="submit" className="pv-btn pv-btn-dourado pv-btn-grande pv-btn-full" disabled={loading}>
+                  {loading ? 'Confirmando...' : 'Confirmar agendamento'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== FAQ ===== */}
+      <section className="pv-secao" id="faq">
+        <div className="pv-container">
+          <p className="pv-eyebrow">TIRA-DÚVIDAS</p>
+          <h2 className="pv-h2">Perguntas rápidas</h2>
+          <div className="pv-faqs">
+            {FAQS.map((f, i) => (
+              <div key={i} className={`pv-faq ${faqAberta === i ? 'aberta' : ''}`}>
+                <button type="button" className="pv-faq-pergunta" onClick={() => setFaqAberta(faqAberta === i ? null : i)}>
+                  {f.p}
+                  <ChevronDown size={18} className="pv-faq-seta" />
+                </button>
+                {faqAberta === i && <p className="pv-faq-resposta">{f.r}</p>}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="sobre" className="secao secao-escura">
-        <div className="container">
-          <div className="sobre-grid">
-            <div className="sobre-img">
-              <div className="img-placeholder">
-                <Scissors size={64} />
-                <p>Morais Barber</p>
-                <small>Desde 2020</small>
-              </div>
-            </div>
-            <div className="sobre-texto">
-              <p className="secao-subtitle">SOBRE NÓS</p>
-              <h2 className="secao-titulo">Tradição e modernidade em cada <span className="destaque">corte</span></h2>
-              <p className="sobre-p">A Morais Barber nasceu da paixão por transformar autoestima. Nosso barbeiro tem mais de 5 anos de experiência.</p>
-              <p className="sobre-p">Aqui você encontra um ambiente descontraído, produtos de primeira e o melhor atendimento.</p>
-              <ul className="sobre-lista">
-                <li><CheckCircle size={18} /> Profissional certificado</li>
-                <li><CheckCircle size={18} /> Ambiente confortável</li>
-                <li><CheckCircle size={18} /> Produtos premium</li>
-                <li><CheckCircle size={18} /> Atendimento personalizado</li>
-              </ul>
-            </div>
-          </div>
+      {/* ===== CTA FINAL ===== */}
+      <section className="pv-cta-final">
+        <div className="pv-container">
+          <h2>A cadeira tá esperando.</h2>
+          <p>Escolha seu horário agora — leva 30 segundos.</p>
+          <button className="pv-btn pv-btn-dourado pv-btn-grande" onClick={() => scrollTo('agendar')}>Agendar meu corte</button>
         </div>
       </section>
 
-      <section id="contato" className="secao secao-escura">
-        <div className="container">
-          <p className="secao-subtitle">CONTATO</p>
-          <h2 className="secao-titulo">Agende seu <span className="destaque">horário</span></h2>
-          <p className="secao-desc">Escolha o melhor dia e horário pra você.</p>
-          <div className="contato-grid">
-            <div className="contato-info">
-              <div className="info-item">
-                <span className="info-icone"><MapPin size={24} /></span>
-                <div><strong>Endereço</strong><p>R. Potiguara, 974 - Canudos, NH</p></div>
-              </div>
-              <div className="info-item">
-                <span className="info-icone"><Phone size={24} /></span>
-                <div><strong>Telefone</strong><p>(51) 98130-1035</p></div>
-              </div>
-              <div className="info-item">
-                <span className="info-icone"><Clock size={24} /></span>
-                <div><strong>Horário</strong><p>Terça a Sexta: 9h às 19:30h</p><p>Sábado: 9h às 17h</p></div>
-              </div>
-              <div className="info-item">
-                <span className="info-icone"><Star size={24} /></span>
-                <div><strong>Instagram</strong><p>@moraisbarber.tattoo</p></div>
-              </div>
-              <a href="https://wa.me/5551981301035" target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-                <MessageCircle size={20} /> Agendar pelo WhatsApp
-              </a>
-              <div className="mapa-container">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3516.0!2d-51.1!3d-29.1!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sR.+Potiguara%2C+974+-29035-490!5e0!3m2!1spt-BR!2sbr!4v1234567890"
-                  width="100%"
-                  height="200"
-                  style={{ border: 0, borderRadius: 12 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Localização Morais Barber"
-                ></iframe>
-              </div>
-            </div>
-            <div className="contato-form">
-              <h3>Envie uma mensagem</h3>
-              {enviado && (
-                <div className="sucesso-msg sucesso-token">
-                  <div className="sucesso-titulo">
-                    <CheckCircle size={22} /> Agendamento enviado!
-                  </div>
-                  {formaPagamento === 'pix' && !pixPago && (
-                    <div className="pix-box">
-                      <span className="pix-titulo">Pague com PIX para confirmar</span>
-                      <div className="pix-qr">
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(gerarPixPayload(valorAgendado))}`}
-                          alt="QR Code PIX"
-                          width={220}
-                          height={220}
-                        />
-                      </div>
-                      <div className="pix-info">
-                        <span className="pix-chave-label">PIX copia e cola:</span>
-                        <code className="pix-payload">{gerarPixPayload(valorAgendado)}</code>
-                        <button
-                          type="button"
-                          className="btn-copiar-pix"
-                          onClick={() => navigator.clipboard.writeText(gerarPixPayload(valorAgendado))}
-                        >
-                          Copiar código PIX
-                        </button>
-                      </div>
-                      <p className="pix-aviso">
-                        {valorAgendado > 0
-                          ? `Valor: R$ ${valorAgendado.toFixed(2).replace('.', ',')}. Depois de pagar, cole o código do comprovante:`
-                          : 'Depois de pagar, cole o código do comprovante PIX abaixo:'}
-                      </p>
-                      <div className="comprovante-box">
-                        <input
-                          type="text"
-                          value={comprovante}
-                          onChange={e => setComprovante(e.target.value.trim())}
-                          placeholder="Copie e cole o texto do comprovante PIX (do app do banco)"
-                          maxLength={2000}
-                          disabled={confirmandoPix}
-                        />
-                        <span className="comprovante-dica">
-                          No app do banco: PIX feito → toque no pagamento → "Comprovante" ou "Detalhes" → copie o código/ID
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-primary btn-full"
-                          onClick={confirmarPix}
-                          disabled={confirmandoPix || comprovante.length < 30}
-                        >
-                          {confirmandoPix ? 'Verificando...' : '✓ Enviar comprovante'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {formaPagamento === 'pix' && pixPago && (
-                    <div className="pix-confirmado">
-                      <CheckCircle size={20} /> Comprovante enviado! O barbeiro vai verificar e confirmar seu horário.
-                    </div>
-                  )}
-                  {formaPagamento === 'pix_na_hora' && (
-                    <div className="pix-na-hora-info">
-                      Você paga na hora do corte (PIX, dinheiro ou cartão). O barbeiro já recebeu seu agendamento!
-                    </div>
-                  )}
-                  {tokenGerado && (
-                    <div className="token-gerado-box">
-                      <span className="token-gerado-label">Guarde seu token de acompanhamento:</span>
-                      <code className="token-gerado-valor">{tokenGerado}</code>
-                      <button
-                        type="button"
-                        className="btn-copiar-token"
-                        onClick={() => {
-                          navigator.clipboard.writeText(tokenGerado)
-                          setTokenCopiado(true)
-                          setTimeout(() => setTokenCopiado(false), 2000)
-                        }}
-                      >
-                        {tokenCopiado ? '✓ Copiado!' : 'Copiar token'}
-                      </button>
-                    </div>
-                  )}
-                  <div className="sucesso-acoes">
-                    {whatsappUrl && (
-                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp-mini">
-                        <MessageCircle size={16} /> Avisar no WhatsApp
-                      </a>
-                    )}
-                    <a href="#/agendamento" className="btn btn-outline-mini">Acompanhar agendamento</a>
-                  </div>
-                </div>
-              )}
-              <form onSubmit={enviarFormulario}>
-                <div className="form-grupo">
-                  <label htmlFor="nome">Nome</label>
-                  <input type="text" id="nome" placeholder="Seu nome" value={formNome} onChange={e => setFormNome(e.target.value)} required disabled={loading} maxLength={100} />
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="telefone">Telefone</label>
-                  <input type="tel" id="telefone" placeholder="(51) 99999-9999" value={formTelefone} onChange={handleTelefoneChange} required disabled={loading} maxLength={15} />
-                </div>
-                <div style={{ display: 'none' }} aria-hidden="true">
-                  <input type="text" name="honeypot" value={honeypot} onChange={e => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="servico">Serviço</label>
-                  <select id="servico" value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}>
-                    <option value="">Selecione...</option>
-                    {SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
-                  </select>
-                </div>
-                <div className="form-grupo">
-                  <label>Data e Horário</label>
-                  <div className="grade-datas">
-                    {datasDisponiveis.map(d => {
-                      const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]
-                      const sel = dataSelecionada && dataSelecionada.toDateString() === d.toDateString()
-                      return (
-                        <button
-                          type="button"
-                          key={d.toISOString()}
-                          className={`grade-data ${sel ? 'selecionada' : ''}`}
-                          onClick={() => { setDataSelecionada(d); setHorario('') }}
-                        >
-                          <span className="grade-data-dia">{dia}</span>
-                          <span className="grade-data-num">{String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                  {dataSelecionada && (
-                    <div className="grade-horarios">
-                      {carregandoGrade && <span className="grade-carregando">Carregando horários...</span>}
-                      {!carregandoGrade && horariosDoDia.length === 0 && <span className="grade-carregando">Sem horários neste dia</span>}
-                      {horariosDoDia.map(h => {
-                        const hora = h.split('T')[1]
-                        const ocupado = horariosOcupados.includes(h)
-                        const passado = horarioPassado(h)
-                        const indisponivel = ocupado || passado
-                        const selecionado = horario === h
-                        return (
-                          <button
-                            type="button"
-                            key={h}
-                            className={`grade-horario ${indisponivel ? 'ocupado' : 'livre'} ${selecionado ? 'selecionado' : ''}`}
-                            disabled={indisponivel}
-                            onClick={() => setHorario(h)}
-                            title={ocupado ? 'Horário já reservado' : passado ? 'Horário já passou' : 'Clique para selecionar'}
-                          >
-                            {hora}
-                          </button>
-                        )
-                      })}
-                      {!carregandoGrade && horariosDoDia.length > 0 && (
-                        <div className="grade-legenda">
-                          <span><i className="legenda-livre" /> Livre</span>
-                          <span><i className="legenda-ocupado" /> Reservado</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {!dataSelecionada && <span className="grade-dica">Escolha um dia acima pra ver os horários</span>}
-                </div>
-                <div className="form-grupo">
-                  <label>Forma de pagamento</label>
-                  <div className="pagamento-vertical">
-                    <button
-                      type="button"
-                      className={`pagamento-opcao-vertical ${formaPagamento === 'pix_na_hora' ? 'ativa' : ''}`}
-                      onClick={() => setFormaPagamento('pix_na_hora')}
-                    >
-                      <span className="pagamento-icone">💵</span>
-                      <span className="pagamento-textos">
-                        <span className="pagamento-titulo">Pagar na hora do corte</span>
-                        <span className="pagamento-desc">PIX, dinheiro ou cartão lá na barbearia</span>
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`facilite-tab ${formaPagamento === 'pix' ? 'aberta' : ''}`}
-                      onClick={() => setFormaPagamento(formaPagamento === 'pix' ? 'pix_na_hora' : 'pix')}
-                    >
-                      <span className="facilite-tab-titulo">✨ Facilite o atendimento</span>
-                      <span className="facilite-tab-seta">{formaPagamento === 'pix' ? '▲' : '▼'}</span>
-                    </button>
-
-                    {formaPagamento === 'pix' && (
-                      <div className="facilite-conteudo">
-                        <p className="facilite-desc">
-                          Pague agora com PIX e garanta seu horário na hora — você recebe o QR Code
-                          logo após agendar e o horário fica reservado assim que o pagamento for confirmado.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="form-grupo">
-                  <label htmlFor="mensagem">Mensagem (opcional)</label>
-                  <textarea id="mensagem" rows={3} placeholder="Alguma observação?" value={formMensagem} onChange={e => setFormMensagem(e.target.value)} disabled={loading} maxLength={500}></textarea>
-                </div>
-                {erro && <p className="erro-msg">{erro}</p>}
-                <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-                  {loading ? 'Enviando...' : 'Enviar Mensagem'}
-                </button>
-              </form>
-            </div>
+      {/* ===== FOOTER ===== */}
+      <footer className="pv-footer">
+        <div className="pv-container pv-footer-inner">
+          <div>
+            <span className="pv-logo">MORAIS<span> BARBER</span></span>
+            <p className="pv-footer-desc">Barbearia + Tattoo em Canudos, Novo Hamburgo.</p>
+          </div>
+          <div className="pv-footer-info">
+            <span><MapPin size={14} /> R. Potiguara, 974 — Canudos, NH</span>
+            <span><Phone size={14} /> (51) 98130-1035</span>
+            <span><Clock size={14} /> Ter-Sex 9h-12h · 14h-19h30 | Sáb 9h-17h</span>
+            <a href="https://instagram.com/moraisbarber.tattoo" target="_blank" rel="noopener noreferrer"><MessageCircle size={14} /> @moraisbarber.tattoo</a>
           </div>
         </div>
-      </section>
-
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-grid">
-            <div className="footer-col">
-              <div className="logo footer-logo">
-                <span className="logo-icon"><Scissors size={24} /></span>
-                <span className="logo-text">MORAIS<span className="logo-highlight"> BARBER</span></span>
-              </div>
-              <p className="footer-desc">O melhor da barbearia em Canudos, NH.</p>
-            </div>
-            <div className="footer-col">
-              <h4>Links</h4>
-              <ul>
-                <li><button onClick={() => scrollToSection('inicio')}>Início</button></li>
-                <li><button onClick={() => scrollToSection('servicos')}>Serviços</button></li>
-                <li><button onClick={() => scrollToSection('sobre')}>Sobre</button></li>
-                <li><a href="#/agendamento">Meus Agendamentos</a></li>
-              </ul>
-            </div>
-            <div className="footer-col">
-              <h4>Contato</h4>
-              <ul>
-                <li>📍 R. Potiguara, 974</li>
-                <li>📞 (51) 98130-1035</li>
-                <li>🕐 Ter-Sex 9h-19:30h</li>
-              </ul>
-            </div>
-          </div>
-          <div className="footer-bottom">
-            <p>© 2026 Morais Barber. Todos os direitos reservados.</p>
-          </div>
+        <div className="pv-container pv-footer-base">
+          <span>© 2026 Morais Barber</span>
+          <span className="pv-preview-tag">PRÉVIA — versão de teste</span>
         </div>
       </footer>
     </div>

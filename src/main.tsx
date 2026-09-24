@@ -5,7 +5,6 @@ import './index.css'
 import App from './App.tsx'
 import AdminPage from './AdminPage.tsx'
 import Acompanhamento from './Acompanhamento.tsx'
-import PreviewLanding from './PreviewLanding.tsx'
 
 // Remove a tela de carregamento assim que o React monta
 const bootEl = document.getElementById('fallback-boot')
@@ -17,8 +16,9 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/admin.morais" element={<AdminPage />} />
+        <Route path="/admin-morais" element={<AdminPage />} />
         <Route path="/agendamento" element={<Acompanhamento />} />
-        <Route path="/preview" element={<PreviewLanding />} />
+        <Route path="/preview" element={<App />} />
       </Routes>
     </HashRouter>
   </StrictMode>,
