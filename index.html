@@ -9,9 +9,8 @@
     <meta property="og:description" content="Onde estilo encontra excelência" />
     <meta property="og:type" content="website" />
     <style>
-      /* Tela de carregamento/erro — se o JS morrer, o usuário vê o que houve */
       #fallback-boot { position: fixed; inset: 0; background: #0a0a0a; color: #d4a853; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: system-ui, sans-serif; gap: 12px; padding: 24px; text-align: center; z-index: 9999; }
-      #fallback-boot .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; }
+      #fallback-boot .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; font-family: Georgia, serif; }
       #fallback-boot .msg { color: #ccc; font-size: 0.95rem; max-width: 420px; }
       #fallback-boot .erro { color: #ff6b6b; font-size: 0.85rem; max-width: 520px; word-break: break-word; }
       #fallback-boot .btn { background: #d4a853; color: #0a0a0a; border: none; border-radius: 8px; padding: 10px 22px; font-weight: 600; cursor: pointer; }
@@ -22,35 +21,10 @@
     <div id="fallback-boot">
       <div class="logo">MORAIS BARBER</div>
       <div class="msg" id="boot-msg">Carregando...</div>
-      <button class="btn" id="boot-btn" onclick="location.reload()" style="display:none">Tentar de novo</button>
+      <button class="btn" id="boot-btn" type="button" style="display:none">Tentar de novo</button>
       <div class="erro" id="boot-erro"></div>
     </div>
-    <script>
-      // Se em 6s o React não montou, mostra ajuda em vez de tela preta
-      setTimeout(function () {
-        var root = document.getElementById('root')
-        if (!root || !root.innerHTML || root.innerHTML === '') {
-          var msg = document.getElementById('boot-msg')
-          if (msg) {
-            msg.textContent = 'O site não conseguiu carregar neste navegador. Limpe o cache (Ctrl+Shift+R) ou atualize o navegador.'
-          }
-          var btn = document.getElementById('boot-btn')
-          if (btn) btn.style.display = 'block'
-        } else {
-          var fb = document.getElementById('fallback-boot')
-          if (fb) fb.remove()
-        }
-      }, 6000)
-      window.addEventListener('error', function (e) {
-        var root = document.getElementById('root')
-        if (root && (!root.innerHTML || root.innerHTML === '')) {
-          var msg = document.getElementById('boot-msg')
-          var erro = document.getElementById('boot-erro')
-          if (msg) msg.textContent = 'Erro ao carregar o site:'
-          if (erro) erro.textContent = (e.message || 'Erro desconhecido') + ' — tente Ctrl+Shift+R'
-        }
-      })
-    </script>
+    <script src="/boot.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

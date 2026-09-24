@@ -1,16 +1,10 @@
 import react from '@vitejs/plugin-react'
-import legacy from '@vitejs/plugin-legacy'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
+// Nota: NÃO usar @vitejs/plugin-legacy — ele injeta scripts inline no HTML,
+// que o CSP estrito (script-src 'self') bloqueia. Navegadores muito antigos
+// recebem aviso claro do /boot.js (externo) pedindo pra atualizar o navegador.
 export default defineConfig({
-  plugins: [
-    react(),
-    // Suporte a navegadores antigos (Chrome <87, Edge antigo, etc):
-    // gera um bundle extra compatível e carrega o que o navegador entender
-    legacy({
-      targets: ['defaults', 'not IE 11'],
-      renderLegacyChunks: true,
-    }),
-  ],
+  plugins: [react()],
 })
