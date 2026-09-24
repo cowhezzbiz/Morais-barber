@@ -271,7 +271,45 @@ export default function AdminPage() {
   }
 
   const countStatus = (s: string) => agendamentos.filter(a => a.status === s).length
-  const filtrados = filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro)
+  // Ordena: agendamentos SEM horário por último; com horário, do mais PRÓXIMO pro mais distante.
+  // Depois agrupa por dia (cabeçalho "Quinta, 25/09") na renderização.
+  const ordenarAgendamentos = (lista: Agendamento[]): Agendamento[] => {
+    return [...lista].sort((a, b) => {
+      const ha = a.horario_agendado ? new Date(a.horario_agendado).getTime() : null
+      const hb = b.horario_agendado ? new Date(b.horario_agendado).getTime() : null
+      if (ha === null && hb === null) return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      if (ha === null) return 1
+      if (hb === null) return -1
+      return ha - hb
+    })
+  }
+
+  const filtrados = ordenarAgendamentos(filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro))
+
+  // Agrupa por dia: { chave: '2026-09-25', rotulo: 'Quinta, 25/09', itens: [...] }
+  const agrupados = (() => {
+    const grupos: { chave: string; rotulo: string; itens: Agendamento[] }[] = []
+    for (const ag of filtrados) {
+      if (!ag.horario_agendado) {
+        const gSemData = grupos.find(g => g.chave === 'sem-data')
+        if (gSemData) gSemData.itens.push(ag)
+        else grupos.push({ chave: 'sem-data', rotulo: 'A combinar', itens: [ag] })
+        continue
+      }
+      const d = new Date(ag.horario_agendado)
+      const chave = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+      const hoje = new Date()
+      const ehHoje = d.toDateString() === hoje.toDateString()
+      const amanha = new Date(hoje.getTime() + 86400000)
+      const ehAmanha = d.toDateString() === amanha.toDateString()
+      const rotulo = ehHoje ? '🔥 Hoje' : ehAmanha ? '➡️ Amanhã' : `${dias[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+      const g = grupos.find(x => x.chave === chave)
+      if (g) g.itens.push(ag)
+      else grupos.push({ chave, rotulo, itens: [ag] })
+    }
+    return grupos
+  })()
 
   if (loading) return <div className="admin-container"><div className="admin-loading">Carregando...</div></div>
 
@@ -354,54 +392,62 @@ export default function AdminPage() {
         <div className="admin-vazio"><span>📭</span><p>Nenhum agendamento.</p></div>
       ) : (
         <div className="admin-tabela">
-          <div className="tabela-header">
-            <span>Nome</span><span>Telefone</span><span>Serviço</span><span>Horário</span><span>Pgto</span><span>Status</span><span>Ações</span>
-          </div>
-          {filtrados.map(ag => (
-            <div key={ag.id} className={`tabela-linha ${ag.status}`}>
-              <span className="celula-nome"><strong>{ag.nome}</strong>{ag.mensagem && <small>{ag.mensagem}</small>}</span>
-              <span className="celula-telefone">{ag.telefone}</span>
-              <span className="celula-servico">{ag.servico}</span>
-              <span className="celula-horario">{ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '-'}</span>
-              <span className="celula-pgto">
-                <button className={`btn-pagamento ${ag.pago ? 'pago' : 'pendente'}`} onClick={() => togglePagamento(ag.id, ag.pago)}>
-                  {ag.pago ? '💰' : '⏳'}
-                </button>
-              </span>
-              <span className="celula-status">
-                <span className={`badge ${ag.status}`}>
-                  {ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : ag.status === 'aguardando_pagamento' ? '📱' : ag.status === 'aguardando_verificacao' ? '🔍' : '❌'}
-                  {ag.status === 'aguardando_pagamento' ? 'PIX não pago' : ag.status === 'aguardando_verificacao' ? 'Verificar PIX' : ag.status}
-                </span>
-              </span>
-              <span className="celula-acoes">
-                {ag.status === 'aguardando_verificacao' && (
-                  <div className="verificacao-box">
-                    <code className="comprovante-mostra" title={ag.comprovante || ''}>
-                      {ag.comprovante ? `${ag.comprovante.slice(0, 18)}...` : '—'}
-                    </code>
-                    <button className="btn-acao confirmar" onClick={() => aprovarComprovante(ag.id)} title="Confere com o extrato — confirmar e marcar pago">✓</button>
-                    <button className="btn-acao cancelar" onClick={() => rejeitarComprovante(ag.id)} title="Comprovante não bate — cancelar e bloquear PIX">✕</button>
-                  </div>
-                )}
-                {ag.status === 'aguardando_pagamento' && (
-                  <>
-                    <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar pagamento recebido">✓</button>
-                    <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Cancelar">✕</button>
-                  </>
-                )}
-                {ag.status === 'pendente' && (
-                  <>
-                    <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar">✓</button>
-                    <button className="btn-acao whatsapp" onClick={() => enviarWhatsApp(ag, 'confirmacao')} title="Confirmar via WhatsApp">💬</button>
-                    <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Cancelar">✕</button>
-                  </>
-                )}
-                {ag.status === 'confirmado' && (
-                  <button className="btn-acao whatsapp" onClick={() => enviarWhatsApp(ag, 'lembrete')} title="Enviar lembrete">💬</button>
-                )}
-                <button className="btn-acao excluir" onClick={() => deleteAgendamento(ag.id)} title="Excluir">🗑</button>
-              </span>
+          {agrupados.map(grupo => (
+            <div key={grupo.chave} className="grupo-dia">
+              <div className="grupo-dia-header">
+                <span>{grupo.rotulo}</span>
+                <small>{grupo.itens.length} {grupo.itens.length === 1 ? 'atendimento' : 'atendimentos'}</small>
+              </div>
+              <div className="tabela-header">
+                <span>Nome</span><span>Telefone</span><span>Serviço</span><span>Hora</span><span>Pgto</span><span>Status</span><span>Ações</span>
+              </div>
+              {grupo.itens.map(ag => (
+                <div key={ag.id} className={`tabela-linha ${ag.status}`}>
+                  <span className="celula-nome"><strong>{ag.nome}</strong>{ag.mensagem && <small>{ag.mensagem}</small>}</span>
+                  <span className="celula-telefone">{ag.telefone}</span>
+                  <span className="celula-servico">{ag.servico}</span>
+                  <span className="celula-horario">{ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-'}</span>
+                  <span className="celula-pgto">
+                    <button className={`btn-pagamento ${ag.pago ? 'pago' : 'pendente'}`} onClick={() => togglePagamento(ag.id, ag.pago)}>
+                      {ag.pago ? '💰' : '⏳'}
+                    </button>
+                  </span>
+                  <span className="celula-status">
+                    <span className={`badge ${ag.status}`}>
+                      {ag.status === 'pendente' ? '⏳' : ag.status === 'confirmado' ? '✅' : ag.status === 'aguardando_pagamento' ? '📱' : ag.status === 'aguardando_verificacao' ? '🔍' : '❌'}
+                      {ag.status === 'aguardando_pagamento' ? 'PIX não pago' : ag.status === 'aguardando_verificacao' ? 'Verificar PIX' : ag.status}
+                    </span>
+                  </span>
+                  <span className="celula-acoes">
+                    {ag.status === 'aguardando_verificacao' && (
+                      <div className="verificacao-box">
+                        <code className="comprovante-mostra" title={ag.comprovante || ''}>
+                          {ag.comprovante ? `${ag.comprovante.slice(0, 18)}...` : '—'}
+                        </code>
+                        <button className="btn-acao confirmar" onClick={() => aprovarComprovante(ag.id)} title="Confere com o extrato — confirmar e marcar pago">✓</button>
+                        <button className="btn-acao cancelar" onClick={() => rejeitarComprovante(ag.id)} title="Comprovante não bate — cancelar e bloquear PIX">✕</button>
+                      </div>
+                    )}
+                    {ag.status === 'aguardando_pagamento' && (
+                      <>
+                        <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar pagamento recebido">✓</button>
+                        <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Cancelar">✕</button>
+                      </>
+                    )}
+                    {ag.status === 'pendente' && (
+                      <>
+                        <button className="btn-acao confirmar" onClick={() => updateStatus(ag.id, 'confirmado')} title="Confirmar">✓</button>
+                        <button className="btn-acao whatsapp" onClick={() => enviarWhatsApp(ag, 'confirmacao')} title="Confirmar via WhatsApp">💬</button>
+                        <button className="btn-acao cancelar" onClick={() => updateStatus(ag.id, 'cancelado')} title="Cancelar">✕</button>
+                      </>
+                    )}
+                    {ag.status === 'confirmado' && (
+                      <button className="btn-acao whatsapp" onClick={() => enviarWhatsApp(ag, 'lembrete')} title="Enviar lembrete">💬</button>
+                    )}
+                    <button className="btn-acao excluir" onClick={() => deleteAgendamento(ag.id)} title="Excluir">🗑</button>
+                  </span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -417,7 +463,7 @@ export default function AdminPage() {
               <select value={novoCliente.servico} onChange={e => setNovoCliente({...novoCliente, servico: e.target.value})}>
                 <option value="">Selecione...</option>
                 <option value="Corte + Sobrancelha">Corte + Sobrancelha — R$ 35</option>
-                <option value="Corte + Barba">Corte + Barba — R$ 35</option>
+                <option value="Barba">Barba — R$ 30</option>
                 <option value="Combo Completo">Combo Completo — R$ 60</option>
                 <option value="Tatuagem">Tatuagem — Consultar</option>
               </select>
