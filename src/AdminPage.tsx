@@ -37,6 +37,8 @@ export default function AdminPage() {
   const [modalAberto, setModalAberto] = useState(false)
   const [faturamento, setFaturamento] = useState({ diario: 0, mensal: 0, anual: 0 })
   const faturamentoCalculado = useRef(false)
+  const [pushAtivo, setPushAtivo] = useState<boolean | null>(null)
+  const [pushStatus, setPushStatus] = useState('')
   const [novoCliente, setNovoCliente] = useState({
     nome: '',
     telefone: '',
@@ -54,6 +56,10 @@ export default function AdminPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
+    // Registra o service worker das notificações
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
     return () => subscription.unsubscribe()
   }, [])
 
@@ -108,6 +114,81 @@ export default function AdminPage() {
   }
 
   const handleLogout = async () => { await supabase.auth.signOut() }
+
+  // ===== Notificações push (barbeiro recebe no celular) =====
+  const VAPID_PUBLIC_KEY = 'BOX77pKob48hz25LCPGfbfCGHWk3FtwwwRY4TBt-V8guW2cjqFakhyXaKPUH9_nDt4L-xpJyyS-ObLBvqLBt238'
+
+  const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+    const raw = atob(base64)
+    const output = new Uint8Array(raw.length)
+    for (let i = 0; i < raw.length; i++) output[i] = raw.charCodeAt(i)
+    return output
+  }
+
+  // Checa no load se já tem push ativo neste navegador
+  useEffect(() => {
+    if (!user || !('serviceWorker' in navigator) || !('PushManager' in window)) return
+    navigator.serviceWorker.ready
+      .then(reg => reg.pushManager.getSubscription())
+      .then(sub => setPushAtivo(!!sub))
+      .catch(() => setPushAtivo(false))
+  }, [user])
+
+  const ativarPush = async () => {
+    setPushStatus('')
+    try {
+      const permissao = await Notification.requestPermission()
+      if (permissao !== 'granted') {
+        setPushStatus('Permissão negada. Habilite notificações nas configurações do navegador.')
+        return
+      }
+      const reg = await navigator.serviceWorker.ready
+      let sub = await reg.pushManager.getSubscription()
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+        })
+      }
+      // Salva a inscrição no banco (Edge Function envia praqui)
+      const resp = await fetch('https://croscmpnezlixszygyka.supabase.co/rest/v1/push_inscricoes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Prefer': 'resolution=ignore-duplicates',
+        },
+        body: JSON.stringify({
+          endpoint: sub.endpoint,
+          p256dh: sub.getKey('p256dh') ? btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh')!))) : '',
+          auth: sub.getKey('auth') ? btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth')!))) : '',
+        }),
+      })
+      if (!resp.ok) throw new Error('Falha ao salvar inscrição')
+      setPushAtivo(true)
+      setPushStatus('✅ Notificações ativadas! Você receberá alerta a cada alteração na agenda.')
+    } catch (err) {
+      setPushStatus(`Erro ao ativar: ${err instanceof Error ? err.message : 'desconhecido'}`)
+    }
+  }
+
+  const testarPush = async () => {
+    setPushStatus('Enviando teste...')
+    try {
+      const resp = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/push-agenda', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
+        body: JSON.stringify({ titulo: '🔔 Teste Morais Barber', corpo: 'Notificações funcionando! A agenda avisa quando mudar.' }),
+      })
+      const res = await resp.json()
+      setPushStatus(res.enviados > 0 ? '✅ Teste enviado! Olha teu celular/PC.' : 'Nenhuma inscrição ativa ainda — ativa primeiro.')
+    } catch {
+      setPushStatus('Erro ao enviar teste.')
+    }
+  }
 
   const updateStatus = async (id: number, status: string) => {
     await supabase.from('agendamentos').update({ status }).eq('id', id)
@@ -218,9 +299,18 @@ export default function AdminPage() {
     <div className="admin-container">
       <div className="admin-header-bar">
         <div><h2>📋 Painel de Agendamentos</h2><p>Bem-vindo, {user.email}</p></div>
-        <button className="btn btn-primary" onClick={() => setModalAberto(true)}>+ Adicionar Cliente</button>
-        <button className="btn btn-outline" onClick={handleLogout}>Sair</button>
+        <div className="admin-header-acoes">
+          {!pushAtivo && (
+            <button className="btn btn-notificacao" onClick={ativarPush} title="Receber alerta no celular quando a agenda mudar">🔔 Ativar notificações</button>
+          )}
+          {pushAtivo && (
+            <button className="btn btn-notificacao-ok" onClick={testarPush} title="Mandar notificação de teste">🔔 Notificações ativas — testar</button>
+          )}
+          <button className="btn btn-primary" onClick={() => setModalAberto(true)}>+ Adicionar Cliente</button>
+          <button className="btn btn-outline" onClick={handleLogout}>Sair</button>
+        </div>
       </div>
+      {pushStatus && <div className="push-status">{pushStatus}</div>}
 
       <div className="admin-stats">
         <div className="admin-stat"><span className="stat-num">{agendamentos.length}</span><span className="stat-label">Total</span></div>

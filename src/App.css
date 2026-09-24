@@ -2201,3 +2201,41 @@ body {
   line-height: 1.6;
   margin: 0;
 }
+
+/* ===== Notificações push no admin ===== */
+.admin-header-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn-notificacao {
+  background: rgba(212, 168, 83, 0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn-notificacao:hover {
+  background: rgba(212, 168, 83, 0.3);
+}
+
+.btn-notificacao-ok {
+  background: rgba(76, 175, 80, 0.15);
+  color: #7bd47f;
+  border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.btn-notificacao-ok:hover {
+  background: rgba(76, 175, 80, 0.3);
+}
+
+.push-status {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(212, 168, 83, 0.08);
+  border: 1px solid rgba(212, 168, 83, 0.3);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
