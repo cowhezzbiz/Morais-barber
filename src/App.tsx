@@ -668,8 +668,7 @@ export default function App() {
           </div>
         </div>
         <div className="pv-container pv-footer-base">
-          <span>© 2026 Morais Barber</span>
-          <span className="pv-preview-tag">PRÉVIA — versão de teste</span>
+          <span>© 2026 Morais Barber. Todos os direitos reservados.</span>
         </div>
       </footer>
     </div>
