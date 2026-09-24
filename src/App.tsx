@@ -272,7 +272,7 @@ export default function App() {
 
   // Cliente enviou o comprovante PIX → vai pra verificação do barbeiro
   const confirmarPix = async () => {
-    if (!tokenGerado || comprovante.length < 20) return
+    if (!tokenGerado || comprovante.length < 30) return
     setConfirmandoPix(true)
     try {
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/confirmar-pagamento', {
@@ -460,8 +460,8 @@ export default function App() {
                           type="text"
                           value={comprovante}
                           onChange={e => setComprovante(e.target.value.trim())}
-                          placeholder="Cole o código do comprovante aqui"
-                          maxLength={60}
+                          placeholder="Copie e cole o texto do comprovante PIX (do app do banco)"
+                          maxLength={2000}
                           disabled={confirmandoPix}
                         />
                         <span className="comprovante-dica">
@@ -471,7 +471,7 @@ export default function App() {
                           type="button"
                           className="btn btn-primary btn-full"
                           onClick={confirmarPix}
-                          disabled={confirmandoPix || comprovante.length < 20}
+                          disabled={confirmandoPix || comprovante.length < 30}
                         >
                           {confirmandoPix ? 'Verificando...' : '✓ Enviar comprovante'}
                         </button>

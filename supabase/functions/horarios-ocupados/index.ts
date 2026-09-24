@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!
 const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!
 
-// Retorna APENAS os horários ocupados de uma data (AAAA-MM-DD).
+// Retorna APENAS os horários ocupados de um período.
+// Parâmetros: ?data=AAAA-MM-DD (um dia) OU ?inicio=AAAA-MM-DD&fim=AAAA-MM-DD (range).
 // Nenhum dado pessoal (nome, telefone, serviço) é exposto — só timestamps.
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -14,23 +15,33 @@ serve(async (req: Request) => {
   try {
     const url = new URL(req.url)
     const data = url.searchParams.get("data") || ""
+    const inicio = url.searchParams.get("inicio") || ""
+    const fim = url.searchParams.get("fim") || ""
 
-    // Valida formato AAAA-MM-DD
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || isNaN(new Date(data + "T12:00:00").getTime())) {
+    const validaData = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !isNaN(new Date(d + "T12:00:00").getTime())
+
+    let inicioISO: string
+    let fimISO: string
+
+    if (inicio && fim && validaData(inicio) && validaData(fim)) {
+      // Range de dias (agenda da semana)
+      inicioISO = new Date(inicio + "T00:00:00-03:00").toISOString()
+      fimISO = new Date(fim + "T23:59:59-03:00").toISOString()
+    } else if (validaData(data)) {
+      // Dia único
+      inicioISO = new Date(data + "T00:00:00-03:00").toISOString()
+      fimISO = new Date(data + "T23:59:59-03:00").toISOString()
+    } else {
       return new Response(JSON.stringify({ error: "Data inválida" }), { status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } })
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
-    // Janela do dia informado (00:00 às 23:59, horário local do Brasil -03:00)
-    const inicio = new Date(data + "T00:00:00-03:00").toISOString()
-    const fim = new Date(data + "T23:59:59-03:00").toISOString()
-
     const { data: ocupados, error } = await supabase
       .from("agendamentos")
       .select("horario_agendado")
-      .gte("horario_agendado", inicio)
-      .lte("horario_agendado", fim)
+      .gte("horario_agendado", inicioISO)
+      .lte("horario_agendado", fimISO)
       .in("status", ["pendente", "confirmado", "aguardando_pagamento", "aguardando_verificacao"])
       .not("horario_agendado", "is", null)
 

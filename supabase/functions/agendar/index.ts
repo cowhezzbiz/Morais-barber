@@ -146,6 +146,7 @@ serve(async (req: Request) => {
         servico: servicoSanitizado,
         mensagem: mensagemSanitizada,
         status: statusInicial,
+        status_em: new Date().toISOString(),
         horario_agendado: horarioISO,
         forma_pagamento: formaPagamento,
         valor: PRECOS[servicoSanitizado] || 0,
