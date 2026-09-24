@@ -102,6 +102,13 @@ serve(async (req: Request) => {
       const minutos = horaH * 60 + minH
       const FECHAMENTO_SEX = 19 * 60 + 30, FECHAMENTO_SAB = 17 * 60
 
+      // Não pode agendar no passado (considera horário de Brasília -03:00)
+      const agoraSP = new Date(Date.now() - 3 * 60 * 60 * 1000)
+      const dataPedido = new Date(Date.UTC(anoH, mesH - 1, diaH, horaH, minH))
+      if (dataPedido.getTime() <= agoraSP.getTime()) {
+        return new Response(JSON.stringify({ error: "Não é possível agendar em datas que já passaram." }), { status: 400, headers: { "Content-Type": "application/json" } })
+      }
+
       if (diaSemana === 0 || diaSemana === 1) {
         return new Response(JSON.stringify({ error: "Fechado domingo e segunda. Agende de terça a sábado." }), { status: 400, headers: { "Content-Type": "application/json" } })
       }

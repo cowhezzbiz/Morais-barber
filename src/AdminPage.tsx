@@ -314,6 +314,12 @@ export default function AdminPage() {
       alert('Preencha tudo, incluindo o horário!')
       return
     }
+    // Bloqueia data no passado (barbeiro cadastrando na mão)
+    const horaEscolhida = new Date(novoCliente.horario_agendado)
+    if (!isNaN(horaEscolhida.getTime()) && horaEscolhida.getTime() < Date.now() - 60000) {
+      alert('Essa data já passou! Escolhe um horário futuro.')
+      return
+    }
     try {
       const { error } = await supabase.from('agendamentos').insert({
         nome: novoCliente.nome,

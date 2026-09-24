@@ -168,12 +168,13 @@ export default function App() {
     if (dow === 0) base = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 2 + semanaOffset * 7)
     else if (dow === 1) base = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1 + semanaOffset * 7)
     else base = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - (dow - 2) + semanaOffset * 7)
-    // Ter, Qua, Qui, Sex, Sáb
+    // Ter, Qua, Qui, Sex, Sáb — FILTRA dias que já passaram
+    const hojeZero = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())
     return [0, 1, 2, 3, 4].map(i => {
       const d = new Date(base)
       d.setDate(base.getDate() + i)
       return d
-    })
+    }).filter(d => d >= hojeZero)
   }, [semanaOffset])
 
   // Todos os horários possíveis (linhas da tabela): união dos horários de ter-sáb
