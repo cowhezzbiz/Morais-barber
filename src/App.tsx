@@ -14,7 +14,7 @@ interface Servico {
 
 const SERVICOS: Servico[] = [
   { id: 1, nome: 'Corte + Sobrancelha', descricao: 'Corte personalizado + design de sobrancelha com navalha.', preco: 'R$ 35', duracao: '50 min', icone: 'scissors' },
-  { id: 2, nome: 'Corte + Barba', descricao: 'Corte moderno + modelagem completa de barba.', preco: 'R$ 35', duracao: '1h', icone: 'crown' },
+  { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min', icone: 'crown' },
   { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba + Sobrancelha. O visual perfeito.', preco: 'R$ 60', duracao: '1h15min', icone: 'sparkles' },
   { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', icone: 'pen' },
 ]
@@ -118,32 +118,75 @@ export default function App() {
     }
   }, [erro])
 
-  const horariosDisponiveis = useMemo(() => {
+  // ===== Grade de horários (agenda visual) =====
+  // Ter-Sex: 9h-12h e 14h-19h30 (sem horários ao meio-dia) | Sáb: 9h-17h
+  const gerarHorariosDoDia = (data: Date): string[] => {
+    const diaSemana = data.getDay()
+    if (diaSemana === 0 || diaSemana === 1) return []
+    const ano = data.getFullYear()
+    const mes = String(data.getMonth() + 1).padStart(2, '0')
+    const dia = String(data.getDate()).padStart(2, '0')
     const horarios: string[] = []
-    const hoje = new Date()
-    for (let i = 0; i < 30; i++) {
-      const data = new Date(hoje)
-      data.setDate(hoje.getDate() + i)
-      const diaSemana = data.getDay()
-      if (diaSemana === 0 || diaSemana === 1) continue
-      const ano = data.getFullYear()
-      const mes = String(data.getMonth() + 1).padStart(2, '0')
-      const dia = String(data.getDate()).padStart(2, '0')
-      if (diaSemana >= 2 && diaSemana <= 5) {
-        for (let h = 9; h <= 19; h++) {
-          horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:00`)
-          if (h < 19) horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
-        }
-        horarios.push(`${ano}-${mes}-${dia}T19:30`)
-      } else if (diaSemana === 6) {
-        for (let h = 9; h <= 17; h++) {
-          horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:00`)
-          if (h < 17) horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:30`)
-        }
-      }
+    const push = (h: number, m: number) => horarios.push(`${ano}-${mes}-${dia}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+    if (diaSemana >= 2 && diaSemana <= 5) {
+      for (let h = 9; h < 12; h++) { push(h, 0); push(h, 30) }
+      for (let h = 14; h < 19; h++) { push(h, 0); push(h, 30) }
+      push(19, 0); push(19, 30)
+    } else if (diaSemana === 6) {
+      for (let h = 9; h < 17; h++) { push(h, 0); push(h, 30) }
+      push(17, 0)
     }
     return horarios
+  }
+
+  // Próximas 4 semanas de dias úteis (ter-sáb)
+  const datasDisponiveis = useMemo(() => {
+    const datas: Date[] = []
+    const hoje = new Date()
+    for (let i = 0; i < 28; i++) {
+      const d = new Date(hoje)
+      d.setDate(hoje.getDate() + i)
+      const dow = d.getDay()
+      if (dow === 0 || dow === 1) continue
+      datas.push(d)
+    }
+    return datas
   }, [])
+
+  const [dataSelecionada, setDataSelecionada] = useState<Date | null>(null)
+  const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
+  const [carregandoGrade, setCarregandoGrade] = useState(false)
+
+  // Busca ocupados quando muda a data — via Edge Function (não expõe dados)
+  useEffect(() => {
+    if (!dataSelecionada) return
+    const dataISOBase = `${dataSelecionada.getFullYear()}-${String(dataSelecionada.getMonth() + 1).padStart(2, '0')}-${String(dataSelecionada.getDate()).padStart(2, '0')}`
+    setCarregandoGrade(true)
+    fetch(`https://croscmpnezlixszygyka.supabase.co/functions/v1/horarios-ocupados?data=${dataISOBase}`, {
+      headers: { 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY }
+    })
+      .then(r => r.json())
+      .then(res => {
+        // Converte ISO UTC pro formato local AAAA-MM-DDTHH:MM pra comparar
+        const locais = (res.ocupados || []).map((iso: string) => {
+          const d = new Date(iso)
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+        })
+        setHorariosOcupados(locais)
+      })
+      .catch(() => setHorariosOcupados([]))
+      .finally(() => setCarregandoGrade(false))
+  }, [dataSelecionada])
+
+  // Horários já passados ficam desabilitados no dia atual
+  const agoraMs = Date.now()
+  const horariosDoDia = dataSelecionada ? gerarHorariosDoDia(dataSelecionada) : []
+  const horarioPassado = (h: string) => {
+    if (!dataSelecionada) return false
+    const hoje = new Date()
+    const mesmoDia = dataSelecionada.toDateString() === hoje.toDateString()
+    return mesmoDia && new Date(h).getTime() < agoraMs
+  }
 
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value)
@@ -492,39 +535,89 @@ export default function App() {
                   </select>
                 </div>
                 <div className="form-grupo">
-                  <label htmlFor="horario">Data e Horário</label>
-                  <select id="horario" value={horario} onChange={e => setHorario(e.target.value)} required disabled={loading}>
-                    <option value="">Selecione...</option>
-                    {horariosDisponiveis.map(h => {
-                      const d = new Date(h)
+                  <label>Data e Horário</label>
+                  <div className="grade-datas">
+                    {datasDisponiveis.map(d => {
                       const dia = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]
-                      const data = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
-                      const hora = h.split('T')[1]
-                      return <option key={h} value={h}>{dia} {data} às {hora}</option>
+                      const sel = dataSelecionada && dataSelecionada.toDateString() === d.toDateString()
+                      return (
+                        <button
+                          type="button"
+                          key={d.toISOString()}
+                          className={`grade-data ${sel ? 'selecionada' : ''}`}
+                          onClick={() => { setDataSelecionada(d); setHorario('') }}
+                        >
+                          <span className="grade-data-dia">{dia}</span>
+                          <span className="grade-data-num">{String(d.getDate()).padStart(2,'0')}/{String(d.getMonth()+1).padStart(2,'0')}</span>
+                        </button>
+                      )
                     })}
-                  </select>
+                  </div>
+                  {dataSelecionada && (
+                    <div className="grade-horarios">
+                      {carregandoGrade && <span className="grade-carregando">Carregando horários...</span>}
+                      {!carregandoGrade && horariosDoDia.length === 0 && <span className="grade-carregando">Sem horários neste dia</span>}
+                      {horariosDoDia.map(h => {
+                        const hora = h.split('T')[1]
+                        const ocupado = horariosOcupados.includes(h)
+                        const passado = horarioPassado(h)
+                        const indisponivel = ocupado || passado
+                        const selecionado = horario === h
+                        return (
+                          <button
+                            type="button"
+                            key={h}
+                            className={`grade-horario ${indisponivel ? 'ocupado' : 'livre'} ${selecionado ? 'selecionado' : ''}`}
+                            disabled={indisponivel}
+                            onClick={() => setHorario(h)}
+                            title={ocupado ? 'Horário já reservado' : passado ? 'Horário já passou' : 'Clique para selecionar'}
+                          >
+                            {hora}
+                          </button>
+                        )
+                      })}
+                      {!carregandoGrade && horariosDoDia.length > 0 && (
+                        <div className="grade-legenda">
+                          <span><i className="legenda-livre" /> Livre</span>
+                          <span><i className="legenda-ocupado" /> Reservado</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!dataSelecionada && <span className="grade-dica">Escolha um dia acima pra ver os horários</span>}
                 </div>
                 <div className="form-grupo">
                   <label>Forma de pagamento</label>
-                  <div className="pagamento-opcoes">
+                  <div className="pagamento-vertical">
                     <button
                       type="button"
-                      className={`pagamento-opcao ${formaPagamento === 'pix' ? 'ativa' : ''}`}
-                      onClick={() => setFormaPagamento('pix')}
-                    >
-                      <span className="pagamento-icone">📱</span>
-                      <span className="pagamento-titulo">Pagar agora com PIX</span>
-                      <span className="pagamento-desc">Garante seu horário na hora</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`pagamento-opcao ${formaPagamento === 'pix_na_hora' ? 'ativa' : ''}`}
+                      className={`pagamento-opcao-vertical ${formaPagamento === 'pix_na_hora' ? 'ativa' : ''}`}
                       onClick={() => setFormaPagamento('pix_na_hora')}
                     >
                       <span className="pagamento-icone">💵</span>
-                      <span className="pagamento-titulo">Pagar na hora do corte</span>
-                      <span className="pagamento-desc">PIX, dinheiro ou cartão lá na barbearia</span>
+                      <span className="pagamento-textos">
+                        <span className="pagamento-titulo">Pagar na hora do corte</span>
+                        <span className="pagamento-desc">PIX, dinheiro ou cartão lá na barbearia</span>
+                      </span>
                     </button>
+
+                    <button
+                      type="button"
+                      className={`facilite-tab ${formaPagamento === 'pix' ? 'aberta' : ''}`}
+                      onClick={() => setFormaPagamento(formaPagamento === 'pix' ? 'pix_na_hora' : 'pix')}
+                    >
+                      <span className="facilite-tab-titulo">✨ Facilite o atendimento</span>
+                      <span className="facilite-tab-seta">{formaPagamento === 'pix' ? '▲' : '▼'}</span>
+                    </button>
+
+                    {formaPagamento === 'pix' && (
+                      <div className="facilite-conteudo">
+                        <p className="facilite-desc">
+                          Pague agora com PIX e garanta seu horário na hora — você recebe o QR Code
+                          logo após agendar e o horário fica reservado assim que o pagamento for confirmado.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="form-grupo">

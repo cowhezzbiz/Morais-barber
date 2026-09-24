@@ -21,7 +21,7 @@ interface Agendamento {
 
 const PRECOS: Record<string, number> = {
   'Corte + Sobrancelha': 35,
-  'Corte + Barba': 35,
+  'Barba': 30,
   'Combo Completo': 60,
   'Tatuagem': 0,
 }

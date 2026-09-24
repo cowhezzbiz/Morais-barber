@@ -6,14 +6,14 @@ const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!
 
 const SERVICOS_VALIDOS = [
   "Corte + Sobrancelha",
-  "Corte + Barba",
+  "Barba",
   "Combo Completo",
   "Tatuagem"
 ]
 
 const PRECOS: Record<string, number> = {
   "Corte + Sobrancelha": 35,
-  "Corte + Barba": 35,
+  "Barba": 30,
   "Combo Completo": 60,
   "Tatuagem": 0
 }
@@ -85,9 +85,36 @@ serve(async (req: Request) => {
     // Verificar horário duplicado (se fornecido) — inclui aguardando_pagamento
     let horarioISO: string | null = null
     if (horario_agendado) {
-      horarioISO = new Date(horario_agendado).toISOString()
-      if (isNaN(new Date(horario_agendado).getTime())) {
+      const dataHorario = new Date(horario_agendado)
+      if (isNaN(dataHorario.getTime())) {
         return new Response(JSON.stringify({ error: "Data/horário inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
+      }
+      horarioISO = dataHorario.toISOString()
+
+      // Validação de horário comercial — interpreta a string como horário de Brasília (-03:00)
+      // Parse manual: a Edge Function roda em UTC, então não dá pra confiar no fuso do servidor
+      const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(horario_agendado)
+      if (!m) {
+        return new Response(JSON.stringify({ error: "Data/horário inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
+      }
+      const anoH = +m[1], mesH = +m[2], diaH = +m[3], horaH = +m[4], minH = +m[5]
+      const diaSemana = new Date(Date.UTC(anoH, mesH - 1, diaH)).getUTCDay() // 0=Dom ... 6=Sáb
+      const minutos = horaH * 60 + minH
+      const FECHAMENTO_SEX = 19 * 60 + 30, FECHAMENTO_SAB = 17 * 60
+
+      if (diaSemana === 0 || diaSemana === 1) {
+        return new Response(JSON.stringify({ error: "Fechado domingo e segunda. Agende de terça a sábado." }), { status: 400, headers: { "Content-Type": "application/json" } })
+      }
+      if (diaSemana >= 2 && diaSemana <= 5) {
+        // Terça a sexta: 9h-12h e 14h-19:30h (pausa de almoço 12h-14h)
+        const manha = minutos >= 9 * 60 && minutos < 12 * 60
+        const tarde = minutos >= 14 * 60 && minutos < FECHAMENTO_SEX
+        if (!manha && !tarde) {
+          return new Response(JSON.stringify({ error: "Horário fora do expediente (ter-sex: 9h-12h e 14h-19h30, sem horários ao meio-dia)." }), { status: 400, headers: { "Content-Type": "application/json" } })
+        }
+      }
+      if (diaSemana === 6 && (minutos < 9 * 60 || minutos >= FECHAMENTO_SAB)) {
+        return new Response(JSON.stringify({ error: "Sábado: agende entre 9h e 17h." }), { status: 400, headers: { "Content-Type": "application/json" } })
       }
 
       const { data: horarioOcupado } = await supabase
