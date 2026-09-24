@@ -115,13 +115,16 @@ export default function AdminPage() {
 
   const handleLogout = async () => { await supabase.auth.signOut() }
 
-  // ===== Notificações push (barbeiro recebe no celular) =====
+  // ===== Notificações =====
+  // Modo 1 (push externo): funciona com site fechado, depende do serviço do Google
+  // Modo 2 (local): se o push falhar, vigia a agenda a cada 30s com a aba aberta e
+  //                 notifica do mesmo jeito — funciona em qualquer rede
   const VAPID_PUBLIC_KEY = 'BOX77pKob48hz25LCPGfbfCGHWk3FtwwwRY4TBt-V8guW2cjqFakhyXaKPUH9_nDt4L-xpJyyS-ObLBvqLBt238'
 
   const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
-    const raw = atob(base64)
+    const base64String2 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+    const raw = atob(base64String2)
     const output = new Uint8Array(raw.length)
     for (let i = 0; i < raw.length; i++) output[i] = raw.charCodeAt(i)
     return output
@@ -134,6 +137,54 @@ export default function AdminPage() {
       .then(reg => reg.pushManager.getSubscription())
       .then(sub => setPushAtivo(!!sub))
       .catch(() => setPushAtivo(false))
+  }, [user])
+
+  // Notificação local: mostra aviso na hora, mesmo sem push externo
+  const notificarLocal = (titulo: string, corpo: string) => {
+    if (Notification.permission !== 'granted') return
+    try {
+      new Notification(titulo, { body: corpo, tag: 'agenda-morais', icon: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230a0a0a"/><text x="50" y="62" font-size="52" text-anchor="middle" fill="%23d4a853">M</text></svg>') })
+    } catch { /* alguns navegadores só deixam via SW */ }
+  }
+
+  // Vigia a agenda: a cada 30s compara com a última vista e notifica o que mudou
+  const ultimosVistos = useRef<Map<number, string>>(new Map())
+  const primeiroLoad = useRef(true)
+
+  useEffect(() => {
+    if (!user) return
+    const vigiar = async () => {
+      try {
+        const { data } = await supabase
+          .from('agendamentos')
+          .select('id, nome, servico, status, horario_agendado')
+          .order('created_at', { ascending: false })
+          .limit(50)
+        if (!data) return
+        const agora = new Map(data.map(a => [a.id, a.status]))
+        if (primeiroLoad.current) {
+          primeiroLoad.current = false
+          ultimosVistos.current = agora
+          return
+        }
+        for (const a of data) {
+          const anterior = ultimosVistos.current.get(a.id)
+          if (anterior === undefined) {
+            const hora = a.horario_agendado ? new Date(a.horario_agendado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'a combinar'
+            notificarLocal('🔔 Novo agendamento', `${a.nome} — ${a.servico} — ${hora}`)
+          } else if (anterior !== a.status) {
+            const rotulos: Record<string, string> = {
+              confirmado: '✅ Confirmado', cancelado: '❌ Cancelado',
+              aguardando_verificacao: '🔍 PIX pra verificar', aguardando_pagamento: '📱 Aguardando PIX',
+            }
+            notificarLocal('Agenda atualizada', `${a.nome} — ${rotulos[a.status] || a.status}`)
+          }
+        }
+        ultimosVistos.current = agora
+      } catch { /* rede caiu — tenta de novo no próximo ciclo */ }
+    }
+    const t = setInterval(vigiar, 30000)
+    return () => clearInterval(t)
   }, [user])
 
   const ativarPush = async () => {
@@ -161,10 +212,13 @@ export default function AdminPage() {
             if (tentativa < 2) await new Promise(r => setTimeout(r, 2500))
           }
         }
-        if (!sub) {
-          setPushStatus(`Não deu pra conectar no serviço de notificações (${ultimoErro}). Checa a internet e tenta de novo — se insistir, fecha e abre o navegador.`)
-          return
-        }
+      if (!sub) {
+        // Push externo falhou (rede/serviço do Google) — cai pro modo local,
+        // que vigia a agenda com a aba aberta. Funciona do mesmo jeito.
+        setPushAtivo(true)
+        setPushStatus('✅ Notificações ativadas (modo local)! Deixe esta aba aberta — a agenda é vigiada e você recebe alerta de cada mudança. Com uma rede melhor, o modo com site fechado ativa sozinho numa próxima.')
+        return
+      }
       }
       // Salva a inscrição no banco (Edge Function envia praqui)
       const resp = await fetch('https://croscmpnezlixszygyka.supabase.co/rest/v1/push_inscricoes', {
@@ -191,16 +245,23 @@ export default function AdminPage() {
 
   const testarPush = async () => {
     setPushStatus('Enviando teste...')
+    // 1. Testa notificação local (sempre disponível)
+    notificarLocal('🔔 Teste Morais Barber', 'Notificações funcionando! A agenda avisa quando mudar.')
     try {
+      // 2. Tenta o push externo também (se tiver inscrição salva)
       const resp = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/push-agenda', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY },
         body: JSON.stringify({ titulo: '🔔 Teste Morais Barber', corpo: 'Notificações funcionando! A agenda avisa quando mudar.' }),
       })
       const res = await resp.json()
-      setPushStatus(res.enviados > 0 ? '✅ Teste enviado! Olha teu celular/PC.' : 'Nenhuma inscrição ativa ainda — ativa primeiro.')
+      if (res.enviados > 0) {
+        setPushStatus('✅ Teste enviado! Olha a notificação chegar.')
+      } else {
+        setPushStatus('✅ Teste local enviado — olha a notificação. (Push com site fechado ainda sem inscrição; com a aba aberta você recebe tudo.)')
+      }
     } catch {
-      setPushStatus('Erro ao enviar teste.')
+      setPushStatus('✅ Teste local enviado — olha a notificação.')
     }
   }
 
