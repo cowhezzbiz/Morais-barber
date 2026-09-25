@@ -14,9 +14,9 @@ interface Servico {
 }
 
 const SERVICOS: Servico[] = [
-  { id: 1, nome: 'Corte + Sobrancelha', descricao: 'Corte personalizado + design de sobrancelha com navalha.', preco: 'R$ 35', duracao: '50 min' },
+  { id: 1, nome: 'Corte', descricao: 'Corte personalizado com navalha. Para quem quer look impecável.', preco: 'R$ 35', duracao: '50 min' },
   { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min' },
-  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba + Sobrancelha. O visual perfeito.', preco: 'R$ 60', duracao: '1h15min' },
+  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba. O visual completo em uma sessão.', preco: 'R$ 60', duracao: '1h15min' },
   { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável' },
 ]
 
