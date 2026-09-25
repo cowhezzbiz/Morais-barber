@@ -2,21 +2,21 @@
 import { useState } from 'react'
 import { Scissors, Sparkles, PenTool } from 'lucide-react'
 
-// Imagens do Unsplash para o site (placeholder premium - depois substituir pelas reais)
+// Imagens do site - usando arquivos locais do public/
 export const IMAGES = {
-  hero: 'https://images.unsplash.com/photo-1596728325488-58c87691e9af?w=1400&q=80&auto=format&fit=crop',
+  hero: '/barber-hero.jpg',
   gallery: [
-    { id: 1, src: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=600&q=80&auto=format&fit=crop', label: 'CORTE', alt: '' },
-    { id: 2, src: 'https://images.unsplash.com/photo-1621451537084-4302a22d175d?w=600&q=80&auto=format&fit=crop', label: 'BARBA', alt: '' },
-    { id: 3, src: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=600&q=80&auto=format&fit=crop', label: 'SOBRANCELHA', alt: '' },
-    { id: 4, src: 'https://images.unsplash.com/photo-1611501275019-57b8d5348800?w=600&q=80&auto=format&fit=crop', label: 'TATUAGEM', alt: '' },
-    { id: 5, src: 'https://images.unsplash.com/photo-1567806227010-d8d68149c5a4?w=600&q=80&auto=format&fit=crop', label: 'AMBIENTE', alt: '' },
-    { id: 6, src: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=600&q=80&auto=format&fit=crop', label: 'QUALIDADE', alt: '' },
+    { id: 1, src: '/gallery-1.jpg', label: 'CORTE', alt: 'Corte masculino premium' },
+    { id: 2, src: '/gallery-2.jpg', label: 'BARBA', alt: 'Modelagem de barba' },
+    { id: 3, src: '/gallery-3.jpg', label: 'SOBRANCELHA', alt: 'Sobrancelhas' },
+    { id: 4, src: '/gallery-1.jpg', label: 'TATUAGEM', alt: 'Tatuagem artística' },
+    { id: 5, src: '/gallery-2.jpg', label: 'AMBIENTE', alt: 'Ambiente da barbearia' },
+    { id: 6, src: '/gallery-3.jpg', label: 'QUALIDADE', alt: 'Ferramentas premium' },
   ],
   testimonials: [
-    { id: 1, src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&facepad=2&auto=format&fit=crop', name: 'Camila Santos', text: 'Ambiente incrível e o melhor corte que já tive! Voltarei muito!' },
-    { id: 2, src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&facepad=2&auto=format&fit=crop', name: 'Luke Oliveira', text: 'Profissionalismo e atenção ao detalhe. Recomendo de olhos fechados!' },
-    { id: 3, src: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&facepad=2&auto=format&fit=crop', name: 'Murillo Ferreira', text: 'O melhor barbeiro de Novo Hamburgo, sem dúvida!' },
+    { id: 1, src: '/avatar-camila.jpg', name: 'Camila Santos', text: 'Ambiente incrível e o melhor corte que já tive! Voltarei muito!' },
+    { id: 2, src: '/avatar-luke.jpg', name: 'Luke Oliveira', text: 'Profissionalismo e atenção ao detalhe. Recomendo de olhos fechados!' },
+    { id: 3, src: '/avatar-murillo.jpg', name: 'Murillo Ferreira', text: 'O melhor barbeiro de Novo Hamburgo, sem dúvida!' },
   ],
 }
 
@@ -269,6 +269,70 @@ export function Banner({ src, title, subtitle }: { src: string; title: string; s
           </p>
         )}
       </div>
+    </div>
+  )
+}
+
+// === COMPONENTES DE GRID ===
+
+interface GalleryImageData {
+  id: number
+  src: string
+  label: string
+  alt: string
+}
+
+interface GalleryGridProps {
+  images: GalleryImageData[]
+  columns?: 2 | 3 | 4
+}
+
+export function GalleryGrid({ images, columns = 3 }: GalleryGridProps) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: columns === 4 ? '16px' : '20px' }}>
+      {images.map((img) => (
+        <GalleryImage key={img.id} src={img.src} label={img.label} alt={img.alt} />
+      ))}
+    </div>
+  )
+}
+
+interface TestimonialData {
+  id: number
+  src: string
+  name: string
+  text: string
+}
+
+interface TestimonialsGridProps {
+  testimonials: TestimonialData[]
+}
+
+export function TestimonialsGrid({ testimonials }: TestimonialsGridProps) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginTop: '40px' }}>
+      {testimonials.map((t) => (
+        <TestimonialCard key={t.id} name={t.name} text={t.text} avatarUrl={t.src} />
+      ))}
+    </div>
+  )
+}
+
+interface StatData {
+  value: string | number
+  label: string
+}
+
+interface StatsGridProps {
+  stats: StatData[]
+}
+
+export function StatsGrid({ stats }: StatsGridProps) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginTop: '60px', paddingTop: '40px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      {stats.map((s, idx) => (
+        <StatItem key={idx} value={s.value} label={s.label} />
+      ))}
     </div>
   )
 }
