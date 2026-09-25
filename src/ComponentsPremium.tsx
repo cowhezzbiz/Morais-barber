@@ -7,7 +7,8 @@ import { Scissors, Sparkles, PenTool } from 'lucide-react'
 export const IMAGES = {
   hero: '/barber-hero.jpg',
   barberShop: '/barber-shop.jpg',
-  comboCompleto: '/combo-completo.jpg', // foto do combo completo (nova)
+  comboCompleto: '/combo-completo.jpg',
+  logo: '/morais-logo.jpg', // logo/Morais wordmark
   gallery: [
     { id: 1, src: '/barber-cut-1.jpg', label: 'CORTE PREMIUM', alt: 'Corte masculino com detalhes' },
     { id: 2, src: '/barber-cut-2.jpg', label: 'BARBA', alt: 'Modelagem de barba' },
