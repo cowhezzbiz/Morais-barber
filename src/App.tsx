@@ -376,7 +376,7 @@ export default function App() {
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center',
-              opacity: 0.4,
+              opacity: 0.7,
             }}
             loading="eager"
           />
