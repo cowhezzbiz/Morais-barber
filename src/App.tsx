@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from './supabase'
-import { Scissors, Crown, Sparkles, PenTool, MapPin, Phone, Clock, MessageCircle, Star, CheckCircle, ChevronDown, CalendarCheck, BellRing, BadgeCheck, XCircle } from 'lucide-react'
+import { GalleryImage, Banner, TestimonialCard, StatItem, PremiumButton, IMAGES } from './ComponentsPremium'
+import { CalendarCheck, BadgeCheck, BellRing, XCircle, MapPin, Phone, Clock, ChevronDown, CheckCircle, Scissors, Sparkles, PenTool, MessageCircle } from 'lucide-react'
 import './preview.css'
 import './App.css'
 
@@ -353,9 +354,41 @@ export default function App() {
         </div>
       </header>
 
-      {/* ===== HERO ===== */}
-      <section className="pv-hero">
-        <div className="pv-container">
+      {/* ===== BANNER HERO COM IMAGEM ===== */}
+      <section className="pv-hero" style={{ position: 'relative', minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            borderRadius: '0',
+          }}
+        >
+          <img
+            src={IMAGES.hero}
+            alt="Morais Barber - Barbearia premium em Novo Hamburgo"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              opacity: 0.4,
+            }}
+            loading="eager"
+          />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%)',
+            }}
+          />
+        </div>
+        <div className="pv-container" style={{ position: 'relative', zIndex: 1 }}>
           <span className="pv-badge"><CalendarCheck size={14} /> Confirmação na hora · sem ligação</span>
           <h1 className="pv-h1">
             Seu corte, agendado<br />em <span className="pv-destaque">30 segundos</span>.
@@ -405,53 +438,209 @@ export default function App() {
         </div>
       </section>
 
-      {/* ===== SERVIÇOS ===== */}
+      {/* ===== SERVIÇOS - CARDS PREMIUM COM HOVER ===== */}
       <section className="pv-secao pv-secao-escura" id="servicos">
         <div className="pv-container">
           <p className="pv-eyebrow">TABELA DE PREÇOS</p>
           <h2 className="pv-h2">Escolha seu estilo</h2>
-          <div className="pv-servicos">
-            {SERVICOS.map(s => (
-              <button key={s.id} className="pv-servico" onClick={() => { scrollTo('agendar'); setTimeout(() => setFormServico(s.nome), 400) }}>
-                <div className="pv-servico-topo">
-                  <span className="pv-servico-nome">{s.nome}</span>
-                  <span className="pv-servico-preco">{s.preco}</span>
+          <p className="pv-secao-desc" style={{ marginBottom: '50px' }}>
+            Cada serviço com técnica e atenção que você merece. Toque no card pra agendar.
+          </p>
+          <div
+            className="services-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '20px',
+            }}
+          >
+            {SERVICOS.map((s, idx) => (
+              <div
+                key={s.id}
+                className="service-card"
+                onClick={() => { scrollTo('agendar'); setTimeout(() => setFormServico(s.nome), 400) }}
+                style={{
+                  background: '#111111',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '16px',
+                  padding: '32px 28px',
+                  cursor: 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget
+                  el.style.background = 'linear-gradient(135deg, #1a1a1a, #151515)'
+                  el.style.borderColor = '#c8963e'
+                  el.style.boxShadow = '0 8px 40px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,150,62,0.12)'
+                  el.style.transform = 'translateY(-4px)'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget
+                  el.style.background = '#111111'
+                  el.style.borderColor = 'rgba(255,255,255,0.06)'
+                  el.style.boxShadow = 'none'
+                  el.style.transform = 'translateY(0)'
+                }}
+              >
+                {/* Gradient de fundo */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: 0,
+                    background: 'radial-gradient(circle at 50% 0%, rgba(200,150,62,0.08) 0%, transparent 70%)',
+                    transition: 'opacity 0.4s ease',
+                    pointerEvents: 'none',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                />
+
+                {/* Ícone */}
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, rgba(200,150,62,0.15), rgba(200,150,62,0.02))',
+                    border: '1px solid rgba(200,150,62,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '20px',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget
+                    el.style.transform = 'scale(1.1) rotate(-3deg)'
+                    el.style.background = 'linear-gradient(135deg, rgba(200,150,62,0.2), rgba(200,150,62,0.05))'
+                    el.style.borderColor = 'rgba(200,150,62,0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget
+                    el.style.transform = 'scale(1)'
+                    el.style.background = 'linear-gradient(135deg, rgba(200,150,62,0.15), rgba(200,150,62,0.02))'
+                    el.style.borderColor = 'rgba(200,150,62,0.2)'
+                  }}
+                >
+                  {idx === 0 && <Scissors size={24} color="#c8963e" />}
+                  {idx === 1 && <Sparkles size={24} color="#c8963e" />}
+                  {idx === 2 && <Sparkles size={24} color="#c8963e" />}
+                  {idx === 3 && <PenTool size={24} color="#c8963e" />}
                 </div>
-                <p className="pv-servico-desc">{s.descricao}</p>
-                <span className="pv-servico-meta"><Clock size={13} /> {s.duracao} · toque pra agendar</span>
-              </button>
+
+                {/* Conteúdo */}
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <h3
+                    style={{
+                      fontFamily: 'Playfair Display, serif',
+                      fontSize: '20px',
+                      fontWeight: '600',
+                      color: '#ffffff',
+                      marginBottom: '8px',
+                      transition: 'color 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#c8963e'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#ffffff'}
+                  >
+                    {s.nome}
+                  </h3>
+                  <p
+                    style={{
+                      color: 'rgba(255,255,255,0.55)',
+                      fontSize: '14px',
+                      lineHeight: '1.6',
+                      marginBottom: '20px',
+                    }}
+                  >
+                    {s.descricao}
+                  </p>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: 'auto',
+                      paddingTop: '16px',
+                      borderTop: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'Inter, monospace',
+                        fontSize: '26px',
+                        fontWeight: '700',
+                        color: '#c8963e',
+                        letterSpacing: '-0.5px',
+                      }}
+                    >
+                      {s.preco}
+                    </span>
+                    <span
+                      style={{
+                        color: 'rgba(255,255,255,0.3)',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        fontFamily: 'Inter, sans-serif',
+                      }}
+                    >
+                      {s.duracao}
+                    </span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== PROVA SOCIAL ===== */}
-      <section className="pv-secao">
+      {/* ===== PROVA SOCIAL - DEPOIMENTOS PREMIUM ===== */}
+      <section className="pv-secao" id="depoimentos">
         <div className="pv-container">
           <p className="pv-eyebrow">QUEM JÁ SENTOU NA CADEIRA</p>
           <h2 className="pv-h2">Resultado que se vê no espelho</h2>
-          <div className="pv-avaliacoes">
-            <div className="pv-avaliacao">
-              <div className="pv-estrelas">★★★★★</div>
-              <p>"Ótimo ambiente, espaço amplo e serviço de qualidade."</p>
-              <span>— Camila Santos</span>
+          <p className="pv-secao-desc" style={{ marginBottom: '30px' }}>
+            Depoimentos de quem já experimentou o corte na Morais Barber.
+          </p>
+          <TestimonialCard
+            name="Camila Santos"
+            text="Ótimo ambiente, espaço amplo e serviço de qualidade. O melhor da região!"
+            avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&facepad=2"
+          />
+          <TestimonialCard
+            name="Luke Oliveira"
+            text="Preço justo, indico demais o trabalho do Renan! Profissionalismo de outra galáxia."
+            avatarUrl="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&facepad=2"
+          />
+          <TestimonialCard
+            name="Murillo Ferreira"
+            text="O cabeleireiro bem massa, o corte ficou muito bom. Aprovado demais!"
+            avatarUrl="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&facepad=2"
+          />
+          {/* ===== GALERIA DE IMAGENS ===== */}
+          <section className="pv-secao" style={{ paddingTop: '80px', paddingBottom: '60px' }}>
+            <div className="pv-container">
+              <p className="pv-eyebrow">NO QUE VOCÊ VAI ENCONTRAR</p>
+              <h2 className="pv-h2">Ambiente e qualidade</h2>
+              <p className="pv-secao-desc" style={{ marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px' }}>
+                Um espaço pensado pra você ter a melhor experiência.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                <GalleryImage src={IMAGES.gallery[0].src} label={IMAGES.gallery[0].label} />
+                <GalleryImage src={IMAGES.gallery[1].src} label={IMAGES.gallery[1].label} />
+                <GalleryImage src={IMAGES.gallery[2].src} label={IMAGES.gallery[2].label} />
+                <GalleryImage src={IMAGES.gallery[3].src} label={IMAGES.gallery[3].label} />
+                <GalleryImage src={IMAGES.gallery[4].src} label={IMAGES.gallery[4].label} />
+                <GalleryImage src={IMAGES.gallery[5].src} label={IMAGES.gallery[5].label} />
+              </div>
             </div>
-            <div className="pv-avaliacao">
-              <div className="pv-estrelas">★★★★★</div>
-              <p>"Preço justo, indico demais o trabalho do Renan!"</p>
-              <span>— Luke Oliveira</span>
-            </div>
-            <div className="pv-avaliacao">
-              <div className="pv-estrelas">★★★★★</div>
-              <p>"O Cabeleireiro bem massa, o corte ficou muito bom (aprovado)"</p>
-              <span>— Murillo Ferreira</span>
-            </div>
-          </div>
-          <div className="pv-numeros">
-            <div><strong>36</strong><span>avaliações no Google</span></div>
-            <div><strong>5.0</strong><span>nota no Google</span></div>
-            <div><strong>30s</strong><span>pra agendar</span></div>
-          </div>
+          </section>
         </div>
       </section>
 
