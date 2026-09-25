@@ -413,20 +413,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* ===== BACKDROP COM LOGO ===== */}
-      <section style={{ marginTop: '40px' }}>
-        <img
-          src={IMAGES.backdrop}
-          alt="Morais Barber"
-          style={{
-            width: '100%',
-            height: 'auto',
-            display: 'block',
-            filter: 'brightness(0.95)',
-          }}
-        />
-      </section>
-
       {/* ===== COMO FUNCIONA ===== */}
       <section className="pv-secao" id="como-funciona">
         <div className="pv-container">
