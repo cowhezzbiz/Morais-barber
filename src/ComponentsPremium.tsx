@@ -15,7 +15,6 @@ export const IMAGES = {
     { id: 4, src: '/gallery-2.jpg', label: 'AMBIENTE', alt: 'Espaço da barbearia' },
     { id: 5, src: '/gallery-3.jpg', label: 'QUALIDADE', alt: 'Ferramentas premium' },
     { id: 6, src: '/barber-shop.jpg', label: 'BARBEARIA', alt: 'Foto da barbearia Morais' },
-    { id: 7, src: '/combo-completo.jpg', label: 'COMBO COMPLETO', alt: 'Corte + Barba + Sobrancelha - o visual completo' },
   ],
   banners: {
     howItWorks: '/barber-hero.jpg',
