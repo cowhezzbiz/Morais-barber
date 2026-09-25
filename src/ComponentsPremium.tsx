@@ -9,7 +9,6 @@ export const IMAGES = {
   barberShop: '/barber-shop.jpg',
   comboCompleto: '/combo-completo.jpg',
   logo: '/favicon-logo.png',
-  backdrop: '/backdrop-com-logo.png', // imagem de fundo preto com logo em cima
   gallery: [
     { id: 1, src: '/barber-cut-1.jpg', label: 'CORTE PREMIUM', alt: 'Corte masculino com detalhes' },
     { id: 2, src: '/barber-cut-2.jpg', label: 'BARBA', alt: 'Modelagem de barba' },
