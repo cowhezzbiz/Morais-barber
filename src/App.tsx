@@ -632,13 +632,10 @@ export default function App() {
                 Um espaço pensado pra você ter a melhor experiência.
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                <GalleryImage src={IMAGES.gallery[0].src} label={IMAGES.gallery[0].label} />
-                <GalleryImage src={IMAGES.gallery[1].src} label={IMAGES.gallery[1].label} />
-                <GalleryImage src={IMAGES.gallery[2].src} label={IMAGES.gallery[2].label} />
-                <GalleryImage src={IMAGES.gallery[3].src} label={IMAGES.gallery[3].label} />
-                <GalleryImage src={IMAGES.gallery[4].src} label={IMAGES.gallery[4].label} />
-                <GalleryImage src={IMAGES.gallery[5].src} label={IMAGES.gallery[5].label} />
-              </div>
+                    <GalleryImage src={IMAGES.gallery[0].src} label={IMAGES.gallery[0].label} />
+                    <GalleryImage src={IMAGES.gallery[1].src} label={IMAGES.gallery[1].label} />
+                    <GalleryImage src={IMAGES.gallery[2].src} label={IMAGES.gallery[2].label} />
+                  </div>
             </div>
           </section>
         </div>

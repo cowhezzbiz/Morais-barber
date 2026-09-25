@@ -2,22 +2,18 @@
 import { useState } from 'react'
 import { Scissors, Sparkles, PenTool } from 'lucide-react'
 
-// Imagens do site - usando arquivos locais do public/
+// Images do site - usando arquivos locais do public/ (fotos reais da barbearia)
+// Cada imagem é ÚNICA - sem duplicatas
 export const IMAGES = {
   hero: '/barber-hero.jpg',
   gallery: [
-    { id: 1, src: '/gallery-1.jpg', label: 'CORTE', alt: 'Corte masculino premium' },
+    { id: 1, src: '/gallery-1.jpg', label: 'CORTE PREMIUM', alt: 'Corte masculino com detalhes' },
     { id: 2, src: '/gallery-2.jpg', label: 'BARBA', alt: 'Modelagem de barba' },
-    { id: 3, src: '/gallery-3.jpg', label: 'SOBRANCELHA', alt: 'Sobrancelhas' },
-    { id: 4, src: '/gallery-1.jpg', label: 'TATUAGEM', alt: 'Tatuagem artística' },
-    { id: 5, src: '/gallery-2.jpg', label: 'AMBIENTE', alt: 'Ambiente da barbearia' },
-    { id: 6, src: '/gallery-3.jpg', label: 'QUALIDADE', alt: 'Ferramentas premium' },
+    { id: 3, src: '/gallery-3.jpg', label: 'SOBRANCELHA', alt: 'Sobrancelhas perfeitamente alinhadas' },
   ],
-  testimonials: [
-    { id: 1, src: '/avatar-camila.jpg', name: 'Camila Santos', text: 'Ambiente incrível e o melhor corte que já tive! Voltarei muito!' },
-    { id: 2, src: '/avatar-luke.jpg', name: 'Luke Oliveira', text: 'Profissionalismo e atenção ao detalhe. Recomendo de olhos fechados!' },
-    { id: 3, src: '/avatar-murillo.jpg', name: 'Murillo Ferreira', text: 'O melhor barbeiro de Novo Hamburgo, sem dúvida!' },
-  ],
+  banners: {
+    howItWorks: '/barber-hero.jpg', // mesma imagem do hero, usada como banner secundário
+  }
 }
 
 // Card de serviço com hover premium
