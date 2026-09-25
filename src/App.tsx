@@ -631,10 +631,10 @@ export default function App() {
               <p className="pv-secao-desc" style={{ marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px' }}>
                 Um espaço pensado pra você ter a melhor experiência.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                    <GalleryImage src={IMAGES.gallery[0].src} label={IMAGES.gallery[0].label} />
-                    <GalleryImage src={IMAGES.gallery[1].src} label={IMAGES.gallery[1].label} />
-                    <GalleryImage src={IMAGES.gallery[2].src} label={IMAGES.gallery[2].label} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+                    {IMAGES.gallery.map((img) => (
+                      <GalleryImage key={img.id} src={img.src} label={img.label} alt={img.alt} />
+                    ))}
                   </div>
             </div>
           </section>
