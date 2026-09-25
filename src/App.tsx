@@ -433,22 +433,22 @@ export default function App() {
           <div className="pv-avaliacoes">
             <div className="pv-avaliacao">
               <div className="pv-estrelas">★★★★★</div>
-              <p>"Melhor barbeiro da região. Ambiente top e atendimento nota 10."</p>
-              <span>— Cliente Morais Barber</span>
+              <p>"Ótimo ambiente, espaço amplo e serviço de qualidade."</p>
+              <span>— Camila Santos</span>
             </div>
             <div className="pv-avaliacao">
               <div className="pv-estrelas">★★★★★</div>
-              <p>"Sempre saio satisfeito. Agendar pelo site então, nem se fala — prático demais."</p>
-              <span>— Cliente Morais Barber</span>
+              <p>"Preço justo, indico demais o trabalho do Renan!"</p>
+              <span>— Luke Oliveira</span>
             </div>
             <div className="pv-avaliacao">
               <div className="pv-estrelas">★★★★★</div>
-              <p>"Corte impecável, barba no detalhe. Virei cliente fiel."</p>
-              <span>— Cliente Morais Barber</span>
+              <p>"O Cabeleireiro bem massa, o corte ficou muito bom (aprovado)"</p>
+              <span>— Murillo Ferreira</span>
             </div>
           </div>
           <div className="pv-numeros">
-            <div><strong>+1.000</strong><span>cortes realizados</span></div>
+            <div><strong>36</strong><span>avaliações no Google</span></div>
             <div><strong>5.0</strong><span>nota no Google</span></div>
             <div><strong>30s</strong><span>pra agendar</span></div>
           </div>
