@@ -389,19 +389,6 @@ export default function App() {
           />
         </div>
         <div className="pv-container" style={{ position: 'relative', zIndex: 1 }}>
-          {/* Logo/Morais wordmark */}
-          <img
-            src={IMAGES.logo}
-            alt="Morais Barber"
-            style={{
-              display: 'block',
-              margin: '0 auto 20px',
-              maxWidth: '180px',
-              height: 'auto',
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 4px 12px rgba(200,150,62,0.3))',
-            }}
-          />
           <span className="pv-badge"><CalendarCheck size={14} /> Confirmação na hora · sem ligação</span>
           <h1 className="pv-h1">
             Seu corte, agendado<br />em <span className="pv-destaque">30 segundos</span>.
