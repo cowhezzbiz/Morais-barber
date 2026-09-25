@@ -8,11 +8,11 @@ export const IMAGES = {
   hero: '/barber-hero.jpg',
   barberShop: '/barber-shop.jpg',
   comboCompleto: '/combo-completo.jpg',
-  logo: '/morais-logo.jpg', // logo/Morais wordmark
+  logo: '/favicon-logo.png',
+  backdrop: '/backdrop-com-logo.png', // imagem de fundo preto com logo em cima
   gallery: [
     { id: 1, src: '/barber-cut-1.jpg', label: 'CORTE PREMIUM', alt: 'Corte masculino com detalhes' },
     { id: 2, src: '/barber-cut-2.jpg', label: 'BARBA', alt: 'Modelagem de barba' },
-    { id: 3, src: '/gallery-1.jpg', label: 'SOBRANCELHA', alt: 'Sobrancelhas perfeitamente alinhadas' },
     { id: 4, src: '/gallery-2.jpg', label: 'AMBIENTE', alt: 'Espaço da barbearia' },
     { id: 5, src: '/gallery-3.jpg', label: 'QUALIDADE', alt: 'Ferramentas premium' },
     { id: 6, src: '/barber-shop.jpg', label: 'BARBEARIA', alt: 'Foto da barbearia Morais' },
