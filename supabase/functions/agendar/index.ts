@@ -34,149 +34,192 @@ function gerarToken(): string {
   return Array.from(bytes, b => chars[b % chars.length]).join("")
 }
 
+// Resposta de erro padronizada - SEMPRE retorna JSON válido com CORS
+function erro(msg: string, status = 400): Response {
+  return new Response(JSON.stringify({ error: msg }), {
+    status,
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  })
+}
+
+// Resposta de sucesso padronizada
+function sucesso(data: unknown): Response {
+  return new Response(JSON.stringify(data), {
+    status: 201,
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  })
+}
+
 serve(async (req: Request) => {
+  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" } })
+    return new Response("ok", {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS"
+      }
+    })
+  }
+
+  // Só aceita POST
+  if (req.method !== "POST") {
+    return erro("Método não permitido", 405)
   }
 
   try {
-    const { nome, telefone, servico, mensagem, horario_agendado, forma_pagamento } = await req.json()
-
-    // Sanitização
-    const nomeSanitizado = sanitizeString(nome || "", 100)
-    const telefoneSanitizado = sanitizeString(telefone || "", 15).replace(/\D/g, "")
-    const servicoSanitizado = sanitizeString(servico || "", 100)
-    const mensagemSanitizada = sanitizeString(mensagem || "", 500)
-    const formaPagamento = forma_pagamento === "pix" ? "pix" : "pix_na_hora"
-
-    // Validações
-    if (!nomeSanitizado || nomeSanitizado.length < 2) {
-      return new Response(JSON.stringify({ error: "Nome inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
+    // Parse do JSON com fallback seguro
+    let body: Record<string, unknown>
+    try {
+      body = await req.json()
+    } catch {
+      return erro("Dados inválidos")
     }
 
-    if (!isValidPhone(telefoneSanitizado)) {
-      return new Response(JSON.stringify({ error: "Telefone inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
-    }
+    // Extrai e sanitiza campos com fallback seguro
+    const nome = sanitizeString(String(body.nome || ""), 100)
+    const telefone = sanitizeString(String(body.telefone || ""), 15).replace(/\D/g, "")
+    const servico = sanitizeString(String(body.servico || ""), 100)
+    const mensagem = sanitizeString(String(body.mensagem || ""), 500)
+    const horario_agendado = body.horario_agendado ? String(body.horario_agendado) : null
+    const forma_pagamento = body.forma_pagamento === "pix" ? "pix" : "pix_na_hora"
 
-    // Aceita qualquer serviço não vazio (flexível para alterações no frontend)
-    if (!servicoSanitizado) {
-      return new Response(JSON.stringify({ error: "Serviço inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
+    // Validações básicas
+    if (!nome || nome.length < 2) return erro("Nome inválido")
+    if (!isValidPhone(telefone)) return erro("Telefone inválido")
+    if (!servico) return erro("Serviço inválido")
+
+    // Verifica variáveis de ambiente
+    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+      console.error("SUPABASE_URL ou SERVICE_ROLE_KEY não configuradas")
+      return erro("Erro de configuração do servidor", 500)
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
-    // Verificar limite por telefone
-    const { data: agendamentosExistentes, error: countError } = await supabase
-      .from("agendamentos")
-      .select("id")
-      .eq("telefone", telefoneSanitizado)
-      .in("status", ["pendente", "confirmado"])
-      .limit(MAX_AGENDAMENTOS_POR_TELEFONE + 1)
-
-    if (countError) {
-      return new Response(JSON.stringify({ error: "Erro ao verificar agendamentos" }), { status: 500, headers: { "Content-Type": "application/json" } })
-    }
-
-    if (agendamentosExistentes && agendamentosExistentes.length >= MAX_AGENDAMENTOS_POR_TELEFONE) {
-      return new Response(JSON.stringify({ error: "Você já tem 2 agendamentos ativos" }), { status: 403, headers: { "Content-Type": "application/json" } })
-    }
-
-    // Verificar horário duplicado (se fornecido) — inclui aguardando_pagamento
-    let horarioISO: string | null = null
-    if (horario_agendado) {
-      const dataHorario = new Date(horario_agendado)
-      if (isNaN(dataHorario.getTime())) {
-        return new Response(JSON.stringify({ error: "Data/horário inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
-      }
-      horarioISO = dataHorario.toISOString()
-
-      // Validação de horário comercial — interpreta a string como horário de Brasília (-03:00)
-      // Parse manual: a Edge Function roda em UTC, então não dá pra confiar no fuso do servidor
-      const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(horario_agendado)
-      if (!m) {
-        return new Response(JSON.stringify({ error: "Data/horário inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
-      }
-      const anoH = +m[1], mesH = +m[2], diaH = +m[3], horaH = +m[4], minH = +m[5]
-      const diaSemana = new Date(Date.UTC(anoH, mesH - 1, diaH)).getUTCDay() // 0=Dom ... 6=Sáb
-      const minutos = horaH * 60 + minH
-      const FECHAMENTO_SEX = 19 * 60 + 30, FECHAMENTO_SAB = 17 * 60
-
-      // Não pode agendar no passado (considera horário de Brasília -03:00)
-      const agoraSP = new Date(Date.now() - 3 * 60 * 60 * 1000)
-      const dataPedido = new Date(Date.UTC(anoH, mesH - 1, diaH, horaH, minH))
-      if (dataPedido.getTime() <= agoraSP.getTime()) {
-        return new Response(JSON.stringify({ error: "Não é possível agendar em datas que já passaram." }), { status: 400, headers: { "Content-Type": "application/json" } })
-      }
-
-      if (diaSemana === 0 || diaSemana === 1) {
-        return new Response(JSON.stringify({ error: "Fechado domingo e segunda. Agende de terça a sábado." }), { status: 400, headers: { "Content-Type": "application/json" } })
-      }
-      if (diaSemana >= 2 && diaSemana <= 5) {
-        // Terça a sexta: 9h-12h e 14h-19:30h (pausa de almoço 12h-14h)
-        const manha = minutos >= 9 * 60 && minutos < 12 * 60
-        const tarde = minutos >= 14 * 60 && minutos < FECHAMENTO_SEX
-        if (!manha && !tarde) {
-          return new Response(JSON.stringify({ error: "Horário fora do expediente (ter-sex: 9h-12h e 14h-19h30, sem horários ao meio-dia)." }), { status: 400, headers: { "Content-Type": "application/json" } })
-        }
-      }
-      if (diaSemana === 6 && (minutos < 9 * 60 || minutos >= FECHAMENTO_SAB)) {
-        return new Response(JSON.stringify({ error: "Sábado: agende entre 9h e 17h." }), { status: 400, headers: { "Content-Type": "application/json" } })
-      }
-      // Sábado: sem horários entre 12:00 e 13:30 (pausa de almoço)
-      if (diaSemana === 6 && minutos >= 12 * 60 && minutos < 13 * 60 + 30) {
-        return new Response(JSON.stringify({ error: "Sábado: sem agendamentos entre 12h e 13h30 (pausa de almoço)." }), { status: 400, headers: { "Content-Type": "application/json" } })
-      }
-
-      const { data: horarioOcupado } = await supabase
+    // Verificar limite por telefone (não bloqueia se der erro)
+    try {
+      const { data: existentes, error: countErr } = await supabase
         .from("agendamentos")
         .select("id")
-        .eq("horario_agendado", horarioISO)
-        .in("status", ["pendente", "confirmado", "aguardando_pagamento"])
-        .limit(1)
+        .eq("telefone", telefone)
+        .in("status", ["pendente", "confirmado"])
+        .limit(MAX_AGENDAMENTOS_POR_TELEFONE + 1)
 
-      if (horarioOcupado && horarioOcupado.length > 0) {
-        return new Response(JSON.stringify({ error: "Este horário já está ocupado" }), { status: 409, headers: { "Content-Type": "application/json" } })
+      if (countErr) {
+        console.error("Erro ao verificar agendamentos:", countErr.message)
+      } else if (existentes && existentes.length >= MAX_AGENDAMENTOS_POR_TELEFONE) {
+        return erro("Você já tem 2 agendamentos ativos", 403)
+      }
+    } catch (e) {
+      console.error("Erro ao verificar limite:", e)
+    }
+
+    // Processa horário se fornecido
+    let horarioISO: string | null = null
+    if (horario_agendado) {
+      try {
+        const dataHorario = new Date(horario_agendado)
+        if (isNaN(dataHorario.getTime())) return erro("Data/horário inválido")
+        horarioISO = dataHorario.toISOString()
+
+        const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(horario_agendado)
+        if (!m) return erro("Data/horário inválido")
+
+        const anoH = +m[1], mesH = +m[2], diaH = +m[3], horaH = +m[4], minH = +m[5]
+        const diaSemana = new Date(Date.UTC(anoH, mesH - 1, diaH)).getUTCDay()
+        const minutos = horaH * 60 + minH
+        const FECHAMENTO_SEX = 19 * 60 + 30, FECHAMENTO_SAB = 17 * 60
+
+        const agoraSP = new Date(Date.now() - 3 * 60 * 60 * 1000)
+        const dataPedido = new Date(Date.UTC(anoH, mesH - 1, diaH, horaH, minH))
+        if (dataPedido.getTime() <= agoraSP.getTime()) {
+          return erro("Não é possível agendar em datas que já passaram.")
+        }
+
+        if (diaSemana === 0 || diaSemana === 1) {
+          return erro("Fechado domingo e segunda. Agende de terça a sábado.")
+        }
+
+        if (diaSemana >= 2 && diaSemana <= 5) {
+          const manha = minutos >= 9 * 60 && minutos < 12 * 60
+          const tarde = minutos >= 14 * 60 && minutos < FECHAMENTO_SEX
+          if (!manha && !tarde) {
+            return erro("Horário fora do expediente (ter-sex: 9h-12h e 14h-19h30).")
+          }
+        }
+
+        if (diaSemana === 6 && (minutos < 9 * 60 || minutos >= FECHAMENTO_SAB)) {
+          return erro("Sábado: agende entre 9h e 17h.")
+        }
+
+        if (diaSemana === 6 && minutos >= 12 * 60 && minutos < 13 * 60 + 30) {
+          return erro("Sábado: sem agendamentos entre 12h e 13h30 (pausa de almoço).")
+        }
+
+        try {
+          const { data: ocupado } = await supabase
+            .from("agendamentos")
+            .select("id")
+            .eq("horario_agendado", horarioISO)
+            .in("status", ["pendente", "confirmado", "aguardando_pagamento"])
+            .limit(1)
+
+          if (ocupado && ocupado.length > 0) {
+            return erro("Este horário já está ocupado", 409)
+          }
+        } catch (e) {
+          console.error("Erro ao verificar horário ocupado:", e)
+        }
+      } catch (e) {
+        console.error("Erro ao processar horário:", e)
+        return erro("Data/horário inválido")
       }
     }
 
-    // Auto-aceite: PIX na hora → já entra CONFIRMADO na agenda.
-    // PIX agora → fica aguardando pagamento (vira confirmado ao verificar comprovante).
-    const statusInicial = formaPagamento === "pix" ? "aguardando_pagamento" : "confirmado"
+    const statusInicial = forma_pagamento === "pix" ? "aguardando_pagamento" : "confirmado"
 
-    // Inserir com token único (tenta até 3x em caso de colisão raríssima)
     let token = ""
     let data: { id: number }[] | null = null
-    let error: { code?: string; message: string } | null = null
+    let lastError: { code?: string; message: string } | null = null
 
     for (let tentativa = 0; tentativa < 3; tentativa++) {
-      token = gerarToken()
-      const resultado = await supabase.from("agendamentos").insert({
-        nome: nomeSanitizado,
-        telefone: telefoneSanitizado,
-        servico: servicoSanitizado,
-        mensagem: mensagemSanitizada,
-        status: statusInicial,
-        status_em: new Date().toISOString(),
-        horario_agendado: horarioISO,
-        forma_pagamento: formaPagamento,
-        valor: PRECOS[servicoSanitizado] || 0,
-        token
-      }).select("id")
-      data = resultado.data
-      error = resultado.error
-      if (!error) break
-      if (error.code !== "23505") break
-    }
+      try {
+        token = gerarToken()
+        const resultado = await supabase.from("agendamentos").insert({
+          nome,
+          telefone,
+          servico,
+          mensagem,
+          status: statusInicial,
+          status_em: new Date().toISOString(),
+          horario_agendado: horarioISO,
+          forma_pagamento: forma_pagamento,
+          valor: PRECOS[servico] || 0,
+          token
+        }).select("id")
 
-    if (error) {
-      if (error.code === "23505") {
-        return new Response(JSON.stringify({ error: "Este horário acabou de ser reservado" }), { status: 409, headers: { "Content-Type": "application/json" } })
+        data = resultado.data
+        lastError = resultado.error
+        if (!resultado.error) break
+        if (resultado.error.code !== "23505") break
+      } catch (e) {
+        console.error(`Tentativa ${tentativa + 1} falhou:`, e)
+        lastError = { message: e instanceof Error ? e.message : "Erro desconhecido" }
       }
-      return new Response(JSON.stringify({ error: "Erro ao salvar", details: error.message }), { status: 500, headers: { "Content-Type": "application/json" } })
     }
 
-    return new Response(JSON.stringify({ success: true, id: data?.[0]?.id, token }), { status: 201, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } })
+    if (lastError) {
+      if (lastError.code === "23505") {
+        return erro("Este horário acabou de ser reservado", 409)
+      }
+      console.error("Erro ao salvar:", lastError.message)
+      return erro("Erro ao salvar. Tente novamente.", 500)
+    }
+
+    return sucesso({ success: true, id: data?.[0]?.id, token })
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Erro interno do servidor" }), { status: 500, headers: { "Content-Type": "application/json" } })
+    console.error("Erro não capturado:", err)
+    return erro("Erro inesperado. Tente novamente.", 500)
   }
 })
