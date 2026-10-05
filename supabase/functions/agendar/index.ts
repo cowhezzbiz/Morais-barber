@@ -123,6 +123,10 @@ serve(async (req: Request) => {
       if (diaSemana === 6 && (minutos < 9 * 60 || minutos >= FECHAMENTO_SAB)) {
         return new Response(JSON.stringify({ error: "Sábado: agende entre 9h e 17h." }), { status: 400, headers: { "Content-Type": "application/json" } })
       }
+      // Sábado: sem horários entre 12:00 e 13:30 (pausa de almoço)
+      if (diaSemana === 6 && minutos >= 12 * 60 && minutos < 13 * 60 + 30) {
+        return new Response(JSON.stringify({ error: "Sábado: sem agendamentos entre 12h e 13h30 (pausa de almoço)." }), { status: 400, headers: { "Content-Type": "application/json" } })
+      }
 
       const { data: horarioOcupado } = await supabase
         .from("agendamentos")

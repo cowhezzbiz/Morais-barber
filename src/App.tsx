@@ -174,7 +174,11 @@ export default function App() {
       for (let h = 14; h < 19; h++) { push(h, 0); push(h, 30) }
       push(19, 0); push(19, 30)
     } else if (diaSemana === 6) {
-      for (let h = 9; h < 17; h++) { push(h, 0); push(h, 30) }
+      for (let h = 9; h < 17; h++) {
+        // Sábado: sem horários entre 12:00 e 13:30 (pausa de almoço)
+        if (h === 12 || h === 13) continue
+        push(h, 0); push(h, 30)
+      }
       push(17, 0)
     }
     return horarios
