@@ -19,8 +19,6 @@ const SERVICOS: Servico[] = [
   { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min', duracaoMin: 40 },
   { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba. O visual completo em uma sessão.', preco: 'R$ 60', duracao: '1h15min', duracaoMin: 75 },
   { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', duracaoMin: 0 },
-  { id: 5, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com precisão.', preco: 'R$ 15', duracao: '20 min', duracaoMin: 20 },
-  { id: 6, nome: 'Pigmentação', descricao: 'Pigmentação de sobrancelha e barba.', preco: 'R$ 80', duracao: '1h30min', duracaoMin: 90 },
 ]
 
 // Lista de DDDs válidos no Brasil
