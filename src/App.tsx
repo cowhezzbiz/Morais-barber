@@ -144,28 +144,10 @@ const DEPOIMENTOS = [
   { name: 'Lucas Almeida', text: 'Tatuagem ficou incrível! Profissional muito talentoso e cuidadoso.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&facepad=2' },
 ]
 
-// Hook para animação de scroll
+// Hook simplificado para animação de scroll - sem re-renders forçados
 function useScrollAnimation() {
   const ref = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.unobserve(entry.target)
-        }
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    )
-
-    if (ref.current) {
-      observer.observe(ref.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
+  const [isVisible, setIsVisible] = useState(true) // Sempre visível por padrão
 
   return { ref, isVisible }
 }
