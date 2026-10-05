@@ -80,6 +80,26 @@
       <button class="btn" id="boot-btn" type="button" style="display:none">Tentar de novo</button>
       <div class="erro" id="boot-erro"></div>
     </div>
+    <script>
+      // Detecta nova versão e força recarregamento automático
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+      // Verifica versão a cada 30s e recarrega se mudou
+      let currentVersion = '20261005';
+      setInterval(async () => {
+        try {
+          const res = await fetch('/version.txt', { cache: 'no-store' });
+          if (res.ok) {
+            const newVersion = await res.text();
+            if (newVersion.trim() !== currentVersion) {
+              currentVersion = newVersion.trim();
+              window.location.reload(true);
+            }
+          }
+        } catch {}
+      }, 30000);
+    </script>
     <script src="/boot.js?v=20261005"></script>
     <script type="module" src="/src/main.tsx?v=20261005"></script>
   </body>
