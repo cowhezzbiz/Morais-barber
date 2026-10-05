@@ -338,7 +338,7 @@ export default function App() {
     if (isBot) return
     if (!podeEnviar) { setErro('Muitas tentativas. Aguarde 1 minuto.'); return }
     const telefoneDigits = formTelefone.replace(/\D/g, '')
-    if (!isValidPhone(formTelefone)) { setErro('Telefone inválido. Digite um número real com DDD. Ex: (51) 99482-6685'); return }
+    if (!isValidPhone(formTelefone)) { setErro('Telefone inválido. Digite um número real com DDD. Ex: (51) 99999-9999'); return }
     if (servicosSelecionados.length === 0) { setErro('Selecione pelo menos um serviço.'); return }
     if (!horario) { setErro('Escolha um horário na agenda.'); return }
 
