@@ -1016,11 +1016,16 @@
   height: 28px;
 }
 
-/* ===== Animações de Scroll ===== */
+/* ===== Animações leves e suaves ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -1028,159 +1033,53 @@
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInLeft {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateX(-50px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes bounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-  70% {
     transform: scale(0.95);
   }
-  100% {
+  to {
+    opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(212, 168, 83, 0.3); }
-  50% { box-shadow: 0 0 20px rgba(212, 168, 83, 0.6); }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes rotateIn {
-  from {
-    opacity: 0;
-    transform: rotate(-10deg) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: rotate(0) scale(1);
   }
 }
 
 /* Classes de animação */
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeInUp 0.4s ease-out forwards;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-bounce-in {
-  animation: bounceIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 .animate-slide-down {
-  animation: slideDown 0.6s ease-out forwards;
+  animation: slideDown 0.3s ease-out forwards;
 }
 
-.animate-rotate-in {
-  animation: rotateIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-glow {
-  animation: glow 2s ease-in-out infinite;
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
 }
 
 /* Delay classes */
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-600 { animation-delay: 0.6s; }
-.delay-700 { animation-delay: 0.7s; }
-.delay-800 { animation-delay: 0.8s; }
+.delay-100 { animation-delay: 0.05s; }
+.delay-200 { animation-delay: 0.1s; }
+.delay-300 { animation-delay: 0.15s; }
+.delay-400 { animation-delay: 0.2s; }
+.delay-500 { animation-delay: 0.25s; }
 
-/* ===== Transições suaves para todos os elementos ===== */
+/* ===== Transições suaves ===== */
 .pv-btn,
 .pv-servico-chip,
 .pv-opcao-extra,
@@ -1190,51 +1089,23 @@
 .pv-faq-pergunta,
 .pv-semana-nav button,
 .pv-calendario-nav {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
-/* ===== Hover effects melhorados ===== */
-.pv-btn-dourado {
-  position: relative;
-  overflow: hidden;
+/* ===== Hover effects leves ===== */
+.pv-btn-dourado:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.3);
 }
 
-.pv-btn-dourado::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+.pv-servico-chip:hover {
+  border-color: rgba(212, 168, 83, 0.5);
+  transform: translateY(-1px);
 }
 
-.pv-btn-dourado:hover::after {
-  width: 300px;
-  height: 300px;
-}
-
-.pv-servico-chip {
-  position: relative;
-  overflow: hidden;
-}
-
-.pv-servico-chip::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(212, 168, 83, 0.1), transparent);
-  transition: left 0.5s;
-}
-
-.pv-servico-chip:hover::before {
-  left: 100%;
+.pv-servico-chip.selecionado {
+  border-color: var(--pv-ouro);
+  background: rgba(212, 168, 83, 0.1);
 }
 
 /* ===== Animação de entrada para cards ===== */
@@ -1242,398 +1113,196 @@
 .pv-servico-chip,
 .pv-opcao-extra {
   opacity: 0;
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fadeInUp 0.4s ease-out forwards;
 }
 
-.pv-passo:nth-child(1) { animation-delay: 0.1s; }
-.pv-passo:nth-child(2) { animation-delay: 0.2s; }
-.pv-passo:nth-child(3) { animation-delay: 0.3s; }
+.pv-passo:nth-child(1) { animation-delay: 0.05s; }
+.pv-passo:nth-child(2) { animation-delay: 0.1s; }
+.pv-passo:nth-child(3) { animation-delay: 0.15s; }
 
 /* ===== Animação para o hero ===== */
 .pv-hero .pv-badge {
-  animation: slideDown 0.8s ease-out 0.2s both;
+  animation: slideDown 0.4s ease-out 0.1s both;
 }
 
 .pv-hero .pv-h1 {
-  animation: fadeInUp 0.8s ease-out 0.4s both;
+  animation: fadeInUp 0.4s ease-out 0.2s both;
 }
 
 .pv-hero .pv-sub {
-  animation: fadeInUp 0.8s ease-out 0.6s both;
+  animation: fadeInUp 0.4s ease-out 0.3s both;
 }
 
 .pv-hero .pv-hero-cta {
-  animation: fadeInUp 0.8s ease-out 0.8s both;
+  animation: fadeInUp 0.4s ease-out 0.4s both;
 }
 
 .pv-hero .pv-hero-selos {
-  animation: fadeInUp 0.8s ease-out 1s both;
-}
-
-/* ===== Animação para o logo ===== */
-.pv-logo {
-  transition: all 0.3s ease;
-}
-
-.pv-logo:hover {
-  transform: scale(1.05);
-  text-shadow: 0 0 10px rgba(212, 168, 83, 0.5);
+  animation: fadeInUp 0.4s ease-out 0.5s both;
 }
 
 /* ===== Animação para o botão WhatsApp ===== */
 .pv-whatsapp-float {
-  animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 /* ===== Animação para os chips de horário ===== */
-.pv-chip {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .pv-chip:not(.ocupado):hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-.pv-chip.selecionado {
-  animation: pulse 0.5s ease-out;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 /* ===== Animação para as abas de dias ===== */
-.pv-dia-tab {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .pv-dia-tab:hover:not(.selecionada) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: rgba(212, 168, 83, 0.5);
 }
 
-.pv-dia-tab.selecionada {
-  animation: scaleIn 0.4s ease-out;
-}
-
 /* ===== Animação para o FAQ ===== */
-.pv-faq {
-  transition: all 0.3s ease;
-}
-
-.pv-faq.aberta {
-  animation: slideDown 0.3s ease-out;
-}
-
 .pv-faq-resposta {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 /* ===== Animação para o modal ===== */
 .modal-overlay {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
-  animation: scaleIn 0.3s ease-out;
+  animation: scaleIn 0.2s ease-out;
 }
 
 /* ===== Animação para o calendário ===== */
-.calendario-dia {
-  transition: all 0.2s ease;
-}
-
 .calendario-dia:hover {
-  transform: scale(1.02);
-  z-index: 1;
-}
-
-.calendario-agendamento {
-  transition: all 0.2s ease;
+  transform: scale(1.01);
 }
 
 .calendario-agendamento:hover {
-  transform: translateX(4px);
+  transform: translateX(2px);
 }
 
 /* ===== Animação para a tabela admin ===== */
-.tabela-linha {
-  transition: all 0.2s ease;
-}
-
 .tabela-linha:hover {
-  transform: translateX(4px);
+  transform: translateX(2px);
   background: var(--bg-secondary);
 }
 
 /* ===== Animação para os botões de filtro ===== */
-.btn-filtro {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 .btn-filtro:hover {
-  transform: translateY(-2px);
-}
-
-.btn-filtro.ativo {
-  animation: scaleIn 0.3s ease-out;
+  transform: translateY(-1px);
 }
 
 /* ===== Animação para os cards de stats ===== */
-.admin-stat {
-  transition: all 0.3s ease;
-}
-
 .admin-stat:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* ===== Animação para o faturamento ===== */
-.faturamento-card {
-  transition: all 0.3s ease;
-}
-
 .faturamento-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: var(--accent);
 }
 
 /* ===== Animação para o token ===== */
 .pv-token {
-  animation: bounceIn 0.6s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* ===== Animação para o sucesso ===== */
 .pv-sucesso {
-  animation: scaleIn 0.5s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* ===== Animação para o PIX ===== */
 .pv-pix-box {
-  animation: slideDown 0.5s ease-out;
+  animation: slideDown 0.3s ease-out;
 }
 
 /* ===== Animação para o QR Code ===== */
 .pv-pix-qr {
-  animation: scaleIn 0.6s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* ===== Animação para o comprovante ===== */
 .pv-pix-ok {
-  animation: bounceIn 0.5s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* ===== Animação para o cancelamento ===== */
 .cancelado-ok {
-  animation: slideDown 0.5s ease-out;
+  animation: slideDown 0.3s ease-out;
 }
 
 /* ===== Animação para o histórico ===== */
-.historico-item {
-  transition: all 0.2s ease;
-}
-
 .historico-item:hover {
-  transform: translateX(4px);
+  transform: translateX(2px);
   background: var(--bg-secondary);
 }
 
 /* ===== Animação para as flags ===== */
-.flag {
-  transition: all 0.2s ease;
-}
-
 .flag:hover {
-  transform: scale(1.2);
-}
-
-/* ===== Animação para o toggle de visualização ===== */
-.admin-view-toggle .btn-filtro {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1.1);
 }
 
 /* ===== Animação para a navegação do calendário ===== */
-.calendario-nav {
-  transition: all 0.3s ease;
-}
-
 .calendario-nav:hover {
-  transform: scale(1.1);
-}
-
-/* ===== Animação para os dias da semana ===== */
-.calendario-dia-semana {
-  transition: all 0.2s ease;
-}
-
-/* ===== Animação para o mês atual ===== */
-.calendario-header h3 {
-  animation: fadeIn 0.5s ease-out;
+  transform: scale(1.05);
 }
 
 /* ===== Animação para os botões de ação ===== */
-.btn-acao {
-  transition: all 0.2s ease;
-}
-
 .btn-acao:hover {
-  transform: scale(1.15);
-}
-
-/* ===== Animação para os badges ===== */
-.badge {
-  transition: all 0.2s ease;
-}
-
-.badge:hover {
-  transform: scale(1.05);
-}
-
-/* ===== Animação para os inputs ===== */
-.pv-form-grupo input,
-.pv-form-grupo select,
-.pv-form-grupo textarea {
-  transition: all 0.3s ease;
-}
-
-.pv-form-grupo input:focus,
-.pv-form-grupo select:focus,
-.pv-form-grupo textarea:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para o select ===== */
-.pv-form-grupo select {
-  cursor: pointer;
-}
-
-/* ===== Animação para o textarea ===== */
-.pv-form-grupo textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-
-/* ===== Animação para o checkbox ===== */
-.pv-opcao-extra input[type="checkbox"] {
-  transition: all 0.2s ease;
-}
-
-.pv-opcao-extra input[type="checkbox"]:checked {
-  animation: pulse 0.3s ease-out;
-}
-
-/* ===== Animação para o label ===== */
-.pv-opcao-extra {
-  cursor: pointer;
-}
-
-.pv-opcao-extra:hover {
-  transform: translateX(4px);
-}
-
-/* ===== Animação para o small ===== */
-.pv-opcao-extra small {
-  transition: all 0.2s ease;
-}
-
-/* ===== Animação para o span ===== */
-.pv-opcao-extra span {
-  transition: all 0.2s ease;
-}
-
-/* ===== Animação para o strong ===== */
-.pv-servicos-total strong {
-  transition: all 0.2s ease;
-}
-
-/* ===== Animação para o código ===== */
-.pv-token code {
-  transition: all 0.3s ease;
-}
-
-.pv-token code:hover {
-  transform: scale(1.05);
-  letter-spacing: 6px;
-}
-
-/* ===== Animação para o botão copiar ===== */
-.pv-token button {
-  transition: all 0.2s ease;
-}
-
-.pv-token button:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o link ===== */
-.pv-token a {
-  transition: all 0.2s ease;
-}
-
-.pv-token a:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o botão fantasma ===== */
-.pv-btn-fantasma {
-  position: relative;
-  overflow: hidden;
-}
-
-.pv-btn-fantasma::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(212, 168, 83, 0.1), transparent);
-  transition: left 0.5s;
-}
-
-.pv-btn-fantasma:hover::before {
-  left: 100%;
-}
-
-/* ===== Animação para o botão de navegação ===== */
-.pv-semana-nav button {
-  transition: all 0.2s ease;
-}
-
-.pv-semana-nav button:hover:not(:disabled) {
   transform: scale(1.1);
 }
 
-/* ===== Animação para o botão de pagamento ===== */
-.pv-pag-opcao {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ===== Animação para os badges ===== */
+.badge:hover {
+  transform: scale(1.02);
 }
 
+/* ===== Animação para os inputs ===== */
+.pv-form-grupo input:focus,
+.pv-form-grupo select:focus,
+.pv-form-grupo textarea:focus {
+  border-color: var(--pv-ouro);
+  box-shadow: 0 0 0 2px rgba(212, 168, 83, 0.15);
+}
+
+/* ===== Animação para o botão fantasma ===== */
+.pv-btn-fantasma:hover {
+  border-color: var(--pv-ouro);
+  color: var(--pv-ouro);
+}
+
+/* ===== Animação para o botão de navegação ===== */
+.pv-semana-nav button:hover:not(:disabled) {
+  border-color: var(--pv-ouro);
+  color: var(--pv-ouro);
+}
+
+/* ===== Animação para o botão de pagamento ===== */
 .pv-pag-opcao:hover {
-  transform: translateY(-2px);
+  border-color: var(--pv-ouro);
 }
 
 .pv-pag-opcao.ativa {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o lembrete ===== */
-.pv-chips-legenda {
-  animation: fadeIn 0.5s ease-out 0.3s both;
-}
-
-/* ===== Animação para o carregamento ===== */
-.pv-chips-dica {
-  animation: pulse 1.5s ease-in-out infinite;
+  border-color: var(--pv-ouro);
+  background: rgba(212, 168, 83, 0.08);
 }
 
 /* ===== Animação para o erro ===== */
 .pv-erro {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 /* ===== Animação para o sucesso ===== */
 .pv-sucesso-titulo {
-  animation: bounceIn 0.6s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* ===== Animação para o timer ===== */
@@ -1641,427 +1310,83 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* ===== Animação para o aviso ===== */
-.pv-pix-aviso {
-  animation: fadeIn 0.5s ease-out 0.3s both;
-}
-
-/* ===== Animação para o input do comprovante ===== */
-.pv-comprovante-input {
-  transition: all 0.3s ease;
-}
-
-.pv-comprovante-input:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para o botão enviar comprovante ===== */
-.pv-pix-box .pv-btn {
-  transition: all 0.3s ease;
-}
-
-.pv-pix-box .pv-btn:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o botão fazer outro ===== */
-.pv-sucesso .pv-btn-fantasma {
-  transition: all 0.3s ease;
-}
-
-.pv-sucesso .pv-btn-fantasma:hover {
-  transform: translateY(-2px);
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* ===== Animação para o acompanhamento ===== */
 .token-card {
-  animation: scaleIn 0.5s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 .token-card-topo {
-  animation: slideDown 0.5s ease-out 0.2s both;
+  animation: slideDown 0.3s ease-out 0.1s both;
 }
 
 .token-card-grade {
-  animation: fadeIn 0.5s ease-out 0.4s both;
+  animation: fadeIn 0.3s ease-out 0.2s both;
 }
 
 .token-card-rodape {
-  animation: fadeIn 0.5s ease-out 0.6s both;
+  animation: fadeIn 0.3s ease-out 0.3s both;
 }
 
 /* ===== Animação para o cancelamento ===== */
 .cancelar-zone {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 .cancelar-confirm {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* ===== Animação para o botão voltar ===== */
+.btn-voltar:hover {
+  transform: translateX(-2px);
+}
+
+/* ===== Animação para o token salvo ===== */
+.token-salvo-card {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* ===== Animação para o input do token ===== */
+.token-input-grupo:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+}
+
+/* ===== Animação para o resultado ===== */
+.resultado-token {
   animation: scaleIn 0.3s ease-out;
 }
 
-/* ===== Animação para o botão cancelar ===== */
-.btn-cancelar-agendamento {
-  transition: all 0.3s ease;
-}
-
-.btn-cancelar-agendamento:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o input do telefone ===== */
-.cancelar-confirm input {
-  transition: all 0.3s ease;
-}
-
-.cancelar-confirm input:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para os botões de cancelamento ===== */
-.cancelar-botoes button {
-  transition: all 0.3s ease;
-}
-
-.cancelar-botoes button:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o aviso de cancelamento ===== */
-.cancelar-aviso {
-  animation: fadeIn 0.5s ease-out 0.3s both;
-}
-
-/* ===== Animação para o botão voltar ===== */
-.btn-voltar {
-  transition: all 0.3s ease;
-}
-
-.btn-voltar:hover {
-  transform: translateX(-4px);
-}
-
-/* ===== Animação para o token salvo ===== */
-.token-salvo-card {
-  animation: slideDown 0.5s ease-out;
-}
-
-/* ===== Animação para os botões do token ===== */
-.btn-token-usar,
-.btn-token-copiar {
-  transition: all 0.3s ease;
-}
-
-.btn-token-usar:hover,
-.btn-token-copiar:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o input do token ===== */
-.token-input-grupo {
-  transition: all 0.3s ease;
-}
-
-.token-input-grupo:focus-within {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para o botão buscar ===== */
-.token-input-grupo .btn {
-  transition: all 0.3s ease;
-}
-
-.token-input-grupo .btn:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o resultado ===== */
-.resultado-token {
-  animation: scaleIn 0.5s ease-out;
-}
-
 /* ===== Animação para o status ===== */
 .token-status-icone {
-  animation: bounceIn 0.6s ease-out;
+  animation: scaleIn 0.3s ease-out;
 }
 
 /* ===== Animação para o texto do status ===== */
 .token-status-texto {
-  animation: slideInLeft 0.5s ease-out 0.2s both;
+  animation: fadeIn 0.3s ease-out 0.1s both;
 }
 
 /* ===== Animação para os itens de info ===== */
 .token-info-item {
-  animation: fadeIn 0.5s ease-out both;
+  animation: fadeIn 0.3s ease-out both;
 }
 
-.token-info-item:nth-child(1) { animation-delay: 0.1s; }
-.token-info-item:nth-child(2) { animation-delay: 0.2s; }
-.token-info-item:nth-child(3) { animation-delay: 0.3s; }
-.token-info-item:nth-child(4) { animation-delay: 0.4s; }
-.token-info-item:nth-child(5) { animation-delay: 0.5s; }
-.token-info-item:nth-child(6) { animation-delay: 0.6s; }
+.token-info-item:nth-child(1) { animation-delay: 0.05s; }
+.token-info-item:nth-child(2) { animation-delay: 0.1s; }
+.token-info-item:nth-child(3) { animation-delay: 0.15s; }
+.token-info-item:nth-child(4) { animation-delay: 0.2s; }
+.token-info-item:nth-child(5) { animation-delay: 0.25s; }
+.token-info-item:nth-child(6) { animation-delay: 0.3s; }
 
 /* ===== Animação para o rodapé do token ===== */
 .token-card-rodape {
-  animation: fadeIn 0.5s ease-out 0.7s both;
-}
-
-/* ===== Animação para o botão de acompanhar ===== */
-.token-card-rodape a {
-  transition: all 0.3s ease;
-}
-
-.token-card-rodape a:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o botão de cancelar agendamento ===== */
-.btn-cancelar-agendamento {
-  transition: all 0.3s ease;
-}
-
-.btn-cancelar-agendamento:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o texto de cancelamento ===== */
-.cancelar-texto {
-  animation: fadeIn 0.5s ease-out 0.2s both;
-}
-
-/* ===== Animação para o input de telefone ===== */
-.cancelar-confirm input {
-  transition: all 0.3s ease;
-}
-
-.cancelar-confirm input:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para os botões de cancelamento ===== */
-.cancelar-botoes button {
-  transition: all 0.3s ease;
-}
-
-.cancelar-botoes button:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o aviso de cancelamento ===== */
-.cancelar-aviso {
-  animation: fadeIn 0.5s ease-out 0.3s both;
-}
-
-/* ===== Animação para o botão voltar ===== */
-.btn-voltar {
-  transition: all 0.3s ease;
-}
-
-.btn-voltar:hover {
-  transform: translateX(-4px);
-}
-
-/* ===== Animação para o token salvo ===== */
-.token-salvo-card {
-  animation: slideDown 0.5s ease-out;
-}
-
-/* ===== Animação para os botões do token ===== */
-.btn-token-usar,
-.btn-token-copiar {
-  transition: all 0.3s ease;
-}
-
-.btn-token-usar:hover,
-.btn-token-copiar:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o input do token ===== */
-.token-input-grupo {
-  transition: all 0.3s ease;
-}
-
-.token-input-grupo:focus-within {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para o botão buscar ===== */
-.token-input-grupo .btn {
-  transition: all 0.3s ease;
-}
-
-.token-input-grupo .btn:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o resultado ===== */
-.resultado-token {
-  animation: scaleIn 0.5s ease-out;
-}
-
-/* ===== Animação para o status ===== */
-.token-status-icone {
-  animation: bounceIn 0.6s ease-out;
-}
-
-/* ===== Animação para o texto do status ===== */
-.token-status-texto {
-  animation: slideInLeft 0.5s ease-out 0.2s both;
-}
-
-/* ===== Animação para os itens de info ===== */
-.token-info-item {
-  animation: fadeIn 0.5s ease-out both;
-}
-
-.token-info-item:nth-child(1) { animation-delay: 0.1s; }
-.token-info-item:nth-child(2) { animation-delay: 0.2s; }
-.token-info-item:nth-child(3) { animation-delay: 0.3s; }
-.token-info-item:nth-child(4) { animation-delay: 0.4s; }
-.token-info-item:nth-child(5) { animation-delay: 0.5s; }
-.token-info-item:nth-child(6) { animation-delay: 0.6s; }
-
-/* ===== Animação para o rodapé do token ===== */
-.token-card-rodape {
-  animation: fadeIn 0.5s ease-out 0.7s both;
-}
-
-/* ===== Animação para o botão de acompanhar ===== */
-.token-card-rodape a {
-  transition: all 0.3s ease;
-}
-
-.token-card-rodape a:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o botão de cancelar agendamento ===== */
-.btn-cancelar-agendamento {
-  transition: all 0.3s ease;
-}
-
-.btn-cancelar-agendamento:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o texto de cancelamento ===== */
-.cancelar-texto {
-  animation: fadeIn 0.5s ease-out 0.2s both;
-}
-
-/* ===== Animação para o input de telefone ===== */
-.cancelar-confirm input {
-  transition: all 0.3s ease;
-}
-
-.cancelar-confirm input:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para os botões de cancelamento ===== */
-.cancelar-botoes button {
-  transition: all 0.3s ease;
-}
-
-.cancelar-botoes button:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o aviso de cancelamento ===== */
-.cancelar-aviso {
-  animation: fadeIn 0.5s ease-out 0.3s both;
-}
-
-/* ===== Animação para o botão voltar ===== */
-.btn-voltar {
-  transition: all 0.3s ease;
-}
-
-.btn-voltar:hover {
-  transform: translateX(-4px);
-}
-
-/* ===== Animação para o token salvo ===== */
-.token-salvo-card {
-  animation: slideDown 0.5s ease-out;
-}
-
-/* ===== Animação para os botões do token ===== */
-.btn-token-usar,
-.btn-token-copiar {
-  transition: all 0.3s ease;
-}
-
-.btn-token-usar:hover,
-.btn-token-copiar:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o input do token ===== */
-.token-input-grupo {
-  transition: all 0.3s ease;
-}
-
-.token-input-grupo:focus-within {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.15);
-}
-
-/* ===== Animação para o botão buscar ===== */
-.token-input-grupo .btn {
-  transition: all 0.3s ease;
-}
-
-.token-input-grupo .btn:hover {
-  transform: translateY(-2px);
-}
-
-/* ===== Animação para o resultado ===== */
-.resultado-token {
-  animation: scaleIn 0.5s ease-out;
-}
-
-/* ===== Animação para o status ===== */
-.token-status-icone {
-  animation: bounceIn 0.6s ease-out;
-}
-
-/* ===== Animação para o texto do status ===== */
-.token-status-texto {
-  animation: slideInLeft 0.5s ease-out 0.2s both;
-}
-
-/* ===== Animação para os itens de info ===== */
-.token-info-item {
-  animation: fadeIn 0.5s ease-out both;
-}
-
-.token-info-item:nth-child(1) { animation-delay: 0.1s; }
-.token-info-item:nth-child(2) { animation-delay: 0.2s; }
-.token-info-item:nth-child(3) { animation-delay: 0.3s; }
-.token-info-item:nth-child(4) { animation-delay: 0.4s; }
-.token-info-item:nth-child(5) { animation-delay: 0.5s; }
-.token-info-item:nth-child(6) { animation-delay: 0.6s; }
-
-/* ===== Animação para o rodapé do token ===== */
-.token-card-rodape {
-  animation: fadeIn 0.5s ease-out 0.7s both;
-}
-
-/* ===== Animação para o botão de acompanhar ===== */
-.token-card-rodape a {
-  transition: all 0.3s ease;
-}
-
-.token-card-rodape a:hover {
-  transform: translateY(-2px);
+  animation: fadeIn 0.3s ease-out 0.35s both;
 }
 
 /* ===== Scrollbar Customizada ===== */
