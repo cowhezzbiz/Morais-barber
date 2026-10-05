@@ -679,23 +679,7 @@ export default function App() {
               <TestimonialCard key={i} name={d.name} text={d.text} avatarUrl={d.avatar} />
             ))}
           </div>
-          {/* ===== GALERIA DE IMAGENS ===== */}
-          <section className="pv-secao" style={{ paddingTop: '80px', paddingBottom: '60px' }}>
-            <div className="pv-container">
-              <p className="pv-eyebrow">NO QUE VOCÊ VAI ENCONTRAR</p>
-              <h2 className="pv-h2">Ambiente e qualidade</h2>
-              <p className="pv-secao-desc" style={{ marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px' }}>
-                Um espaço pensado pra você ter a melhor experiência.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
-                    {IMAGES.gallery.map((img, i) => (
-                      <div key={img.id} style={i === IMAGES.gallery.length - 1 ? { gridColumn: '1 / -1' } : undefined}>
-                        <GalleryImage src={img.src} label={img.label} alt={img.alt} />
-                      </div>
-                    ))}
-                  </div>
-            </div>
-          </section>
+
         </div>
       </section>
 
