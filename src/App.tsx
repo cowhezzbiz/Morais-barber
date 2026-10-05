@@ -64,18 +64,8 @@ const isValidPhone = (phone: string): boolean => {
   // Verifica se DDD é válido
   if (!DDD_VALIDOS.includes(ddd)) return false
   
-  // Se tem 11 dígitos, é celular — o 3º dígito deve ser 9
-  if (digits.length === 11 && digits[2] !== '9') return false
-  
-  // Se tem 10 dígitos, é fixo — o 3º dígito deve ser 2, 3, 4 ou 5
-  if (digits.length === 10 && !['2', '3', '4', '5'].includes(digits[2])) return false
-  
-  // Verifica se todos os dígitos são iguais (00000000, 11111111, etc.)
+  // Não pode ter todos os dígitos iguais
   if (/^(\d)\1+$/.test(digits)) return false
-  
-  // Verifica sequências óbvias (12345678, 98765432, etc.)
-  const sequencias = ['0123456789', '9876543210', '1234567890', '0987654321']
-  if (sequencias.some(seq => seq.includes(digits))) return false
   
   return true
 }
