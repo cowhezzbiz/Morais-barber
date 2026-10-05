@@ -165,9 +165,6 @@ export default function App() {
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
   const [servicosSelecionados, setServicosSelecionados] = useState<number[]>([])
-  const [listaEspera, setListaEspera] = useState(false)
-  const [fidelidade, setFidelidade] = useState(false)
-  const [agendamentoRecorrente, setAgendamentoRecorrente] = useState(false)
   const [horario, setHorario] = useState('')
   const [honeypot, setHoneypot] = useState('')
   const [loading, setLoading] = useState(false)
@@ -382,10 +379,7 @@ export default function App() {
           servicos: servicosSelecionados,
           mensagem: mensagemSanitizada,
           horario_agendado: horario || null,
-          forma_pagamento: formaPagamento,
-          lista_espera: listaEspera,
-          fidelidade: fidelidade,
-          agendamento_recorrente: agendamentoRecorrente
+          forma_pagamento: formaPagamento
         })
       })
 
@@ -401,7 +395,7 @@ export default function App() {
       setPixInicioEm(Date.now())
       setTentativas(0)
       setFormNome(''); setFormTelefone(''); setFormMensagem(''); setHorario('')
-      setServicosSelecionados([]); setListaEspera(false); setFidelidade(false); setAgendamentoRecorrente(false)
+      setServicosSelecionados([])
     } catch (err: unknown) {
       setErro(`Erro: ${err instanceof Error ? err.message : 'Erro ao enviar.'}`)
     } finally {
@@ -842,27 +836,6 @@ export default function App() {
                       }, 0)} min</span>
                     </div>
                   )}
-                </div>
-
-                <div className="pv-form-grupo">
-                  <label>Opções extras</label>
-                  <div className="pv-opcoes-extras">
-                    <label className={`pv-opcao-extra ${listaEspera ? 'ativa' : ''}`}>
-                      <input type="checkbox" checked={listaEspera} onChange={e => setListaEspera(e.target.checked)} disabled={loading} />
-                      <span>📋 Lista de espera</span>
-                      <small>Se o horário estiver ocupado, te avisarmos</small>
-                    </label>
-                    <label className={`pv-opcao-extra ${fidelidade ? 'ativa' : ''}`}>
-                      <input type="checkbox" checked={fidelidade} onChange={e => setFidelidade(e.target.checked)} disabled={loading} />
-                      <span>⭐ Programa de fidelidade</span>
-                      <small>Acumule pontos e ganhe descontos</small>
-                    </label>
-                    <label className={`pv-opcao-extra ${agendamentoRecorrente ? 'ativa' : ''}`}>
-                      <input type="checkbox" checked={agendamentoRecorrente} onChange={e => setAgendamentoRecorrente(e.target.checked)} disabled={loading} />
-                      <span>🔄 Agendamento recorrente</span>
-                      <small>Repetir toda semana no mesmo horário</small>
-                    </label>
-                  </div>
                 </div>
 
                 <div className="pv-form-grupo">
