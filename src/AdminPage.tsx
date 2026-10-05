@@ -34,6 +34,11 @@ export default function AdminPage() {
   const [error, setError] = useState('')
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [filtro, setFiltro] = useState<'todos' | 'pendente' | 'confirmado' | 'cancelado' | 'aguardando_pagamento' | 'aguardando_verificacao'>('todos')
+  const [visualizacao, setVisualizacao] = useState<'lista' | 'calendario'>('lista')
+  const [mesCalendario, setMesCalendario] = useState(() => {
+    const agora = new Date()
+    return new Date(agora.getFullYear(), agora.getMonth(), 1)
+  })
   const [modalAberto, setModalAberto] = useState(false)
   const [faturamento, setFaturamento] = useState({ diario: 0, mensal: 0, anual: 0 })
   const faturamentoCalculado = useRef(false)
@@ -367,6 +372,40 @@ export default function AdminPage() {
 
   const filtrados = ordenarAgendamentos(filtro === 'todos' ? agendamentos : agendamentos.filter(a => a.status === filtro))
 
+  // ===== Calendário mensal =====
+  const gerarCalendario = () => {
+    const ano = mesCalendario.getFullYear()
+    const mes = mesCalendario.getMonth()
+    const primeiroDia = new Date(ano, mes, 1)
+    const ultimoDia = new Date(ano, mes + 1, 0)
+    const diasNoMes = ultimoDia.getDate()
+    const diaSemanaInicio = primeiroDia.getDay() // 0=Dom, 1=Seg, ...
+
+    const dias: { data: Date; agendamentos: Agendamento[] }[] = []
+
+    // Preenche os dias do mês
+    for (let d = 1; d <= diasNoMes; d++) {
+      const data = new Date(ano, mes, d)
+      const agsDoDia = filtrados.filter(ag => {
+        if (!ag.horario_agendado) return false
+        const dataAg = new Date(ag.horario_agendado)
+        return dataAg.getDate() === d && dataAg.getMonth() === mes && dataAg.getFullYear() === ano
+      })
+      dias.push({ data, agendamentos: agsDoDia })
+    }
+
+    return { dias, diaSemanaInicio, diasNoMes }
+  }
+
+  const { dias: diasCalendario, diaSemanaInicio } = gerarCalendario()
+
+  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+  const diasSemanaCurto = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
+  const mudarMes = (direcao: number) => {
+    setMesCalendario(new Date(mesCalendario.getFullYear(), mesCalendario.getMonth() + direcao, 1))
+  }
+
   // Agrupa por dia: { chave: '2026-09-25', rotulo: 'Quinta, 25/09', itens: [...] }
   const agrupados = (() => {
     const grupos: { chave: string; rotulo: string; itens: Agendamento[] }[] = []
@@ -469,7 +508,50 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {filtrados.length === 0 ? (
+      <div className="admin-view-toggle">
+        <button className={`btn-filtro ${visualizacao === 'lista' ? 'ativo' : ''}`} onClick={() => setVisualizacao('lista')}>
+          📋 Lista
+        </button>
+        <button className={`btn-filtro ${visualizacao === 'calendario' ? 'ativo' : ''}`} onClick={() => setVisualizacao('calendario')}>
+          📅 Calendário
+        </button>
+      </div>
+
+      {visualizacao === 'calendario' ? (
+        <div className="calendario-container">
+          <div className="calendario-header">
+            <button className="calendario-nav" onClick={() => mudarMes(-1)}>‹</button>
+            <h3>{meses[mesCalendario.getMonth()]} {mesCalendario.getFullYear()}</h3>
+            <button className="calendario-nav" onClick={() => mudarMes(1)}>›</button>
+          </div>
+          <div className="calendario-grid">
+            {diasSemanaCurto.map(d => (
+              <div key={d} className="calendario-dia-semana">{d}</div>
+            ))}
+            {Array.from({ length: diaSemanaInicio }).map((_, i) => (
+              <div key={`vazio-${i}`} className="calendario-dia vazio" />
+            ))}
+            {diasCalendario.map(({ data, agendamentos: ags }) => {
+              const hoje = new Date()
+              const ehHoje = data.toDateString() === hoje.toDateString()
+              return (
+                <div key={data.toISOString()} className={`calendario-dia ${ehHoje ? 'hoje' : ''} ${ags.length > 0 ? 'tem-agendamento' : ''}`}>
+                  <span className="calendario-dia-num">{data.getDate()}</span>
+                  <div className="calendario-agendamentos">
+                    {ags.slice(0, 3).map(ag => (
+                      <div key={ag.id} className={`calendario-agendamento ${ag.status}`} title={`${ag.nome} — ${ag.servico} — ${ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}`}>
+                        <span className="calendario-hora">{ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                        <span className="calendario-nome">{ag.nome}</span>
+                      </div>
+                    ))}
+                    {ags.length > 3 && <span className="calendario-mais">+{ags.length - 3} mais</span>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ) : filtrados.length === 0 ? (
         <div className="admin-vazio"><span>📭</span><p>Nenhum agendamento.</p></div>
       ) : (
         <div className="admin-tabela">
