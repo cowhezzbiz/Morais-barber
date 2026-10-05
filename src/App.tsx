@@ -427,6 +427,7 @@ export default function App() {
             <button onClick={() => scrollTo('servicos')}>Serviços</button>
             <button onClick={() => scrollTo('como-funciona')}>Como funciona</button>
             <button onClick={() => scrollTo('faq')}>Dúvidas</button>
+            <a href="#/agendamento" className="pv-nav-acompanhar">Meu Agendamento</a>
           </nav>
           <button className="pv-btn pv-btn-dourado" onClick={() => scrollTo('agendar')}>Agendar agora</button>
         </div>

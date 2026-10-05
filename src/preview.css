@@ -66,6 +66,22 @@
 }
 .pv-nav button:hover, .pv-nav a:hover { color: var(--pv-ouro); }
 
+.pv-nav-acompanhar {
+  background: var(--pv-ouro);
+  color: #0a0a0a !important;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.pv-nav-acompanhar:hover {
+  background: #e0b86a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(212, 168, 83, 0.3);
+}
+
 @media (max-width: 640px) {
   .pv-nav { display: none; }
 }
