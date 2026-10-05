@@ -111,9 +111,9 @@ export default function AdminPage() {
     faturamentoCalculado.current = true
   }
 
-  const resetarFaturamento = () => {
+  const resetarFaturamento = (periodo: 'diario' | 'mensal' | 'anual') => {
     faturamentoCalculado.current = false
-    setFaturamento({ diario: 0, mensal: 0, anual: 0 })
+    setFaturamento(prev => ({ ...prev, [periodo]: 0 }))
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -501,17 +501,17 @@ export default function AdminPage() {
           <div className="faturamento-card">
             <span className="faturamento-label">Hoje</span>
             <span className="faturamento-valor">R$ {faturamento.diario.toFixed(2).replace('.', ',')}</span>
-            <button className="btn-reset-faturamento" onClick={resetarFaturamento}>🗑 Zerar</button>
+            <button className="btn-reset-faturamento" onClick={() => resetarFaturamento('diario')}>🗑 Zerar</button>
           </div>
           <div className="faturamento-card">
             <span className="faturamento-label">Este Mês</span>
             <span className="faturamento-valor">R$ {faturamento.mensal.toFixed(2).replace('.', ',')}</span>
-            <button className="btn-reset-faturamento" onClick={resetarFaturamento}>🗑 Zerar</button>
+            <button className="btn-reset-faturamento" onClick={() => resetarFaturamento('mensal')}>🗑 Zerar</button>
           </div>
           <div className="faturamento-card">
             <span className="faturamento-label">Este Ano</span>
             <span className="faturamento-valor">R$ {faturamento.anual.toFixed(2).replace('.', ',')}</span>
-            <button className="btn-reset-faturamento" onClick={resetarFaturamento}>🗑 Zerar</button>
+            <button className="btn-reset-faturamento" onClick={() => resetarFaturamento('anual')}>🗑 Zerar</button>
           </div>
         </div>
       </div>
