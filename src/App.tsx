@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from './supabase'
 import { GalleryImage, Banner, TestimonialCard, StatItem, PremiumButton, IMAGES } from './ComponentsPremium'
 import { CalendarCheck, BadgeCheck, BellRing, XCircle, MapPin, Phone, Clock, ChevronDown, CheckCircle, Scissors, Sparkles, PenTool, MessageCircle } from 'lucide-react'
@@ -78,7 +78,49 @@ const FAQS = [
   { p: 'Vou receber lembrete do horário?', r: 'Sim — guarde seu token. E se você pagou por PIX, o barbeiro confirma o pagamento assim que o comprovante for verificado.' },
 ]
 
+const DEPOIMENTOS = [
+  { name: 'Camila Santos', text: 'Ótimo ambiente, espaço amplo e serviço de qualidade. O melhor da região!', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&facepad=2' },
+  { name: 'Luke Oliveira', text: 'Preço justo, indico demais o trabalho do Renan! Profissionalismo de outra galáxia.', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&facepad=2' },
+  { name: 'Murillo Ferreira', text: 'O cabeleireiro bem massa, o corte ficou muito bom. Aprovado demais!', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&facepad=2' },
+  { name: 'Rafael Costa', text: 'Melhor barbearia de Canudos! O Renan é muito atencioso e o corte fica perfeito.', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80&facepad=2' },
+  { name: 'Thiago Mendes', text: 'Ambiente top, atendimento nota 10. Virei cliente fiel!', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&facepad=2' },
+  { name: 'Lucas Almeida', text: 'Tatuagem ficou incrível! Profissional muito talentoso e cuidadoso.', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&facepad=2' },
+]
+
+// Hook para animação de scroll
+function useScrollAnimation() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  return { ref, isVisible }
+}
+
 export default function App() {
+  const sobreAnim = useScrollAnimation()
+  const servicosAnim = useScrollAnimation()
+  const comoFuncionaAnim = useScrollAnimation()
+  const depoimentosAnim = useScrollAnimation()
+  const agendarAnim = useScrollAnimation()
+  const faqAnim = useScrollAnimation()
+
   const [formNome, setFormNome] = useState('')
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
@@ -346,10 +388,11 @@ export default function App() {
         <div className="pv-container pv-topo-inner">
           <span className="pv-logo">MORAIS<span> BARBER</span></span>
           <nav className="pv-nav">
+            <button onClick={() => scrollTo('sobre')}>Sobre</button>
             <button onClick={() => scrollTo('servicos')}>Serviços</button>
             <button onClick={() => scrollTo('como-funciona')}>Como funciona</button>
             <button onClick={() => scrollTo('faq')}>Dúvidas</button>
-            </nav>
+          </nav>
           <button className="pv-btn pv-btn-dourado" onClick={() => scrollTo('agendar')}>Agendar agora</button>
         </div>
       </header>
@@ -414,7 +457,7 @@ export default function App() {
       </section>
 
       {/* ===== COMO FUNCIONA ===== */}
-      <section className="pv-secao" id="como-funciona">
+      <section className={`pv-secao ${comoFuncionaAnim.isVisible ? 'animate-fade-in-up' : ''}`} id="como-funciona" ref={comoFuncionaAnim.ref}>
         <div className="pv-container">
           <p className="pv-eyebrow">SEM COMPROMISSO</p>
           <h2 className="pv-h2">Agendar é simples assim</h2>
@@ -439,7 +482,7 @@ export default function App() {
       </section>
 
       {/* ===== SERVIÇOS - CARDS PREMIUM COM HOVER ===== */}
-      <section className="pv-secao pv-secao-escura" id="servicos">
+      <section className={`pv-secao pv-secao-escura ${servicosAnim.isVisible ? 'animate-fade-in-up' : ''}`} id="servicos" ref={servicosAnim.ref}>
         <div className="pv-container">
           <p className="pv-eyebrow">TABELA DE PREÇOS</p>
           <h2 className="pv-h2">Escolha seu estilo</h2>
@@ -600,29 +643,38 @@ export default function App() {
         </div>
       </section>
 
+      {/* ===== SOBRE ===== */}
+      <section className={`pv-secao ${sobreAnim.isVisible ? 'animate-fade-in-up' : ''}`} id="sobre" ref={sobreAnim.ref}>
+        <div className="pv-container">
+          <p className="pv-eyebrow">NOSSA HISTÓRIA</p>
+          <h2 className="pv-h2">Tradição e estilo em Canudos</h2>
+          <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+            <p style={{ color: 'var(--pv-texto-2)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '24px' }}>
+              A <strong style={{ color: 'var(--pv-ouro)' }}>Morais Barber</strong> nasceu do sonho de oferecer muito mais do que um simples corte. Somos uma barbearia e estúdio de tattoo localizado em Canudos, Novo Hamburgo, onde cada cliente é recebido como amigo e sai com a autoestima renovada.
+            </p>
+            <p style={{ color: 'var(--pv-texto-2)', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '24px' }}>
+              Nosso espaço foi pensado para proporcionar conforto e um ambiente descontraído, com profissionais apaixonados pelo que fazem. Do corte clássico ao moderno, da barba desenhada à tatuagem personalizada, cada detalhe é tratado com máxima atenção.
+            </p>
+            <p style={{ color: 'var(--pv-texto-2)', fontSize: '1.05rem', lineHeight: '1.8' }}>
+              Agende online em 30 segundos e venha viver a experiência Morais Barber. A cadeira está esperando por você! 💈
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ===== PROVA SOCIAL - DEPOIMENTOS PREMIUM ===== */}
-      <section className="pv-secao" id="depoimentos">
+      <section className={`pv-secao ${depoimentosAnim.isVisible ? 'animate-fade-in-up' : ''}`} id="depoimentos" ref={depoimentosAnim.ref}>
         <div className="pv-container">
           <p className="pv-eyebrow">QUEM JÁ SENTOU NA CADEIRA</p>
           <h2 className="pv-h2">Resultado que se vê no espelho</h2>
           <p className="pv-secao-desc" style={{ marginBottom: '30px' }}>
             Depoimentos de quem já experimentou o corte na Morais Barber.
           </p>
-          <TestimonialCard
-            name="Camila Santos"
-            text="Ótimo ambiente, espaço amplo e serviço de qualidade. O melhor da região!"
-            avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&facepad=2"
-          />
-          <TestimonialCard
-            name="Luke Oliveira"
-            text="Preço justo, indico demais o trabalho do Renan! Profissionalismo de outra galáxia."
-            avatarUrl="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&facepad=2"
-          />
-          <TestimonialCard
-            name="Murillo Ferreira"
-            text="O cabeleireiro bem massa, o corte ficou muito bom. Aprovado demais!"
-            avatarUrl="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&facepad=2"
-          />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+            {DEPOIMENTOS.map((d, i) => (
+              <TestimonialCard key={i} name={d.name} text={d.text} avatarUrl={d.avatar} />
+            ))}
+          </div>
           {/* ===== GALERIA DE IMAGENS ===== */}
           <section className="pv-secao" style={{ paddingTop: '80px', paddingBottom: '60px' }}>
             <div className="pv-container">
@@ -642,7 +694,7 @@ export default function App() {
       </section>
 
       {/* ===== AGENDAR (form) ===== */}
-      <section className="pv-secao pv-secao-escura" id="agendar">
+      <section className={`pv-secao pv-secao-escura ${agendarAnim.isVisible ? 'animate-fade-in-up' : ''}`} id="agendar" ref={agendarAnim.ref}>
         <div className="pv-container">
           <p className="pv-eyebrow">AGENDA EM TEMPO REAL</p>
           <h2 className="pv-h2">Garanta seu horário</h2>
@@ -813,7 +865,7 @@ export default function App() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section className="pv-secao" id="faq">
+      <section className={`pv-secao ${faqAnim.isVisible ? 'animate-fade-in-up' : ''}`} id="faq" ref={faqAnim.ref}>
         <div className="pv-container">
           <p className="pv-eyebrow">TIRA-DÚVIDAS</p>
           <h2 className="pv-h2">Perguntas rápidas</h2>
@@ -839,6 +891,19 @@ export default function App() {
           <button className="pv-btn pv-btn-dourado pv-btn-grande" onClick={() => scrollTo('agendar')}>Agendar meu corte</button>
         </div>
       </section>
+
+      {/* ===== BOTÃO WHATSAPP FLUTUANTE ===== */}
+      <a
+        href="https://wa.me/5551981301035?text=Olá! Quero agendar um horário na Morais Barber 💈"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pv-whatsapp-float"
+        aria-label="Falar no WhatsApp"
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </a>
 
       {/* ===== FOOTER ===== */}
       <footer className="pv-footer">
