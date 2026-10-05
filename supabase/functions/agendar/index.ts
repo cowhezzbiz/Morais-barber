@@ -4,18 +4,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!
 const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!
 
-const SERVICOS_VALIDOS = [
-  "Corte",
-  "Barba",
-  "Combo Completo",
-  "Tatuagem"
-]
-
+// Preços padrão - aceita qualquer serviço que o frontend envie
 const PRECOS: Record<string, number> = {
   "Corte": 35,
   "Barba": 30,
   "Combo Completo": 60,
-  "Tatuagem": 0
+  "Tatuagem": 0,
+  "Corte + Barba": 60,
+  "Corte + Sobrancelha": 35,
+  "Sobrancelha": 15,
+  "Pigmentação": 80,
 }
 
 const MAX_AGENDAMENTOS_POR_TELEFONE = 2
@@ -60,7 +58,8 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: "Telefone inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
     }
 
-    if (!SERVICOS_VALIDOS.includes(servicoSanitizado)) {
+    // Aceita qualquer serviço não vazio (flexível para alterações no frontend)
+    if (!servicoSanitizado) {
       return new Response(JSON.stringify({ error: "Serviço inválido" }), { status: 400, headers: { "Content-Type": "application/json" } })
     }
 
