@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from './supabase'
 import { GalleryImage, Banner, TestimonialCard, StatItem, PremiumButton, IMAGES } from './ComponentsPremium'
-import { CalendarCheck, BadgeCheck, BellRing, XCircle, MapPin, Phone, Clock, ChevronDown, CheckCircle, Scissors, Sparkles, PenTool, MessageCircle } from 'lucide-react'
+import { CalendarCheck, BadgeCheck, BellRing, XCircle, MapPin, Phone, Clock, ChevronDown, CheckCircle, Scissors, Crown, Palette, MessageCircle } from 'lucide-react'
 import './preview.css'
 import './App.css'
 
@@ -418,8 +418,8 @@ export default function App() {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              objectPosition: 'center',
-              opacity: 0.7,
+              objectPosition: 'center 30%',
+              opacity: 0.5,
             }}
             loading="eager"
           />
@@ -427,7 +427,7 @@ export default function App() {
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to bottom, rgba(10,10,10,0.3) 0%, rgba(10,10,10,0.7) 100%)',
+              background: 'linear-gradient(to bottom, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.85) 50%, rgba(10,10,10,0.95) 100%)',
             }}
           />
         </div>
@@ -571,9 +571,9 @@ export default function App() {
                   }}
                 >
                   {idx === 0 && <Scissors size={24} color="#c8963e" />}
-                  {idx === 1 && <Sparkles size={24} color="#c8963e" />}
-                  {idx === 2 && <Sparkles size={24} color="#c8963e" />}
-                  {idx === 3 && <PenTool size={24} color="#c8963e" />}
+                  {idx === 1 && <Crown size={24} color="#c8963e" />}
+                  {idx === 2 && <Crown size={24} color="#c8963e" />}
+                  {idx === 3 && <Palette size={24} color="#c8963e" />}
                 </div>
 
                 {/* Conteúdo */}

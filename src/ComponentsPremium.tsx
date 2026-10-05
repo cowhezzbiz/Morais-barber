@@ -5,7 +5,7 @@ import { Scissors, Sparkles, PenTool } from 'lucide-react'
 // Images do site - usando arquivos locais do public/ (fotos reais da barbearia)
 // Cada imagem é ÚNICA - sem duplicatas
 export const IMAGES = {
-  hero: '/barber-hero.jpg',
+  hero: '/barber-shop.jpg',
   barberShop: '/barber-shop.jpg',
   comboCompleto: '/combo-completo.jpg',
   logo: '/favicon-logo.png',
@@ -14,10 +14,10 @@ export const IMAGES = {
     { id: 2, src: '/barber-cut-2.jpg', label: 'BARBA', alt: 'Modelagem de barba' },
     { id: 4, src: '/gallery-2.jpg', label: 'AMBIENTE', alt: 'Espaço da barbearia' },
     { id: 5, src: '/gallery-3.jpg', label: 'QUALIDADE', alt: 'Ferramentas premium' },
-    { id: 6, src: '/barber-shop.jpg', label: 'BARBEARIA', alt: 'Foto da barbearia Morais' },
+    { id: 6, src: '/barber-hero.jpg', label: 'BARBEARIA', alt: 'Foto da barbearia Morais' },
   ],
   banners: {
-    howItWorks: '/barber-hero.jpg',
+    howItWorks: '/barber-shop.jpg',
   }
 }
 
