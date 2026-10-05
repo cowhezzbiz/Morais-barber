@@ -1174,6 +1174,7 @@
 /* ===== Smooth scroll para toda a página ===== */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 /* ===== Melhorias de acessibilidade ===== */
