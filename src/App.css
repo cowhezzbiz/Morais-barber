@@ -1041,6 +1041,48 @@ body {
   transform: scale(1.1);
 }
 
+.btn-acao.historico {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+}
+
+.btn-acao.historico:hover {
+  background: #2196f3;
+  color: white;
+}
+
+/* ===== Modal de histórico ===== */
+.modal-historico {
+  max-width: 600px;
+}
+
+.historico-cliente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.historico-cliente-info strong {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.historico-cliente-info span {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.historico-vazio {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
 /* ========== FATURAMENTO ========== */
 .faturamento-container {
   max-width: 1000px;
@@ -1974,6 +2016,116 @@ body {
   font-size: 0.78rem;
   line-height: 1.5;
   text-align: center;
+}
+
+/* ===== Flags do cliente ===== */
+.celula-flags {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.flag {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.flag-lista {
+  background: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+}
+
+.flag-fidelidade {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.flag-recorrente {
+  background: rgba(156, 39, 176, 0.15);
+  color: #9c27b0;
+}
+
+/* ===== Histórico do cliente ===== */
+.historico-container {
+  max-width: 1000px;
+  margin: 0 auto 30px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.historico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.historico-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.historico-header span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.historico-lista {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.historico-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.historico-item:hover {
+  background: var(--bg-secondary);
+}
+
+.historico-item:last-child {
+  border-bottom: none;
+}
+
+.historico-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.historico-info strong {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.historico-info small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.historico-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.historico-data {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
 }
 
 /* ===== Verificação no admin ===== */

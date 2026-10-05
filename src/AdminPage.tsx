@@ -17,6 +17,9 @@ interface Agendamento {
   valor: number
   pago_em: string | null
   comprovante: string | null
+  lista_espera?: boolean
+  fidelidade?: boolean
+  agendamento_recorrente?: boolean
 }
 
 const PRECOS: Record<string, number> = {
@@ -52,6 +55,8 @@ export default function AdminPage() {
     valor: '',
     horario_agendado: ''
   })
+  const [clienteDetalhe, setClienteDetalhe] = useState<Agendamento | null>(null)
+  const [historicoCliente, setHistoricoCliente] = useState<Agendamento[]>([])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -357,6 +362,19 @@ export default function AdminPage() {
   }
 
   const countStatus = (s: string) => agendamentos.filter(a => a.status === s).length
+
+  // Busca histórico de um cliente por telefone
+  const buscarHistorico = async (telefone: string) => {
+    const tel = telefone.replace(/\D/g, '')
+    if (tel.length < 10) return
+    const { data } = await supabase
+      .from('agendamentos')
+      .select('*')
+      .eq('telefone', tel)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    setHistoricoCliente(data || [])
+  }
   // Ordena: agendamentos SEM horário por último; com horário, do mais PRÓXIMO pro mais distante.
   // Depois agrupa por dia (cabeçalho "Quinta, 25/09") na renderização.
   const ordenarAgendamentos = (lista: Agendamento[]): Agendamento[] => {
@@ -566,7 +584,15 @@ export default function AdminPage() {
               </div>
               {grupo.itens.map(ag => (
                 <div key={ag.id} className={`tabela-linha ${ag.status}`}>
-                  <span className="celula-nome"><strong>{ag.nome}</strong>{ag.mensagem && <small>{ag.mensagem}</small>}</span>
+                  <span className="celula-nome">
+                    <strong>{ag.nome}</strong>
+                    {ag.mensagem && <small>{ag.mensagem}</small>}
+                    <div className="celula-flags">
+                      {ag.lista_espera && <span className="flag flag-lista" title="Lista de espera">📋</span>}
+                      {ag.fidelidade && <span className="flag flag-fidelidade" title="Programa de fidelidade">⭐</span>}
+                      {ag.agendamento_recorrente && <span className="flag flag-recorrente" title="Agendamento recorrente">🔄</span>}
+                    </div>
+                  </span>
                   <span className="celula-telefone">{ag.telefone}</span>
                   <span className="celula-servico">{ag.servico}</span>
                   <span className="celula-horario">{ag.horario_agendado ? new Date(ag.horario_agendado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-'}</span>
@@ -608,6 +634,7 @@ export default function AdminPage() {
                       <button className="btn-acao whatsapp" onClick={() => enviarWhatsApp(ag, 'lembrete')} title="Enviar lembrete">💬</button>
                     )}
                     <button className="btn-acao excluir" onClick={() => deleteAgendamento(ag.id)} title="Excluir">🗑</button>
+                    <button className="btn-acao historico" onClick={() => { setClienteDetalhe(ag); buscarHistorico(ag.telefone) }} title="Ver histórico do cliente">📋</button>
                   </span>
                 </div>
               ))}
@@ -644,6 +671,43 @@ export default function AdminPage() {
             <div className="modal-botoes">
               <button className="btn btn-primary" onClick={adicionarCliente}>Salvar</button>
               <button className="btn btn-outline" onClick={() => setModalAberto(false)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {clienteDetalhe && (
+        <div className="modal-overlay" onClick={() => setClienteDetalhe(null)}>
+          <div className="modal-content modal-historico" onClick={e => e.stopPropagation()}>
+            <h3>📋 Histórico do Cliente</h3>
+            <div className="historico-cliente-info">
+              <strong>{clienteDetalhe.nome}</strong>
+              <span>{clienteDetalhe.telefone}</span>
+            </div>
+            <div className="historico-lista">
+              {historicoCliente.length === 0 ? (
+                <p className="historico-vazio">Nenhum agendamento anterior encontrado.</p>
+              ) : (
+                historicoCliente.map(h => (
+                  <div key={h.id} className="historico-item">
+                    <div className="historico-info">
+                      <strong>{h.servico}</strong>
+                      <small>{h.horario_agendado ? new Date(h.horario_agendado).toLocaleDateString('pt-BR') : 'A combinar'}</small>
+                    </div>
+                    <div className="historico-status">
+                      <span className={`badge ${h.status}`}>
+                        {h.status === 'confirmado' ? 'Confirmado' : h.status === 'cancelado' ? 'Cancelado' : h.status === 'pendente' ? 'Pendente' : h.status}
+                      </span>
+                      <span className="historico-data">
+                        {h.horario_agendado ? new Date(h.horario_agendado).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="modal-botoes">
+              <button className="btn btn-outline" onClick={() => setClienteDetalhe(null)}>Fechar</button>
             </div>
           </div>
         </div>

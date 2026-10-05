@@ -11,13 +11,16 @@ interface Servico {
   descricao: string
   preco: string
   duracao: string
+  duracaoMin: number
 }
 
 const SERVICOS: Servico[] = [
-  { id: 1, nome: 'Corte', descricao: 'Corte personalizado com navalha. Para quem quer look impecável.', preco: 'R$ 35', duracao: '50 min' },
-  { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min' },
-  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba. O visual completo em uma sessão.', preco: 'R$ 60', duracao: '1h15min' },
-  { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável' },
+  { id: 1, nome: 'Corte', descricao: 'Corte personalizado com navalha. Para quem quer look impecável.', preco: 'R$ 35', duracao: '50 min', duracaoMin: 50 },
+  { id: 2, nome: 'Barba', descricao: 'Modelagem completa de barba com toalha quente.', preco: 'R$ 30', duracao: '40 min', duracaoMin: 40 },
+  { id: 3, nome: 'Combo Completo', descricao: 'Corte + Barba. O visual completo em uma sessão.', preco: 'R$ 60', duracao: '1h15min', duracaoMin: 75 },
+  { id: 4, nome: 'Tatuagem', descricao: 'Tatuagens artísticas e personalizadas. Agende uma consulta.', preco: 'Consultar', duracao: 'Variável', duracaoMin: 0 },
+  { id: 5, nome: 'Sobrancelha', descricao: 'Design e limpeza de sobrancelha com precisão.', preco: 'R$ 15', duracao: '20 min', duracaoMin: 20 },
+  { id: 6, nome: 'Pigmentação', descricao: 'Pigmentação de sobrancelha e barba.', preco: 'R$ 80', duracao: '1h30min', duracaoMin: 90 },
 ]
 
 const isValidPhone = (phone: string): boolean => {
@@ -125,6 +128,10 @@ export default function App() {
   const [formTelefone, setFormTelefone] = useState('')
   const [formServico, setFormServico] = useState('')
   const [formMensagem, setFormMensagem] = useState('')
+  const [servicosSelecionados, setServicosSelecionados] = useState<number[]>([])
+  const [listaEspera, setListaEspera] = useState(false)
+  const [fidelidade, setFidelidade] = useState(false)
+  const [agendamentoRecorrente, setAgendamentoRecorrente] = useState(false)
   const [horario, setHorario] = useState('')
   const [honeypot, setHoneypot] = useState('')
   const [loading, setLoading] = useState(false)
@@ -311,6 +318,7 @@ export default function App() {
     if (!podeEnviar) { setErro('Muitas tentativas. Aguarde 1 minuto.'); return }
     const telefoneDigits = formTelefone.replace(/\D/g, '')
     if (!isValidPhone(formTelefone)) { setErro('Telefone inválido. Digite pelo menos 10 dígitos.'); return }
+    if (servicosSelecionados.length === 0) { setErro('Selecione pelo menos um serviço.'); return }
     if (!horario) { setErro('Escolha um horário na agenda.'); return }
 
     setLoading(true)
@@ -320,8 +328,8 @@ export default function App() {
     try {
       const nomeSanitizado = formNome.replace(/<[^>]*>/g, '').trim().slice(0, 100)
       const mensagemSanitizada = formMensagem.replace(/<[^>]*>/g, '').trim().slice(0, 500)
-      const servicoSelecionado = SERVICOS.find(s => s.nome === formServico)
-      const valorServico = servicoSelecionado ? parseFloat(servicoSelecionado.preco.replace('R$ ', '')) || 0 : 0
+      const servicosEscolhidos = SERVICOS.filter(s => servicosSelecionados.includes(s.id))
+      const valorServico = servicosEscolhidos.reduce((total, s) => total + (parseFloat(s.preco.replace('R$ ', '')) || 0), 0)
       setValorAgendado(valorServico)
 
       const response = await fetch('https://croscmpnezlixszygyka.supabase.co/functions/v1/agendar', {
@@ -334,10 +342,14 @@ export default function App() {
         body: JSON.stringify({
           nome: nomeSanitizado,
           telefone: telefoneDigits,
-          servico: formServico,
+          servico: servicosEscolhidos.map(s => s.nome).join(' + '),
+          servicos: servicosSelecionados,
           mensagem: mensagemSanitizada,
           horario_agendado: horario || null,
-          forma_pagamento: formaPagamento
+          forma_pagamento: formaPagamento,
+          lista_espera: listaEspera,
+          fidelidade: fidelidade,
+          agendamento_recorrente: agendamentoRecorrente
         })
       })
 
@@ -352,7 +364,8 @@ export default function App() {
       setPixPago(false)
       setPixInicioEm(Date.now())
       setTentativas(0)
-      setFormNome(''); setFormTelefone(''); setFormServico(''); setFormMensagem(''); setHorario('')
+      setFormNome(''); setFormTelefone(''); setFormMensagem(''); setHorario('')
+      setServicosSelecionados([]); setListaEspera(false); setFidelidade(false); setAgendamentoRecorrente(false)
     } catch (err: unknown) {
       setErro(`Erro: ${err instanceof Error ? err.message : 'Erro ao enviar.'}`)
     } finally {
@@ -753,11 +766,67 @@ export default function App() {
                   <input type="text" name="honeypot" value={honeypot} onChange={e => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
                 </div>
                 <div className="pv-form-grupo">
-                  <label>Serviço</label>
-                  <select value={formServico} onChange={e => setFormServico(e.target.value)} required disabled={loading}>
-                    <option value="">Selecione...</option>
-                    {SERVICOS.map(s => <option key={s.id} value={s.nome}>{s.nome} — {s.preco}</option>)}
-                  </select>
+                  <label>Serviços (selecione um ou mais)</label>
+                  <div className="pv-servicos-multi">
+                    {SERVICOS.map(s => {
+                      const selecionado = servicosSelecionados.includes(s.id)
+                      return (
+                        <button
+                          type="button"
+                          key={s.id}
+                          className={`pv-servico-chip ${selecionado ? 'selecionado' : ''}`}
+                          onClick={() => {
+                            if (selecionado) {
+                              setServicosSelecionados(servicosSelecionados.filter(id => id !== s.id))
+                            } else {
+                              setServicosSelecionados([...servicosSelecionados, s.id])
+                            }
+                          }}
+                          disabled={loading}
+                        >
+                          <span className="pv-servico-nome">{s.nome}</span>
+                          <span className="pv-servico-preco">{s.preco}</span>
+                          <span className="pv-servico-duracao">{s.duracao}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {servicosSelecionados.length > 0 && (
+                    <div className="pv-servicos-total">
+                      <span>Total: </span>
+                      <strong>
+                        R$ {servicosSelecionados.reduce((total, id) => {
+                          const s = SERVICOS.find(sv => sv.id === id)
+                          return total + (s ? parseFloat(s.preco.replace('R$ ', '')) || 0 : 0)
+                        }, 0).toFixed(2).replace('.', ',')}
+                      </strong>
+                      <span> • {servicosSelecionados.reduce((total, id) => {
+                        const s = SERVICOS.find(sv => sv.id === id)
+                        return total + (s?.duracaoMin || 0)
+                      }, 0)} min</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pv-form-grupo">
+                  <label>Opções extras</label>
+                  <div className="pv-opcoes-extras">
+                    <label className={`pv-opcao-extra ${listaEspera ? 'ativa' : ''}`}>
+                      <input type="checkbox" checked={listaEspera} onChange={e => setListaEspera(e.target.checked)} disabled={loading} />
+                      <span>📋 Lista de espera</span>
+                      <small>Se o horário estiver ocupado, te avisarmos</small>
+                    </label>
+                    <label className={`pv-opcao-extra ${fidelidade ? 'ativa' : ''}`}>
+                      <input type="checkbox" checked={fidelidade} onChange={e => setFidelidade(e.target.checked)} disabled={loading} />
+                      <span>⭐ Programa de fidelidade</span>
+                      <small>Acumule pontos e ganhe descontos</small>
+                    </label>
+                    <label className={`pv-opcao-extra ${agendamentoRecorrente ? 'ativa' : ''}`}>
+                      <input type="checkbox" checked={agendamentoRecorrente} onChange={e => setAgendamentoRecorrente(e.target.checked)} disabled={loading} />
+                      <span>🔄 Agendamento recorrente</span>
+                      <small>Repetir toda semana no mesmo horário</small>
+                    </label>
+                  </div>
                 </div>
 
                 <div className="pv-form-grupo">

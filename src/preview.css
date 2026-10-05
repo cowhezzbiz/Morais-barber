@@ -864,6 +864,131 @@
 
 .pv-pix-timer strong { color: #ffb74d; }
 
+/* ===== Múltiplos Serviços ===== */
+.pv-servicos-multi {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.pv-servico-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  background: var(--pv-cinza);
+  border: 2px solid var(--pv-borda);
+  border-radius: 12px;
+  color: var(--pv-texto);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.pv-servico-chip:hover {
+  border-color: rgba(212, 168, 83, 0.5);
+  transform: translateY(-2px);
+}
+
+.pv-servico-chip.selecionado {
+  border-color: var(--pv-ouro);
+  background: rgba(212, 168, 83, 0.1);
+  box-shadow: 0 0 0 1px var(--pv-ouro);
+}
+
+.pv-servico-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pv-servico-nome {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.pv-servico-preco {
+  color: var(--pv-ouro);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pv-servico-duracao {
+  color: var(--pv-texto-2);
+  font-size: 0.75rem;
+}
+
+.pv-servicos-total {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(212, 168, 83, 0.08);
+  border: 1px solid rgba(212, 168, 83, 0.25);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--pv-texto-2);
+}
+
+.pv-servicos-total strong {
+  color: var(--pv-ouro);
+  font-size: 1rem;
+}
+
+/* ===== Opções Extras ===== */
+.pv-opcoes-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pv-opcao-extra {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--pv-cinza);
+  border: 1px solid var(--pv-borda);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pv-opcao-extra:hover {
+  border-color: rgba(212, 168, 83, 0.4);
+}
+
+.pv-opcao-extra.ativa {
+  border-color: var(--pv-ouro);
+  background: rgba(212, 168, 83, 0.06);
+}
+
+.pv-opcao-extra input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--pv-ouro);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pv-opcao-extra span {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--pv-texto);
+}
+
+.pv-opcao-extra small {
+  display: block;
+  color: var(--pv-texto-2);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+@media (max-width: 520px) {
+  .pv-servicos-multi {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ===== Botão WhatsApp Flutuante ===== */
 .pv-whatsapp-float {
   position: fixed;
