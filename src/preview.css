@@ -842,6 +842,16 @@
   .pv-agenda-card { padding: 18px 14px; }
 }
 
+/* ===== Galeria responsiva ===== */
+@media (max-width: 768px) {
+  .pv-secao .pv-container > div[style*="grid-template-columns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+  .pv-secao .pv-container > div[style*="grid-template-columns: repeat(2, 1fr)"] > div[style*="gridColumn: 1 / -1"] {
+    grid-column: auto !important;
+  }
+}
+
 /* Timer do PIX — avisa que o horário expira em 15 min */
 .pv-pix-timer {
   font-size: 0.85rem;
