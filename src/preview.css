@@ -660,6 +660,15 @@
 .pv-footer-base a { color: var(--pv-texto-2); }
 .pv-footer-base a:hover { color: var(--pv-ouro); }
 
+.pv-admin-link {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+.pv-admin-link:hover {
+  opacity: 1;
+}
+
 .pv-preview-tag {
   color: var(--pv-ouro);
   border: 1px dashed rgba(212, 168, 83, 0.5);

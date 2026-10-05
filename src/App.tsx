@@ -987,6 +987,7 @@ export default function App() {
         </div>
         <div className="pv-container pv-footer-base">
           <span>© 2026 Morais Barber. Todos os direitos reservados.</span>
+          <a href="#/admin-morais" className="pv-admin-link">🔐 Admin</a>
         </div>
       </footer>
     </div>
