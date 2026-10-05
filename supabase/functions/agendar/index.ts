@@ -5,14 +5,14 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!
 const SERVICE_ROLE_KEY = Deno.env.get("SERVICE_ROLE_KEY")!
 
 const SERVICOS_VALIDOS = [
-  "Corte + Sobrancelha",
+  "Corte",
   "Barba",
   "Combo Completo",
   "Tatuagem"
 ]
 
 const PRECOS: Record<string, number> = {
-  "Corte + Sobrancelha": 35,
+  "Corte": 35,
   "Barba": 30,
   "Combo Completo": 60,
   "Tatuagem": 0
@@ -42,7 +42,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { nome, telefone, servico, servicos, mensagem, horario_agendado, forma_pagamento, lista_espera, fidelidade, agendamento_recorrente } = await req.json()
+    const { nome, telefone, servico, mensagem, horario_agendado, forma_pagamento } = await req.json()
 
     // Sanitização
     const nomeSanitizado = sanitizeString(nome || "", 100)
@@ -50,9 +50,6 @@ serve(async (req: Request) => {
     const servicoSanitizado = sanitizeString(servico || "", 100)
     const mensagemSanitizada = sanitizeString(mensagem || "", 500)
     const formaPagamento = forma_pagamento === "pix" ? "pix" : "pix_na_hora"
-    const listaEspera = lista_espera === true
-    const fidelidadeAtiva = fidelidade === true
-    const recorrente = agendamento_recorrente === true
 
     // Validações
     if (!nomeSanitizado || nomeSanitizado.length < 2) {
@@ -164,10 +161,7 @@ serve(async (req: Request) => {
         horario_agendado: horarioISO,
         forma_pagamento: formaPagamento,
         valor: PRECOS[servicoSanitizado] || 0,
-        token,
-        lista_espera: listaEspera,
-        fidelidade: fidelidadeAtiva,
-        agendamento_recorrente: recorrente
+        token
       }).select("id")
       data = resultado.data
       error = resultado.error
