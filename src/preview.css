@@ -1016,70 +1016,7 @@
   height: 28px;
 }
 
-/* ===== Animações leves e suaves ===== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Classes de animação */
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.3s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out forwards;
-}
-
-/* Delay classes */
-.delay-100 { animation-delay: 0.05s; }
-.delay-200 { animation-delay: 0.1s; }
-.delay-300 { animation-delay: 0.15s; }
-.delay-400 { animation-delay: 0.2s; }
-.delay-500 { animation-delay: 0.25s; }
-
-/* ===== Transições suaves ===== */
+/* ===== Transições simples e leves ===== */
 .pv-btn,
 .pv-servico-chip,
 .pv-opcao-extra,
@@ -1089,18 +1026,17 @@
 .pv-faq-pergunta,
 .pv-semana-nav button,
 .pv-calendario-nav {
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
-/* ===== Hover effects leves ===== */
+/* ===== Hover effects simples ===== */
 .pv-btn-dourado:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 168, 83, 0.3);
+  box-shadow: 0 2px 8px rgba(212, 168, 83, 0.3);
 }
 
 .pv-servico-chip:hover {
   border-color: rgba(212, 168, 83, 0.5);
-  transform: translateY(-1px);
 }
 
 .pv-servico-chip.selecionado {
@@ -1108,76 +1044,28 @@
   background: rgba(212, 168, 83, 0.1);
 }
 
-/* ===== Animação de entrada para cards ===== */
-.pv-passo,
-.pv-servico-chip,
-.pv-opcao-extra {
-  opacity: 0;
-  animation: fadeInUp 0.4s ease-out forwards;
+/* ===== Chips de horário ===== */
+.pv-chip:not(.ocupado):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
 }
 
-.pv-passo:nth-child(1) { animation-delay: 0.05s; }
-.pv-passo:nth-child(2) { animation-delay: 0.1s; }
-.pv-passo:nth-child(3) { animation-delay: 0.15s; }
-
-/* ===== Animação para o hero ===== */
-.pv-hero .pv-badge {
-  animation: slideDown 0.4s ease-out 0.1s both;
+/* ===== Abas de dias ===== */
+.pv-dia-tab:hover:not(.selecionada) {
+  border-color: rgba(212, 168, 83, 0.5);
 }
 
-.pv-hero .pv-h1 {
-  animation: fadeInUp 0.4s ease-out 0.2s both;
-}
-
-.pv-hero .pv-sub {
-  animation: fadeInUp 0.4s ease-out 0.3s both;
-}
-
-.pv-hero .pv-hero-cta {
-  animation: fadeInUp 0.4s ease-out 0.4s both;
-}
-
-.pv-hero .pv-hero-selos {
-  animation: fadeInUp 0.4s ease-out 0.5s both;
-}
-
-/* ===== Animação para o botão WhatsApp ===== */
+/* ===== Botão WhatsApp ===== */
 .pv-whatsapp-float {
   animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-3px); }
 }
 
-/* ===== Animação para os chips de horário ===== */
-.pv-chip:not(.ocupado):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-}
-
-/* ===== Animação para as abas de dias ===== */
-.pv-dia-tab:hover:not(.selecionada) {
-  transform: translateY(-1px);
-  border-color: rgba(212, 168, 83, 0.5);
-}
-
-/* ===== Animação para o FAQ ===== */
-.pv-faq-resposta {
-  animation: slideDown 0.2s ease-out;
-}
-
-/* ===== Animação para o modal ===== */
-.modal-overlay {
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal-content {
-  animation: scaleIn 0.2s ease-out;
-}
-
-/* ===== Animação para o calendário ===== */
+/* ===== Calendário ===== */
 .calendario-dia:hover {
   transform: scale(1.01);
 }
@@ -1186,86 +1074,43 @@
   transform: translateX(2px);
 }
 
-/* ===== Animação para a tabela admin ===== */
+/* ===== Tabela admin ===== */
 .tabela-linha:hover {
-  transform: translateX(2px);
   background: var(--bg-secondary);
 }
 
-/* ===== Animação para os botões de filtro ===== */
+/* ===== Botões de filtro ===== */
 .btn-filtro:hover {
   transform: translateY(-1px);
 }
 
-/* ===== Animação para os cards de stats ===== */
+/* ===== Cards de stats ===== */
 .admin-stat:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* ===== Animação para o faturamento ===== */
+/* ===== Faturamento ===== */
 .faturamento-card:hover {
   transform: translateY(-2px);
   border-color: var(--accent);
 }
 
-/* ===== Animação para o token ===== */
-.pv-token {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o sucesso ===== */
-.pv-sucesso {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o PIX ===== */
-.pv-pix-box {
-  animation: slideDown 0.3s ease-out;
-}
-
-/* ===== Animação para o QR Code ===== */
-.pv-pix-qr {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o comprovante ===== */
-.pv-pix-ok {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o cancelamento ===== */
-.cancelado-ok {
-  animation: slideDown 0.3s ease-out;
-}
-
-/* ===== Animação para o histórico ===== */
-.historico-item:hover {
-  transform: translateX(2px);
-  background: var(--bg-secondary);
-}
-
-/* ===== Animação para as flags ===== */
+/* ===== Flags ===== */
 .flag:hover {
   transform: scale(1.1);
 }
 
-/* ===== Animação para a navegação do calendário ===== */
+/* ===== Navegação do calendário ===== */
 .calendario-nav:hover {
   transform: scale(1.05);
 }
 
-/* ===== Animação para os botões de ação ===== */
+/* ===== Botões de ação ===== */
 .btn-acao:hover {
   transform: scale(1.1);
 }
 
-/* ===== Animação para os badges ===== */
-.badge:hover {
-  transform: scale(1.02);
-}
-
-/* ===== Animação para os inputs ===== */
+/* ===== Inputs ===== */
 .pv-form-grupo input:focus,
 .pv-form-grupo select:focus,
 .pv-form-grupo textarea:focus {
@@ -1273,19 +1118,19 @@
   box-shadow: 0 0 0 2px rgba(212, 168, 83, 0.15);
 }
 
-/* ===== Animação para o botão fantasma ===== */
+/* ===== Botão fantasma ===== */
 .pv-btn-fantasma:hover {
   border-color: var(--pv-ouro);
   color: var(--pv-ouro);
 }
 
-/* ===== Animação para o botão de navegação ===== */
+/* ===== Botão de navegação ===== */
 .pv-semana-nav button:hover:not(:disabled) {
   border-color: var(--pv-ouro);
   color: var(--pv-ouro);
 }
 
-/* ===== Animação para o botão de pagamento ===== */
+/* ===== Botão de pagamento ===== */
 .pv-pag-opcao:hover {
   border-color: var(--pv-ouro);
 }
@@ -1295,98 +1140,15 @@
   background: rgba(212, 168, 83, 0.08);
 }
 
-/* ===== Animação para o erro ===== */
-.pv-erro {
-  animation: slideDown 0.2s ease-out;
-}
-
-/* ===== Animação para o sucesso ===== */
-.pv-sucesso-titulo {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o timer ===== */
-.pv-pix-timer {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* ===== Animação para o acompanhamento ===== */
-.token-card {
-  animation: scaleIn 0.3s ease-out;
-}
-
-.token-card-topo {
-  animation: slideDown 0.3s ease-out 0.1s both;
-}
-
-.token-card-grade {
-  animation: fadeIn 0.3s ease-out 0.2s both;
-}
-
-.token-card-rodape {
-  animation: fadeIn 0.3s ease-out 0.3s both;
-}
-
-/* ===== Animação para o cancelamento ===== */
-.cancelar-zone {
-  animation: slideDown 0.2s ease-out;
-}
-
-.cancelar-confirm {
-  animation: scaleIn 0.2s ease-out;
-}
-
-/* ===== Animação para o botão voltar ===== */
+/* ===== Botão voltar ===== */
 .btn-voltar:hover {
   transform: translateX(-2px);
 }
 
-/* ===== Animação para o token salvo ===== */
-.token-salvo-card {
-  animation: slideDown 0.3s ease-out;
-}
-
-/* ===== Animação para o input do token ===== */
+/* ===== Input do token ===== */
 .token-input-grupo:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
-}
-
-/* ===== Animação para o resultado ===== */
-.resultado-token {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o status ===== */
-.token-status-icone {
-  animation: scaleIn 0.3s ease-out;
-}
-
-/* ===== Animação para o texto do status ===== */
-.token-status-texto {
-  animation: fadeIn 0.3s ease-out 0.1s both;
-}
-
-/* ===== Animação para os itens de info ===== */
-.token-info-item {
-  animation: fadeIn 0.3s ease-out both;
-}
-
-.token-info-item:nth-child(1) { animation-delay: 0.05s; }
-.token-info-item:nth-child(2) { animation-delay: 0.1s; }
-.token-info-item:nth-child(3) { animation-delay: 0.15s; }
-.token-info-item:nth-child(4) { animation-delay: 0.2s; }
-.token-info-item:nth-child(5) { animation-delay: 0.25s; }
-.token-info-item:nth-child(6) { animation-delay: 0.3s; }
-
-/* ===== Animação para o rodapé do token ===== */
-.token-card-rodape {
-  animation: fadeIn 0.3s ease-out 0.35s both;
+  box-shadow: 0 0 0 2px rgba(212, 168, 83, 0.12);
 }
 
 /* ===== Scrollbar Customizada ===== */
